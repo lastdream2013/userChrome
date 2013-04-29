@@ -1,0 +1,150 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE overlay [
+  <!ENTITY % mainwindowDTD SYSTEM "chrome://browser/locale/browser.dtd">
+  %mainwindowDTD;
+<!ENTITY % placesDTD SYSTEM "chrome://browser/locale/places/places.dtd">
+%placesDTD;
+]>
+
+<overlay id="classic-bookmark-button-overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+// ==UserScript==
+// @name           bookmarkButtonPlus.uc.xul
+// @description     
+// @include        main
+// @include        chrome://browser/content/places/places.xul
+// @include        chrome://browser/content/bookmarks/bookmarksPanel.xul
+// @author         lastdream2013
+// @version        0.1
+// ==/UserScript==
+ -->
+  <script type="application/x-javascript" xmlns="http://www.w3.org/1999/xhtml"><![CDATA[
+(function () {
+    //css
+    document.insertBefore(document.createProcessingInstruction('xml-stylesheet','type="text/css" href="data:text/css;utf-8,'  + encodeURIComponent(
+    '\
+#classic-bookmark-toolbar-button > .toolbarbutton-icon {\
+	max-width: 18px !important;\
+    padding: 0 !important;\
+    margin: 0 !important;\
+}\
+#classic-bookmark-toolbar-button dropmarker{display: none !important;}\
+    ')+ '"'), document.documentElement);
+})();
+  ]]></script>
+  <script type="application/javascript" src="chrome://browser/content/places/places.js"/>
+  
+     <commandset id="mainCommandSet">
+    <command id="OrganizerCommand_export"
+             oncommand="PlacesOrganizer.exportBookmarks();"/>
+    <command id="OrganizerCommand_import"
+             oncommand="PlacesOrganizer.importFromFile();"/>
+    <command id="OrganizerCommand_browserImport"
+             oncommand="PlacesOrganizer.importFromBrowser();"/>
+  </commandset>
+   
+  	<toolbarpalette id="nav-bar">
+        <toolbarbutton id="classic-bookmark-toolbar-button"  insertbefore="urlbar-container"
+					   image="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABSUlEQVQ4jZWSsWvCQBhH70/pLIWCXVoH6RIodBSkk3V3OacOahczJSZD7wY76CAIToVklYKLYAcXFwcJZCvOLhnC/RzKd0S9aBt4Q+De+467Y4wx5nleyfd73Z73Hksh4boOXj++8OKFGssOUGpNUOQjVWj0UWj0wejz/V5XConNdockVX/iICCFxH8mb7Y7c0AKieE8hjON4EwjtMM12uEafLwCH69QGyzOB1zXOQlk5dyA6zogsnK4jA/kipiZA53OG4js1pNU6UBFzC4Hmpxr+Tv6QZIqbLY7HbDswBxocg6CxGPCZZx/BvV6XRF8vNLbJ9rhWl+nMfBcrYKoDRZwppGemqQKw3mMUmuSH6g8PUIjZhjOf0/fsgP9n31MJ4HyQxmEZQcamlrkI0UYA3e3NyCyokm+GDgnHqMDV9f3nxTIW2wUGWN7VuRUB5u+WVcAAAAASUVORK5CYII="
+					   style = "-moz-appearance: none !important;border-style: none !important;border-radius: 0 !important;padding: 0 2px !important;margin: 0 !important;background: transparent !important;box-shadow: none !important;-moz-box-align: center !important;-moz-box-pack: center !important;min-width: 18px !important;min-height: 18px !important;"
+                       type="menu"
+                       class="toolbarbutton-1 chromeclass-toolbar-additional"
+                     persist="class"
+                     removable="true"
+                     label="&bookmarksMenuButton.label;"
+                     tooltiptext="&bookmarksMenuButton.tooltip;"
+                     ondragenter="PlacesMenuDNDHandler.onDragEnter(event);"
+                     ondragover="PlacesMenuDNDHandler.onDragOver(event);"
+                     ondragleave="PlacesMenuDNDHandler.onDragLeave(event);"
+                     ondrop="PlacesMenuDNDHandler.onDrop(event);"
+                     oncommand="BookmarksMenuButton.onCommand(event);">
+          <menupopup id="BMB_bookmarksPopup"
+                     placespopup="true"
+                     context="placesContext"
+                     openInTabs="children"
+                     oncommand="BookmarksEventHandler.onCommand(event, this.parentNode._placesView);"
+                     onclick="BookmarksEventHandler.onClick(event, this.parentNode._placesView);"
+                     onpopupshowing="BookmarksMenuButton.onPopupShowing(event);
+                                     if (!this.parentNode._placesView)
+                                       new PlacesMenu(event, 'place:folder=BOOKMARKS_MENU');"
+                     tooltip="bhTooltip" popupsinherittooltip="true">
+            <menuitem id="BMB_viewBookmarksToolbar"
+                      placesanonid="view-toolbar"
+                      toolbarId="PersonalToolbar"
+                      type="checkbox"
+                      oncommand="onViewToolbarCommand(event)"
+                      label="&viewBookmarksToolbar.label;"/>
+            <menuseparator/>
+            <menuitem id="BMB_bookmarksShowAll"
+                      label="&showAllBookmarks2.label;"
+                      command="Browser:ShowAllBookmarks"
+                      key="manBookmarkKb"/>
+            <menuseparator/>
+            <menuitem id="BMB_bookmarkThisPage"
+                      class="menuitem-iconic"
+                      label="&bookmarkThisPageCmd.label;"
+                      command="Browser:AddBookmarkAs"
+                      key="addBookmarkAsKb"/>
+    <menu accesskey="&maintenance.accesskey;"
+          class="menu-iconic"
+          id="cm-menu-maintenance"
+          insertafter="BMB_bookmarksShowAll"
+          label="&#23548;&#20837;&#21644;&#23548;&#20986;"
+          tooltiptext="&maintenance.tooltip;">
+      <menupopup id="maintenanceButtonPopup">
+
+        <menuitem id="fileImport"
+                  command="OrganizerCommand_import"
+                  label="&importBookmarksFromHTML.label;"
+                  accesskey="&importBookmarksFromHTML.accesskey;"/>
+        <menuitem id="fileExport"
+                  command="OrganizerCommand_export"
+                  label="&exportBookmarksToHTML.label;"
+                  accesskey="&exportBookmarksToHTML.accesskey;"/>
+            <menuseparator/>
+            <menuitem id="browserImport"
+                      command="OrganizerCommand_browserImport"
+                      label="&importOtherBrowser.label;"
+                      accesskey="&importOtherBrowser.accesskey;"/>
+      </menupopup>
+    </menu>
+            <menuitem id="BMB_subscribeToPageMenuitem"
+                      class="menuitem-iconic"
+                      label="&subscribeToPageMenuitem.label;"
+                      oncommand="return FeedHandler.subscribeToFeed(null, event);"
+                      onclick="checkForMiddleClick(this, event);"
+                      observes="singleFeedMenuitemState"/>
+            <menu id="BMB_subscribeToPageMenupopup"
+                  class="menu-iconic"
+                  label="&subscribeToPageMenupopup.label;"
+                  observes="multipleFeedsMenuState">
+              <menupopup id="BMB_subscribeToPageSubmenuMenupopup"
+                         onpopupshowing="return FeedHandler.buildFeedList(event.target);"
+                         oncommand="return FeedHandler.subscribeToFeed(null, event);"
+                         onclick="checkForMiddleClick(this, event);"/>
+            </menu>
+            <menuseparator/>
+            <menu id="BMB_bookmarksToolbar"
+                  placesanonid="toolbar-autohide"
+                  class="menu-iconic bookmark-item"
+                  label="&personalbarCmd.label;"
+                  container="true">
+              <menupopup id="BMB_bookmarksToolbarPopup"
+                         placespopup="true"
+                         context="placesContext"
+                         onpopupshowing="if (!this.parentNode._placesView)
+                                           new PlacesMenu(event, 'place:folder=TOOLBAR');"/>
+            </menu>
+            <menuseparator/>
+            <!-- Bookmarks menu items -->
+            <menuseparator builder="end"
+                           class="hide-if-empty-places-result"/>
+            <menuitem id="BMB_unsortedBookmarks"
+                      label="&bookmarksMenuButton.unsorted.label;"
+                      oncommand="PlacesCommandHook.showPlacesOrganizer('UnfiledBookmarks');"
+                      class="menuitem-iconic"/>
+          </menupopup>
+        </toolbarbutton>
+	</toolbarpalette>
+  
+</overlay> 
