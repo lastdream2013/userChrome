@@ -1,4 +1,4 @@
 userChrome
 ==========
 
-userChrome JS Script
+ write, fixed and modified some useful userChrome JS Script 
