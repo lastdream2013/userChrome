@@ -15,7 +15,7 @@
 // @include        chrome://browser/content/places/places.xul
 // @include        chrome://browser/content/bookmarks/bookmarksPanel.xul
 // @author         lastdream2013
-// @version        0.1
+// @version        0.11
 // ==/UserScript==
  -->
 	<script type="application/x-javascript" xmlns="http://www.w3.org/1999/xhtml"><![CDATA[
