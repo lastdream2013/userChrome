@@ -6,8 +6,8 @@
 // @compatibility  Firefox 17
 // @charset        UTF-8
 // @version        0.3.0
-// @note           version 20130430: modify by lastdream2013 show real page num(forum search engine only), add max pager limit
 // @note           添加 Super_preloader 的数据库支持及更新 By ywzhaiqi。
+// @note           20130429 testversion: modify by lastdream2013 for show real page num, add max pager limit
 // @note           0.3.0 本家に倣って Cookie の処理を変更した
 // @note           0.2.9 remove E4X
 // @note           0.2.8 履歴に入れる機能を廃止
@@ -992,13 +992,12 @@ AutoPager.prototype = {
 			this.state = 'terminated';
 			return;
 		}
-			log("this.requestURL" + this.requestURL);
+		//log("this.requestURL" + this.requestURL);
 		//论坛和搜索引擎网页显示实际页面信息
 		if (this.requestURL.indexOf('search?') != -1 || 
 			this.requestURL.indexOf('forum')   != -1 ||
 			this.requestURL.indexOf('thread')  != -1 || 
 			this.requestURL.indexOf('baidu')  != -1 ) {
-
 			var ralativePageNumarray = [];
 			if (url) {
 				ralativePageNumarray = this.getRalativePageNumArray(this.requestURL, url);
@@ -1022,7 +1021,7 @@ AutoPager.prototype = {
 		} else {
 			ralativePageStr = '';
 		}
-		log("ralativePageStr" + ralativePageStr);
+		//log("ralativePageStr" + ralativePageStr);
 		var pagerCurStr;
 		if (MAX_PAGER_NUM != -1) {
 			pagerCurStr = ' 自动翻页：第 <font color="red"> ' + (++this.pageNum) + '/' + MAX_PAGER_NUM + '</font> 页 ';
