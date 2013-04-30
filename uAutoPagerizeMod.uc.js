@@ -39,9 +39,9 @@
 (function(css) {
 
 // 以下 設定が無いときに利用する
-var isUrlbar = true;   // 放置的位置，true未地址栏，否则附加组件栏。
+var isUrlbar = true;   // 放置的位置，true为地址栏，否则附加组件栏。
 var FORCE_TARGET_WINDOW = true;
-var BASE_REMAIN_HEIGHT = 400;
+var BASE_REMAIN_HEIGHT = 600;
 var MAX_PAGER_NUM = 10;   //默认最大翻页数， -1表示无限制
 var DEBUG = true;
 var AUTO_START = true;
@@ -51,11 +51,18 @@ var XHR_TIMEOUT = 30 * 1000;
 
 
 var NLF_DB_FILENAME =  "uSuper_preloader.db.js";
-// 替换Super_preloader数据库中 auto;
-// var AUTO_NEXT_XPATH = '//a[contains(text(),"下一页")][@href] | //a[contains(text(),"下一章")][@href] | //a[contains(text(),"后一页")][@href] | //a[descendant::*[contains(text(), "下一页")]][@href]';
-var AUTO_NEXT_XPATH = '//a[descendant-or-self::*[contains(text(), "下一页")]][@href] \
+// 替换Super_preloader数据库中 auto; ，加的太多可能有错误的链接
+var AUTO_NEXT_XPATH = '\
+	//a[descendant-or-self::*[contains(text(), "下一页")]][@href] \
+	| //a[descendant-or-self::*[contains(text(), "下一頁")]][@href] \
+	| //a[descendant-or-self::*[contains(text(), "下页")]][@href] \
+	| //a[descendant-or-self::*[contains(text(), "下頁")]][@href] \
 	| //a[descendant-or-self::*[contains(text(), "下一章")]][@href] \
-	| //a[descendant-or-self::*[contains(text(), "下页")]][@href] ';
+	| //a[descendant-or-self::*[contains(text(), "下章")]][@href] \
+	| //a[descendant-or-self::*[contains(text(), "下一节")]][@href] \
+	| //a[descendant-or-self::*[contains(text(), "下一節")]][@href] \
+	| //a[descendant-or-self::*[contains(text(), "后页")]][@href] \
+';
 
 //Super_preloader的翻页规则更新地址
 var SITEINFO_NLF_IMPORT_URLS = [
@@ -120,12 +127,6 @@ var MY_SITEINFO = [
 		,pageElement : '//tr[@class="bgColor02"][1]|//tr[@class="bgColor02"][1]/following-sibling::tr'
 		,exampleUrl  : 'http://kakaku.com/specsearch/0150/'
 	},
-	{	siteName:'顶点小说',
-		url: '^http://www\\.23us\\.com/html/.+\\.html',
-		siteExample:'http://www.23us.com/html/26/26627/16952316.html',
-		nextLink:' //dd[@id="footlink"]/descendant::a[text()="下一页"]',
-		pageElement: 'id("amain")/dl/dd/h1 | id("contents")'
-	},
 ];
 
 var MICROFORMAT = [
@@ -164,7 +165,6 @@ var ns = window.uAutoPagerize = {
 	MY_SITEINFO    : MY_SITEINFO.slice(),
 	NLF_SITEINFO   : [],
 	SITEINFO       : [],
-	CN_SITEINFO:     {},
 
 	get prefs() {
 		delete this.prefs;
@@ -430,8 +430,8 @@ var ns = window.uAutoPagerize = {
 		if (sandbox.EXCLUDE)
 			ns.EXCLUDE = sandbox.EXCLUDE;
 		if (isAlert)
-			Cc['@mozilla.org/alerts-service;1'].getService(Ci.nsIAlertsService)
-				.showAlertNotification(null, 'uAutoPagerize', '配置文件已经载入', false, "", null, "");
+			alert('uAutoPagerize', '配置文件已经重新载入');
+
 		return true;
 	},
 	getFocusedWindow: function() {
@@ -481,6 +481,7 @@ var ns = window.uAutoPagerize = {
 			});
 		});
 
+		// 原脚本检测下一页链接2次，这里传递一个变量。
 		var index = -1, info, nextLink;
 
 		if (/\bgoogle\.(?:com|co\.jp)$/.test(win.location.host)) {
@@ -620,7 +621,7 @@ var ns = window.uAutoPagerize = {
 			if (info) {
 				win.ap = new AutoPager(win.document, info, nextLink && nextLink.href);
 			}else{
-				debug("没有找到当前站点的配置.");
+				debug("没有找到当前站点的配置: " + win.location.href);
 			}
 
 			updateIcon();
@@ -718,11 +719,12 @@ AutoPager.prototype = {
 		if (this.state !== "terminated" && this.state !== "error") {
 			if (state === "disable") {
 				this.abort();
-			} else if (state === "terminated" && state === "error") {
+			}
+			else if (state === "terminated" && state === "error") {
 				this.removeListener();
 			}
 			if (this.state !== "loading" && state !== "loading" || this.isFrame) {
-				Array.forEach(this.doc.getElementsByClassName('autopagerize_icon'), function (e) {
+				Array.forEach(this.doc.getElementsByClassName('autopagerize_icon'), function(e) {
 					e.style.backgroundColor = COLOR[state];
 					e.setAttribute("state", state);
 				});
@@ -732,7 +734,7 @@ AutoPager.prototype = {
 		}
 		return state;
 	},
-	init : function (doc, info, nextLink) {
+	init: function(doc, info, nextLink) {
 		this.doc = doc;
 		this.win = doc.defaultView;
 		this.documentElement = doc.documentElement;
@@ -740,17 +742,17 @@ AutoPager.prototype = {
 		this.isXML = this.doc.contentType.indexOf('xml') > 0;
 		this.isFrame = this.win.top != this.win;
 		this.info = {};
-		for (let[key, val]in Iterator(info)) {
+		for (let [key, val] in Iterator(info)) {
 			this.info[key] = val;
 		}
-
+		
 		var url;
-		if (nextLink) {
+		if(nextLink){
 			url = nextLink;
-		} else {
+		}else{
 			url = this.getNextURL(this.doc);
 		}
-		if (!url) {
+		if ( !url ) {
 			debug("getNextURL returns null.", this.info.nextLink);
 			return;
 		}
@@ -779,7 +781,7 @@ AutoPager.prototype = {
 		if (this.getScrollHeight() == this.win.innerHeight)
 			this.body.style.minHeight = (this.win.innerHeight + 1) + 'px';
 	},
-	destroy : function (isRemoveAddPage) {
+	destroy: function(isRemoveAddPage) {
 		this.state = "disable";
 		this.win.removeEventListener("pagehide", this, false);
 		this.removeListener();
@@ -802,64 +804,62 @@ AutoPager.prototype = {
 		this.win.ap = null;
 		updateIcon();
 	},
-	addListener : function () {
+	addListener: function() {
 		this.win.addEventListener("scroll", this, false);
 		this.doc.addEventListener("AutoPagerizeToggleRequest", this, false);
 		this.doc.addEventListener("AutoPagerizeEnableRequest", this, false);
 		this.doc.addEventListener("AutoPagerizeDisableRequest", this, false);
 	},
-	removeListener : function () {
+	removeListener: function() {
 		this.win.removeEventListener("scroll", this, false);
 		this.doc.removeEventListener("AutoPagerizeToggleRequest", this, false);
 		this.doc.removeEventListener("AutoPagerizeEnableRequest", this, false);
 		this.doc.removeEventListener("AutoPagerizeDisableRequest", this, false);
 	},
-	handleEvent : function (event) {
-		switch (event.type) {
-		case "scroll":
-			if (this.timer)
-				this.win.clearTimeout(this.timer);
-			this.timer = this.win.setTimeout(function () {
+	handleEvent: function(event) {
+		switch(event.type) {
+			case "scroll":
+				if (this.timer)
+					this.win.clearTimeout(this.timer);
+				this.timer = this.win.setTimeout(function(){
 					this.scroll();
 					this.timer = null;
-				}
-					.bind(this), 100);
-			break;
-		case "click":
-			this.stateToggle();
-			break;
-		case "pagehide":
-			this.abort();
-			break;
-		case "AutoPagerizeToggleRequest":
-			this.stateToggle();
-			break;
-		case "AutoPagerizeEnableRequest":
-			this.state = "enable";
-			break;
-		case "AutoPagerizeDisableRequest":
-			this.state = "disable";
-			break;
+				}.bind(this), 100);
+				break;
+			case "click":
+				this.stateToggle();
+				break;
+			case "pagehide":
+				this.abort();
+				break;
+			case "AutoPagerizeToggleRequest":
+				this.stateToggle();
+				break;
+			case "AutoPagerizeEnableRequest":
+				this.state = "enable";
+				break;
+			case "AutoPagerizeDisableRequest":
+				this.state = "disable";
+				break;
 		}
 	},
-	stateToggle : function () {
-		this.state = this.state == 'disable' ? 'enable' : 'disable';
+	stateToggle: function() {
+		this.state = this.state == 'disable'? 'enable' : 'disable';
 	},
-	scroll : function () {
-		if (this.state !== 'enable' || !ns.AUTO_START)
-			return;
+	scroll : function(){
+		if (this.state !== 'enable' || !ns.AUTO_START) return;
 		var remain = this.getScrollHeight() - this.win.innerHeight - this.win.scrollY;
 		if (remain < this.remainHeight) {
 			this.request();
 		}
 	},
-	abort : function () {
+	abort: function() {
 		if (this.req) {
 			this.req.abort();
 			this.req = null;
 		}
 	},
-	isThridParty : function (aHost, bHost) {
+	isThridParty: function(aHost, bHost) {
 		try {
 			var aTLD = Services.eTLD.getBaseDomainFromHost(aHost);
 			var bTLD = Services.eTLD.getBaseDomainFromHost(bHost);
@@ -868,17 +868,11 @@ AutoPager.prototype = {
 			return aHost === bHost;
 		}
 	},
-	request : function () {
-		//		if (!this.requestURL || this.lastRequestURL == this.requestURL) return;
-		if (!this.requestURL || this.loadedURLs[this.requestURL])
-			return;
+	request : function(){
+		if (!this.requestURL || this.loadedURLs[this.requestURL]) return;
 
-		var[reqScheme, , reqHost] = this.requestURL.split('/');
-		var {
-			protocol,
-			host
-		}
-			 = this.win.location;
+		var [reqScheme,,reqHost] = this.requestURL.split('/');
+		var {protocol, host} = this.win.location;
 		if (reqScheme !== protocol) {
 			log(protocol + " が " + reqScheme + "にリクエストを送ることはできません");
 			this.state = "error";
@@ -896,29 +890,20 @@ AutoPager.prototype = {
 		if (isSameDomain)
 			headers.Cookie = getCookie(reqHost, reqScheme === 'https');
 		var opt = {
-			method : 'get',
-			get url()self.requestURL,
-			set url(url)self.requestURL = url,
-			headers : headers,
-			overrideMimeType : 'text/html; charset=' + this.doc.characterSet,
-			onerror : function () {
-				self.state = 'error';
-				self.req = null;
-			},
-			onload : function (res) {
-				self.requestLoad.apply(self, [res]);
-				self.req = null;
-			}
+			method: 'get',
+			get url() self.requestURL,
+			set url(url) self.requestURL = url,
+			headers: headers,
+			overrideMimeType: 'text/html; charset=' + this.doc.characterSet,
+			onerror: function(){ self.state = 'error'; self.req = null; },
+			onload: function(res) { self.requestLoad.apply(self, [res]); self.req = null; }
 		}
-		this.win.requestFilters.forEach(function (i) {
-			i(opt)
-		}, this);
+		this.win.requestFilters.forEach(function(i) { i(opt) }, this);
 		this.state = 'loading';
 		this.req = GM_xmlhttpRequest(opt);
 	},
 	getRalativePageNumArray : function (lasturl, url) {
 		if (!lasturl || !url) {
-			//log("getRalativePageNumArray error");
 			return [0, 0];
 		}
 
@@ -936,9 +921,9 @@ AutoPager.prototype = {
 		}
 		return [0, 0];
 	},
-	requestLoad : function (res) {
+	requestLoad : function(res){
 		var before = res.URI.host;
-		var after = res.originalURI.host;
+		var after  = res.originalURI.host;
 		if (before != after && !this.isThridParty(before, after)) {
 			log(before + " 被重新定向到 " + after);
 			this.state = 'error';
@@ -947,9 +932,7 @@ AutoPager.prototype = {
 		delete res.URI;
 		delete res.originalURI;
 
-		this.win.responseFilters.forEach(function (i) {
-			i(res, this.requestURL)
-		}, this);
+		this.win.responseFilters.forEach(function(i) { i(res, this.requestURL) }, this);
 		if (res.finalUrl)
 			this.requestURL = res.finalUrl;
 
@@ -966,23 +949,22 @@ AutoPager.prototype = {
 			htmlDoc.documentElement.appendChild(range.createContextualFragment(str));
 			range.detach();
 		}
-		this.win.documentFilters.forEach(function (i) {
-			i(htmlDoc, this.requestURL, this.info)
-		}, this);
+		this.win.documentFilters.forEach(function(i) { i(htmlDoc, this.requestURL, this.info) }, this);
 
 		try {
 			var page = getElementsMix(this.info.pageElement, htmlDoc);
 			var url = this.getNextURL(htmlDoc);
-		} catch (e) {
-			//log("Get page and url Error: ", e);
+		}
+		catch(e){
+			debug("Get page and url Error: ", e);
 			this.state = 'error';
 			return;
 		}
 
 		var innerHTMLstr = '<a class="autopagerize_link" href="' + this.requestURL.replace(/&/g, '&amp;') + '" >';
 
-		if (!page || page.length < 1) {
-			debug('pageElement not found.', this.info.pageElement);
+		if (!page || page.length < 1 ) {
+			debug('pageElement not found.' , this.info.pageElement);
 			this.state = 'terminated';
 			return;
 		}
@@ -992,12 +974,13 @@ AutoPager.prototype = {
 			this.state = 'terminated';
 			return;
 		}
-		//log("this.requestURL" + this.requestURL);
+
 		//论坛和搜索引擎网页显示实际页面信息
 		if (this.requestURL.indexOf('search?') != -1 || 
 			this.requestURL.indexOf('forum')   != -1 ||
 			this.requestURL.indexOf('thread')  != -1 || 
 			this.requestURL.indexOf('baidu')  != -1 ) {
+
 			var ralativePageNumarray = [];
 			if (url) {
 				ralativePageNumarray = this.getRalativePageNumArray(this.requestURL, url);
@@ -1039,9 +1022,7 @@ AutoPager.prototype = {
 		}
 
 		if (typeof this.win.ap == 'undefined') {
-			this.win.ap = {
-				state : 'enabled'
-			};
+			this.win.ap = { state: 'enabled' };
 			updateIcon();
 		}
 		this.loadedURLs[this.requestURL] = true;
@@ -1057,9 +1038,8 @@ AutoPager.prototype = {
 
 		var nextHTMLstr = innerHTMLstr + pagerCurStr + ralativePageStr + ' </a> ';
 		page = this.addPage(htmlDoc, page, nextHTMLstr);
-		this.win.filters.forEach(function (i) {
-			i(page)
-		});
+		this.win.filters.forEach(function(i) { i(page) });
+
 		this.lastPageURL = this.requestURL;
 		this.requestURL = url;
 		this.state = 'enable';
@@ -1095,7 +1075,13 @@ AutoPager.prototype = {
 			o.setAttribute('class', 'autopagerize_icon');
 			o.setAttribute('state', 'enable');
 			o.style.cssText = [
-				'background: ', COLOR['enable'], ';', 'width: 10px;', 'height: 10px;', 'padding: 0px;', 'margin-right: 3px;', 'display: inline-block;', 'vertical-align: middle;'
+				'background: ', COLOR['enable'], ';', 
+				'width: 10px;',
+				'height: 10px;', 
+				'padding: 0px;', 
+				'margin-right: 3px;',
+				'display: inline-block;', 
+				'vertical-align: middle;'
 			].join('');
 			o.addEventListener('click', this, false);
 		}
@@ -1133,12 +1119,9 @@ AutoPager.prototype = {
 
 	addPage : function (htmlDoc, page, innerHTMLstr) {
 		var fragment = this.doc.createDocumentFragment();
-		page.forEach(function (i) {
-			fragment.appendChild(i);
-		});
-		this.win.fragmentFilters.forEach(function (i) {
-			i(fragment, htmlDoc, page)
-		}, this);
+		page.forEach(function(i) { fragment.appendChild(i); });
+		this.win.fragmentFilters.forEach(function(i) { i(fragment, htmlDoc, page) }, this);
+
 		this.addSeparator(fragment, page, innerHTMLstr);
 	},
 	getNextURL : function(doc) {
@@ -1214,9 +1197,12 @@ AutoPager.prototype = {
 	},
 };
 
+// 获取更新 Super_preloader.db 函数
 (function(){
+
+	ns.requestSITEINFO_NLF = requestSITEINFO_NLF;
 	ns.resetSITEINFO_NLF = function(){
-		if (confirm('确定要更新 Super_preloader.db 数据库吗？'))
+		if (confirm('确定要重置 Super_preloader.db 数据库吗？'))
 			requestSITEINFO_NLF(SITEINFO_NLF_IMPORT_URLS);
 	};
 	
@@ -1253,13 +1239,10 @@ AutoPager.prototype = {
 		debug("Super_preloader.db 数据库已经载入")
 
 		if (isAlert)
-			Cc['@mozilla.org/alerts-service;1'].getService(Ci.nsIAlertsService)
-				.showAlertNotification(null, 'uAutoPagerize', 
-					'Super_preloader.db 数据库已经重新载入', false, "", null, "");
+			alert('uAutoPagerize', 'Super_preloader.db 数据库已经重新载入');
+
 		return true;
 	};
-
-	ns.requestSITEINFO_NLF = requestSITEINFO_NLF;
 
 	function requestSITEINFO_NLF(){
 		debug(" request Super_preloader.db");
@@ -1708,7 +1691,6 @@ function getElementsMix(selector, doc) {
 	}
 }
 
-
 function hrefInc(obj,doc,win){
 
 	var _cplink = cplink || content.window.location.href;
@@ -1794,9 +1776,9 @@ function hrefInc(obj,doc,win){
 
 function alert(title, info){
 	Cc['@mozilla.org/alerts-service;1'].getService(Ci.nsIAlertsService)
-		.showAlertNotification(null, title, 
-		info, false, "", null, "");
+		.showAlertNotification(null, title, info, false, "", null, "");
 }
+
 
 })('\
 #uAutoPagerize-icon {\
