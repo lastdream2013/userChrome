@@ -6,6 +6,7 @@
 // @compatibility  Firefox 17
 // @charset        UTF-8
 // @version        0.3.0
+// @note           添加 Super_preloader 的数据库支持及更新 By ywzhaiqi。
 // @note           20130429 testversion: modify by lastdream2013 for show real page num, add max pager limit
 // @note           0.3.0 本家に倣って Cookie の処理を変更した
 // @note           0.2.9 remove E4X
@@ -38,18 +39,33 @@
 (function(css) {
 
 // 以下 設定が無いときに利用する
+var isUrlbar = true;   // 放置的位置，true未地址栏，否则附加组件栏。
 var FORCE_TARGET_WINDOW = true;
 var BASE_REMAIN_HEIGHT = 400;
-var MAX_PAGER_NUM = 3;   //最大翻页数， -1表示无限制
+var MAX_PAGER_NUM = 10;   //默认最大翻页数， -1表示无限制
 var DEBUG = true;
 var AUTO_START = true;
 var SCROLL_ONLY = false;
 var CACHE_EXPIRE = 24 * 60 * 60 * 1000;
 var XHR_TIMEOUT = 30 * 1000;
 
+
+var NLF_DB_FILENAME =  "uSuper_preloader.db.js";
+// 替换Super_preloader数据库中 auto;
+// var AUTO_NEXT_XPATH = '//a[contains(text(),"下一页")][@href] | //a[contains(text(),"下一章")][@href] | //a[contains(text(),"后一页")][@href] | //a[descendant::*[contains(text(), "下一页")]][@href]';
+var AUTO_NEXT_XPATH = '//a[descendant-or-self::*[contains(text(), "下一页")]][@href] \
+	| //a[descendant-or-self::*[contains(text(), "下一章")]][@href] \
+	| //a[descendant-or-self::*[contains(text(), "下页")]][@href] ';
+	
+//官方规则， 太大了，先注释掉，默认用uSuper_preloader.db.js
+var SITEINFO_IMPORT_URLS = [
+    /*'http://wedata.net/databases/AutoPagerize/items.json',*/ 
+];
+	
+	
 // ワイルドカード(*)で記述する
 var INCLUDE = [
-  "*"
+	"*"
 ];
 var EXCLUDE = [
 	'https://mail.google.com/*'
@@ -98,30 +114,16 @@ var MY_SITEINFO = [
 		,pageElement : '//tr[@class="bgColor02"][1]|//tr[@class="bgColor02"][1]/following-sibling::tr'
 		,exampleUrl  : 'http://kakaku.com/specsearch/0150/'
 	},
-	{	// 内容无效，可能js加载
-		url         : '^http://www\\.dm5\\.com/m\\d+/'
-		,nextLink    : 'id("s_next")/a'
-		,pageElement : 'id("showimage")'
-		,exampleUrl  : 'http://www.dm5.com/m118202/'
-	},
 ];
 
 var MICROFORMAT = [
-	// {
-	// 	url        : '^https?://.',
-	// 	nextLink   : '//link[contains(concat(" ", translate(normalize-space(@rel), "ENTX", "entx"), " "), " next ")] | //a[contains(concat(" ", translate(normalize-space(@rel), "ENTX", "entx"), " "), " next ")]',
-	// 	pageElement: '//*[contains(concat(" ", normalize-space(@class), " "), " hentry ")]'
-	// },
+
 	{
 		url         : '^https?://.*',
 		nextLink    : '//a[@rel="next"] | //link[@rel="next"]',
 		pageElement : '//*[contains(@class, "autopagerize_page_element")]',
 		insertBefore: '//*[contains(@class, "autopagerize_insert_before")]',
 	}
-];
-
-var SITEINFO_IMPORT_URLS = [
-    'http://wedata.net/databases/AutoPagerize/items.json', 
 ];
 
 var COLOR = {
@@ -143,13 +145,14 @@ if (typeof window.uAutoPagerize != 'undefined') {
 }
 
 
-
 var ns = window.uAutoPagerize = {
 	INCLUDE_REGEXP : /./,
 	EXCLUDE_REGEXP : /^$/,
 	MICROFORMAT    : MICROFORMAT.slice(),
 	MY_SITEINFO    : MY_SITEINFO.slice(),
+	NLF_SITEINFO   : [],
 	SITEINFO       : [],
+	CN_SITEINFO:     {},
 
 	get prefs() {
 		delete this.prefs;
@@ -160,6 +163,12 @@ var ns = window.uAutoPagerize = {
 		aFile.appendRelativePath('_uAutoPagerize.js');
 		delete this.file;
 		return this.file = aFile;
+	},
+	get NLF_file() {
+		var aFile = Services.dirsvc.get('UChrm', Ci.nsILocalFile);
+		aFile.appendRelativePath(NLF_DB_FILENAME);
+		delete this.NLF_file;
+		return this.NLF_file = aFile;
 	},
 	get INCLUDE() INCLUDE,
 	set INCLUDE(arr) {
@@ -198,6 +207,14 @@ var ns = window.uAutoPagerize = {
 		if (m) m.setAttribute("tooltiptext", BASE_REMAIN_HEIGHT = num);
 		return num;
 	},
+	get MAX_PAGER_NUM() MAX_PAGER_NUM,
+	set MAX_PAGER_NUM(num) {
+		num = parseInt(num, 10);
+		if (!num) return num;
+		let m = $("uAutoPagerize-MAX_PAGER_NUM");
+		if (m) m.setAttribute("tooltiptext", MAX_PAGER_NUM = num);
+		return num;
+	},
 	get DEBUG() DEBUG,
 	set DEBUG(bool) {
 		let m = $("uAutoPagerize-DEBUG");
@@ -220,23 +237,25 @@ var ns = window.uAutoPagerize = {
 	init: function() {
 		ns.style = addStyle(css);
 		
-		// ns.icon = $('status-bar').appendChild($C("statusbarpanel", {
-		// 	id: "uAutoPagerize-icon",
-		// 	class: "statusbarpanel-iconic-text",
-		// 	state: "disable",
-		// 	tooltiptext: "disable",
-		// 	onclick: "if (event.button != 2) uAutoPagerize.iconClick(event);",
-		// 	context: "uAutoPagerize-popup",
-		// }));
-		
-		ns.icon = $('urlbar-icons').appendChild($C("image", {
-			id: "uAutoPagerize-icon",
-			state: "disable",
-			tooltiptext: "disable",
-			onclick: "if (event.button != 2) uAutoPagerize.iconClick(event);",
-			context: "uAutoPagerize-popup",
-			style: "padding: 0px 2px;",
-		}));
+		if(isUrlbar){
+			ns.icon = $('urlbar-icons').appendChild($C("image", {
+				id: "uAutoPagerize-icon",
+				state: "disable",
+				tooltiptext: "disable",
+				onclick: "if (event.button != 2) uAutoPagerize.iconClick(event);",
+				context: "uAutoPagerize-popup",
+				style: "padding: 0px 2px;",
+			}));
+		}else{
+			ns.icon = $('status-bar').appendChild($C("statusbarpanel", {
+				id: "uAutoPagerize-icon",
+				class: "statusbarpanel-iconic-text",
+				state: "disable",
+				tooltiptext: "disable",
+				onclick: "if (event.button != 2) uAutoPagerize.iconClick(event);",
+				context: "uAutoPagerize-popup",
+			}));
+		}
 
 		var xml = '\
 			<menupopup id="uAutoPagerize-popup"\
@@ -249,9 +268,13 @@ var ns = window.uAutoPagerize = {
 				          autoCheck="true"\
 				          checked="'+ AUTO_START +'"\
 				          oncommand="uAutoPagerize.toggle(event);"/>\
-				<menuitem label="重新载入配置文件"\
+				<menuitem label="重载配置文件"\
 				          oncommand="uAutoPagerize.loadSetting(true);"/>\
-				<menuitem label="重置站点信息"\
+				<menuitem label="重载配置文件(Super_perloader)"\
+				          oncommand="uAutoPagerize.loadSetting_NLF(true);"/>\
+				<menuitem label="重置站点信息(Super_perloader)"\
+				          oncommand="uAutoPagerize.resetSITEINFO_NLF();"/>\
+				<menuitem label="重置站点信息(官方)"\
 				          oncommand="uAutoPagerize.resetSITEINFO();"/>\
 				<menuseparator/>\
 				<menuitem label="新标签打开链接"\
@@ -264,6 +287,10 @@ var ns = window.uAutoPagerize = {
 				          id="uAutoPagerize-BASE_REMAIN_HEIGHT"\
 				          tooltiptext="'+ BASE_REMAIN_HEIGHT +'"\
 				          oncommand="uAutoPagerize.BASE_REMAIN_HEIGHT = prompt(\'\', uAutoPagerize.BASE_REMAIN_HEIGHT);"/>\
+                <menuitem label="设置最大自动翻页数"\
+				          id="uAutoPagerize-MAX_PAGER_NUM"\
+				          tooltiptext="'+ MAX_PAGER_NUM +'"\
+				          oncommand="uAutoPagerize.MAX_PAGER_NUM = prompt(\'\', uAutoPagerize.MAX_PAGER_NUM);"/>\
 				<menuitem label="滚动时才翻页"\
 				          id="uAutoPagerize-SCROLL_ONLY"\
 				          type="checkbox"\
@@ -276,6 +303,10 @@ var ns = window.uAutoPagerize = {
 				          autoCheck="false"\
 				          checked="'+ DEBUG +'"\
 				          oncommand="uAutoPagerize.DEBUG = !uAutoPagerize.DEBUG;"/>\
+				<menuseparator/>\
+				<menuitem label="在线搜索翻页规则"\
+				          id="uAutoPagerize-search"\
+				          oncommand="uAutoPagerize.search()"/>\
 			</menupopup>\
 		';
 		var range = document.createRange();
@@ -292,7 +323,9 @@ var ns = window.uAutoPagerize = {
 		try {
 			ns["BASE_REMAIN_HEIGHT"] = ns.prefs.getIntPref("BASE_REMAIN_HEIGHT");
 		} catch (e) {}
-
+		try {
+			ns["MAX_PAGER_NUM"] = ns.prefs.getIntPref("MAX_PAGER_NUM");
+		} catch (e) {}
 		if (!getCache())
 			requestSITEINFO();
 		ns.INCLUDE = INCLUDE;
@@ -300,6 +333,9 @@ var ns = window.uAutoPagerize = {
 		ns.addListener();
 		ns.loadSetting();
 		updateIcon();
+
+		if(!ns.loadSetting_NLF())
+			ns.requestSITEINFO_NLF();
 	},
 	uninit: function() {
 		ns.removeListener();
@@ -310,6 +346,9 @@ var ns = window.uAutoPagerize = {
 		}, ns);
 		try {
 			ns.prefs.setIntPref("BASE_REMAIN_HEIGHT", ns["BASE_REMAIN_HEIGHT"]);
+		} catch (e) {}
+		try {
+			ns.prefs.setIntPref("MAX_PAGER_NUM", ns["MAX_PAGER_NUM"]);
 		} catch (e) {}
 	},
 	theEnd: function() {
@@ -421,7 +460,7 @@ var ns = window.uAutoPagerize = {
 		doc.dispatchEvent(ev);
 
 		var miscellaneous = [];
-		// 継ぎ足されたページからは新しいタブで開く
+		// 新标签打开链接。拼接的部分
 		win.fragmentFilters.push(function(df){
 			if (!ns.FORCE_TARGET_WINDOW) return;
 			var arr = Array.slice(df.querySelectorAll('a[href]:not([href^="mailto:"]):not([href^="javascript:"]):not([href^="#"])'));
@@ -430,7 +469,8 @@ var ns = window.uAutoPagerize = {
 			});
 		});
 
-		var index = -1, info;
+		var index = -1, info, nextLink;
+
 		if (/\bgoogle\.(?:com|co\.jp)$/.test(win.location.host)) {
 			if (!timer || timer < 400) timer = 400;
 			win.addEventListener("hashchange", function(event) {
@@ -528,45 +568,12 @@ var ns = window.uAutoPagerize = {
 				});
 			});
 		}
-		else if (/^http:\/\/kakaku\.com\/specsearch\/\d+/.test(locationHref)) {
-			let nextLink = '//img[@alt="次へ"]/parent::a[starts-with(@onclick, "return page")]';
-			let next = getFirstElementByXPath(nextLink, doc);
-			if (next) {
-				let df = function (_doc) {
-					var form = _doc.querySelector('form[name="specForm"]');
-					if (!form) return;
-					var next = getFirstElementByXPath(nextLink, _doc);
-					if (!next) return;
-					next.id = 'AutoPagerizeNextLink';
-					var postData = Array.slice(form.elements).map(function(elem){
-						return /^(?:button|submit)$/.test(elem.type) || 
-							(elem.type == 'checkbox' && !elem.checked) || 
-							!elem.name ? 
-								'' : 
-								elem.name + '=' + encodeURIComponent(elem.value);
-						})
-						.filter(function(elem) !!elem )
-						.join('&')
-						.replace(/\bPage=\d*/, 'Page=' + /\d+/.exec(next.getAttribute('onclick'))); 
-					next.href = locationHref + '##?' + postData;
-				};
-
-				let rf = function (opt) {
-					opt.method = 'post';
-					opt.send = opt.url.replace(/.*?[#?]+/, '');
-					opt.headers['content-type'] = 'application/x-www-form-urlencoded';
-				};
-				miscellaneous.push(df);
-				win.documentFilters.push(df);
-				win.requestFilters.push(rf);
-			}
-		}
 
 		win.setTimeout(function(){
 			win.ap = null;
 			miscellaneous.forEach(function(func){ func(doc, locationHref); });
 			var index = -1;
-			if (!info) [, info] = ns.getInfo(ns.MY_SITEINFO, win);
+			if (!info) [, info, nextLink] = ns.getInfo(ns.MY_SITEINFO, win);
 			if (info) {
 				if (info.requestFilter)
 					win.requestFilters.push(info.requestFilter.bind(win));
@@ -589,15 +596,30 @@ var ns = window.uAutoPagerize = {
 					doc.getElementsByTagName("head")[0].appendChild(style);
 				}
 			}
-			//var s = new Date().getTime();
-			if (!info) [index, info] = ns.getInfo(ns.SITEINFO, win);
-			//debug(index + 'th/' + (new Date().getTime() - s) + 'ms');
-			if (!info) [, info] = ns.getInfo(ns.MICROFORMAT, win);
-			if (info) win.ap = new AutoPager(win.document, info);
+
+			// var s = new Date().getTime();
+			if(!info) [index, info, nextLink] = ns.getInfo(ns.NLF_SITEINFO, win);
+			// debug(index + 'th/' + (new Date().getTime() - s) + 'ms');
+
+			// var s = new Date().getTime();
+			if (!info) [index, info, nextLink] = ns.getInfo(ns.SITEINFO, win);
+			// debug(index + 'th/' + (new Date().getTime() - s) + 'ms');
+			if (!info) [, info, nextLink] = ns.getInfo(ns.MICROFORMAT, win);
+			if (info) {
+				win.ap = new AutoPager(win.document, info, nextLink && nextLink.href);
+			}else{
+				debug("没有找到当前站点的配置.");
+			}
 
 			updateIcon();
 		}, timer||0);
 	},
+
+	search: function(){
+		var keyword = encodeURIComponent(content.location.href);
+		openLinkIn('http://ap.teesoft.info/?exp=0&url=' + keyword, 'tab', {});
+	},
+
 	iconClick: function(event){
 		if (!event || !event.button) {
 			ns.toggle();
@@ -621,7 +643,7 @@ var ns = window.uAutoPagerize = {
 		}
 	},
 	getInfo: function (list, win) {
-		if (!list) list = ns.SITEINFO;
+		if (!list) list = ns.NLF_SITEINFO || ns.SITEINFO;
 		if (!win)  win  = content;
 		var doc = win.document;
 		var locationHref = doc.location.href;
@@ -633,15 +655,15 @@ var ns = window.uAutoPagerize = {
 					}).url_regexp;
 				if ( !exp.test(locationHref) ) continue;
 
-				var nextLink = getFirstElementByXPath(info.nextLink, doc);
+				var nextLink = getElementMix(info.nextLink, doc);
 				if (!nextLink) {
 					// FIXME microformats case detection.
 					// limiting greater than 12 to filter microformats like SITEINFOs.
 					if (info.url.length > 12)
-						debug('nextLink not found.', info.nextLink);
+						debug('nextLink not found. getInfo(). ', info.nextLink);
 					continue;
 				}
-				var pageElement = getFirstElementByXPath(info.pageElement, doc);
+				var pageElement = getElementMix(info.pageElement, doc);
 				if (!pageElement) {
 					if (info.url.length > 12)
 						debug('pageElement not found.', info.pageElement);
@@ -656,7 +678,7 @@ var ns = window.uAutoPagerize = {
 	},
 	getInfoFromURL: function (url) {
 		if (!url) url = content.location.href;
-		var list = ns.SITEINFO;
+		var list = ns.NLF_SITEINFO ||ns.SITEINFO;
 		return list.filter(function(info, index, array) {
 			try {
 				var exp = info.url_regexp || Object.defineProperty(info, "url_regexp", {
@@ -669,8 +691,9 @@ var ns = window.uAutoPagerize = {
 	},
 };
 
+var cplink;
 // Class
-function AutoPager(doc, info) {
+function AutoPager(doc, info, nextLink) {
 	this.init.apply(this, arguments);
 };
 AutoPager.prototype = {
@@ -698,7 +721,7 @@ AutoPager.prototype = {
 		}
 		return state;
 	},
-	init: function(doc, info) {
+	init: function(doc, info, nextLink) {
 		this.doc = doc;
 		this.win = doc.defaultView;
 		this.documentElement = doc.documentElement;
@@ -710,7 +733,12 @@ AutoPager.prototype = {
 			this.info[key] = val;
 		}
 		
-		var url = this.getNextURL(this.doc);
+		var url;
+		if(nextLink){
+			url = nextLink;
+		}else{
+			url = this.getNextURL(this.doc);
+		}
 		if ( !url ) {
 			debug("getNextURL returns null.", this.info.nextLink);
 			return;
@@ -885,7 +913,7 @@ AutoPager.prototype = {
 		var before = res.URI.host;
 		var after  = res.originalURI.host;
 		if (before != after && !this.isThridParty(before, after)) {
-			log(before + " が " + after + "にリダイレクトされました");
+			log(before + " 被重新定向到 " + after);
 			this.state = 'error';
 			return;
 		}
@@ -912,10 +940,11 @@ AutoPager.prototype = {
 		this.win.documentFilters.forEach(function(i) { i(htmlDoc, this.requestURL, this.info) }, this);
 
 		try {
-			var page = getElementsByXPath(this.info.pageElement, htmlDoc);
+			var page = getElementsMix(this.info.pageElement, htmlDoc);
 			var url = this.getNextURL(htmlDoc);
 		}
 		catch(e){
+			//log("Get page and url Error: ", e);
 			this.state = 'error';
 			return;
 		}
@@ -971,7 +1000,7 @@ AutoPager.prototype = {
 		if ( MAX_PAGER_NUM != -1 && this.pageNum > MAX_PAGER_NUM ) {
 			debug('page number > :', this.pageNum,  MAX_PAGER_NUM );
 			var fragment = this.doc.createDocumentFragment();
-			var lastHTMLstr = innerHTMLstr + ' 自动翻页结束，点击进入下一页' + ralativePageStr + ' </a> ';
+			var lastHTMLstr = innerHTMLstr + ' 达到设置的最大自动翻页数，点击进入下一页' + ralativePageStr + ' </a> ';
 			this.addSeparator(fragment, page, lastHTMLstr);
 			this.state = 'terminated';
 			return;
@@ -998,10 +1027,10 @@ AutoPager.prototype = {
 		this.lastPageURL = this.requestURL;
 		this.requestURL = url;
 		this.state = 'enable';
-//		if (!ns.SCROLL_ONLY)
-//			this.scroll();
+		// if (!ns.SCROLL_ONLY)
+		// 	this.scroll();
 		if (!url) {
-			debug('nextLink not found.', this.info.nextLink, htmlDoc);
+			debug('nextLink not found. requestLoad(). ', this.info.nextLink, htmlDoc);
 			this.state = 'terminated';
 		}
 		var ev = this.doc.createEvent('Event');
@@ -1031,10 +1060,10 @@ AutoPager.prototype = {
 			o.setAttribute('state', 'enable');
 			o.style.cssText = [
 				'background: ', COLOR['enable'], ';'
-				,'width: .8em;'
-				,'height: .8em;'
+				,'width: 10px;'
+				,'height: 10px;'
 				,'padding: 0px;'
-				,'margin: 0px .4em 0px 0px;'
+				,'margin-right: 3px;'
 				,'display: inline-block;'
 				,'vertical-align: middle;'
 			].join('');
@@ -1043,7 +1072,7 @@ AutoPager.prototype = {
 
 		var insertParent = this.insertPoint.parentNode;
 		if (page[0] && page[0].tagName == 'TR') {
-			var colNodes = getElementsByXPath('child::tr[1]/child::*[self::td or self::th]', insertParent);
+			var colNodes = getElementsMix('child::tr[1]/child::*[self::td or self::th]', insertParent);
 			var colums = 0;
 			for (var i = 0, l = colNodes.length; i < l; i++) {
 				var col = colNodes[i].getAttribute('colspan');
@@ -1079,9 +1108,10 @@ AutoPager.prototype = {
 		this.addSeparator(fragment, page, innerHTMLstr);
 	},
 	getNextURL : function(doc) {
+		cplink = this.requestURL;
 		var nextLink = doc instanceof HTMLElement ? 
 			doc :
-			getFirstElementByXPath(this.info.nextLink, doc);
+			getElementMix(this.info.nextLink, doc);
 		if (nextLink) {
 			var nextValue = nextLink.getAttribute('href') ||
 				nextLink.getAttribute('action') || nextLink.value;
@@ -1097,7 +1127,7 @@ AutoPager.prototype = {
 	},
 	getPageElementsBottom : function() {
 		try {
-			var elem = getElementsByXPath(this.info.pageElement, this.doc).pop();
+			var elem = getElementsMix(this.info.pageElement, this.doc).pop();
 			return getElementBottom(elem);
 		}
 		catch(e) {}
@@ -1111,7 +1141,7 @@ AutoPager.prototype = {
 			insertPoint = getFirstElementByXPath(this.info.insertBefore, this.doc);
 		}
 		if (!insertPoint) {
-			var lastPageElement = getElementsByXPath(this.info.pageElement, this.doc).pop();
+			var lastPageElement = getElementsMix(this.info.pageElement, this.doc).pop();
 			if (lastPageElement) {
 				insertPoint = lastPageElement.nextSibling ||
 					lastPageElement.parentNode.appendChild(this.doc.createTextNode(' '));
@@ -1150,6 +1180,110 @@ AutoPager.prototype = {
 	},
 };
 
+(function(){
+
+	var SITEINFO_IMPORT_URLS = [
+		"http://simpleu.googlecode.com/svn/trunk/scripts/Super_preloader.db.js"
+	];
+
+	ns.resetSITEINFO_NLF = function(){
+		if (confirm('确定要更新 Super_preloader.db 数据库吗？'))
+			requestSITEINFO(SITEINFO_IMPORT_URLS);
+	};
+	
+	ns.loadSetting_NLF = function(isAlert) {
+		var data = loadText(ns.NLF_file);
+		if (!data) return false;
+		var sandbox = new Cu.Sandbox( new XPCNativeWrapper(window) );
+		sandbox.SITEINFO = [];
+		sandbox.SITEINFO_TP = [];
+		
+		try {
+			Cu.evalInSandbox(data, sandbox, '1.8');
+		} catch (e) {
+			return log('load error.', e);
+		}
+
+		var list = sandbox.SITEINFO.concat(sandbox.SITEINFO_TP);
+		var newList = []
+		for(let [index, info] in Iterator(list)){
+			let type = typeof info.nextLink;
+			if(!info.nextLink || (type == 'string' && info.nextLink.toLowerCase() == 'auto;')){
+				info.nextLink = AUTO_NEXT_XPATH;
+			}
+
+			newList.push({
+				url: info.url,
+				nextLink: info.nextLink,
+				pageElement: info.autopager.pageElement
+			})
+		}
+
+		ns.NLF_SITEINFO = newList;
+
+		debug("Super_preloader.db 数据库已经载入")
+
+		if (isAlert)
+			Cc['@mozilla.org/alerts-service;1'].getService(Ci.nsIAlertsService)
+				.showAlertNotification(null, 'uAutoPagerize', 
+					'Super_preloader.db 数据库已经重新载入', false, "", null, "");
+		return true;
+	};
+
+	ns.requestSITEINFO_NLF = requestSITEINFO;
+
+	function requestSITEINFO(){
+		debug(" request Super_preloader.db");
+		var xhrStates = {};
+		SITEINFO_IMPORT_URLS.forEach(function(i) {
+			var opt = {
+				method: 'get',
+				url: i,
+				overrideMimeType: "text/plan; charset=utf-8;",
+				onload: function(res) {
+					xhrStates[i] = 'loaded';
+					getCacheCallback(res, i);
+				},
+				onerror: function(res) {
+					xhrStates[i] = 'error';
+					getCacheErrorCallback(i);
+				},
+			}
+			xhrStates[i] = 'start';
+			GM_xmlhttpRequest(opt);
+			setTimeout(function() {
+				if (xhrStates[i] == 'start') {
+					getCacheErrorCallback(i);
+				}
+			}, XHR_TIMEOUT);
+		});
+	}
+
+	function getCacheCallback(res, url) {
+		if (res.status != 200) {
+			return getCacheErrorCallback(url);
+		}
+
+		var temp;
+		var matches = res.responseText.match(/(var SITEINFO=\[[\s\S]*\])[\s\S]*var SITEINFO_comp=/i);
+		if(!matches){
+			log("no matches.");
+			return;
+		}
+
+		saveFile(NLF_DB_FILENAME, matches[1]);
+
+		ns.loadSetting_NLF();
+
+		alert("uAutoPagerize", "Super_preloader 数据库已经更新完毕。");
+		log('getCacheCallback:' + url);
+	}
+
+	function getCacheErrorCallback(url) {
+		log('getCacheErrorCallback:' + url);
+	}
+
+})();
 
 
 function updateIcon(){
@@ -1188,11 +1322,11 @@ function launchAutoPager_org(list, win) {
 			var exp = new RegExp(info.url);
 			if (win.ap) {
 			} else if ( ! exp.test(locationHref) ) {
-			} else if (!getFirstElementByXPath(info.nextLink, doc)) {
+			} else if (!getElementMix(info.nextLink, doc)) {
 				// ignore microformats case.
 				if (!exp.test('http://a'))
-					debug('nextLink not found.', info.nextLink);
-			} else if (!getFirstElementByXPath(info.pageElement, doc)) {
+					debug('nextLink not found. launchAutoPager_org(). ', info.nextLink);
+			} else if (!getElementMix(info.pageElement, doc)) {
 				if (!exp.test('http://a'))
 					debug('pageElement not found.', info.pageElement);
 			} else {
@@ -1234,7 +1368,12 @@ function getXPathResult(xpath, node, resultType) {
 
 	if (defaultNS) {
 		const defaultPrefix = '__default__';
-		xpath = addDefaultPrefix(xpath, defaultPrefix);
+		try{
+			xpath = addDefaultPrefix(xpath, defaultPrefix);
+		}catch(e){
+			//log(xpath);
+		}
+		
 		var defaultResolver = resolver;
 		resolver = function (prefix) {
 			return (prefix == defaultPrefix)
@@ -1497,6 +1636,138 @@ function saveFile(name, data) {
 	foStream.write(data, data.length);
 	foStream.close();
 };
+
+//-------- 来自 Super_preloader, 为了兼容 Super_preloader 数据库 -------------
+//获取单个元素,混合。
+function getElementMix(selector, doc, win){
+	var ret;
+	if(!selector)return ret;
+	win=win || content.window;
+	var type=typeof selector;
+	if(type=='string'){
+		if(selector.search(/^css;/i)==0){
+			ret= doc.querySelector(selector.slice(4));
+		}else if(selector.toLowerCase()=='auto;'){
+			// ret=autoGetLink(doc,win);
+			debug("NextLink is auto. ", content.location.href);
+		}else{
+			ret= getFirstElementByXPath(selector, doc);
+		};
+	}else if(type=='function'){
+		ret=selector(doc,win,cplink);
+	}else{
+		var url = hrefInc(selector,doc,win);
+		if(url){
+			ret = doc.createElement('a');
+			ret.setAttribute('href', url);
+		}
+	};
+	return ret;
+};
+
+function getElementsMix(selector, doc) {
+
+	if(selector.search(/^css;/i)==0){
+		var elems = [];
+		var nodes = doc.querySelectorAll(selector.slice(4));
+		for(var i = 0, l= nodes.length; i < l; i++){
+			elems[i] = nodes[i];
+		}
+		return elems;
+	}else{
+		return getElementsByXPath(selector, doc);
+	}
+}
+
+
+function hrefInc(obj,doc,win){
+
+	var _cplink = cplink || content.window.location.href;
+	_cplink = _cplink.replace(/#.*$/,''); //url 去掉hash
+
+	function getHref(href){
+		var mFails=obj.mFails;
+		if(!mFails)return href;
+		var str;
+		if(typeof mFails=='string'){
+			str=mFails;
+		}else{
+			var fx;
+			var array=[];
+			var i,ii;
+			var mValue;
+			for(i=0,ii=mFails.length;i<ii;i++){
+				fx=mFails[i];
+				if(!fx)continue;
+				if(typeof fx=='string'){
+					array.push(fx);
+				}else{
+					mValue=href.match(fx);
+					if(!mValue)return href;
+					array.push(mValue);
+				};
+			};
+			var str=array.join('');
+		};
+		return str;
+	};
+	 // alert(getHref(_cplink))
+
+	var sa=obj.startAfter;
+	var saType=typeof sa;
+	var index;
+
+	if(saType=='string'){
+		index=_cplink.indexOf(sa);
+		if(index==-1){
+			_cplink=getHref(_cplink);
+			index=_cplink.indexOf(sa);
+			if(index==-1)return;
+			// alert(index);
+		};
+	}else{
+		var tsa=_cplink.match(sa);
+		// alert(sa);
+		if(!tsa){
+			_cplink=getHref(_cplink);
+			sa=(_cplink.match(sa) || [])[0];
+			if(!sa)return;
+			index=_cplink.indexOf(sa);
+			if(index==-1)return;
+		}else{
+			sa=tsa[0];
+			index=_cplink.indexOf(sa);
+			//alert(index)
+			//alert(tsa.index)
+		};
+	};
+
+	index+=sa.length;
+	var max=obj.max===undefined? 9999 : obj.max;
+	var min=obj.min===undefined? 1 : obj.min;
+	var aStr=_cplink.slice(0,index);
+	var bStr=_cplink.slice(index);
+	var nbStr=bStr.replace(/^(\d+)(.*)$/,function(a,b,c){
+		b=Number(b)+obj.inc;
+		if(b>=max || b<min)return a;
+		return b+c;
+	});
+	//alert(aStr+nbStr);
+	if(nbStr!==bStr){
+		var ilresult;
+		try{
+			ilresult=obj.isLast(doc,win,_cplink);
+		}catch(e){}
+		if(ilresult)return;
+		return aStr+nbStr;
+	};
+};
+
+function alert(title, info){
+	Cc['@mozilla.org/alerts-service;1'].getService(Ci.nsIAlertsService)
+		.showAlertNotification(null, title, 
+		info, false, "", null, "");
+}
 
 })('\
 #uAutoPagerize-icon {\
