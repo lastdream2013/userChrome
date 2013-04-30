@@ -18,7 +18,7 @@
 // @version        0.1
 // ==/UserScript==
  -->
-  <script type="application/x-javascript" xmlns="http://www.w3.org/1999/xhtml"><![CDATA[
+	<script type="application/x-javascript" xmlns="http://www.w3.org/1999/xhtml"><![CDATA[
 (function () {
     //css
     document.insertBefore(document.createProcessingInstruction('xml-stylesheet','type="text/css" href="data:text/css;utf-8,'  + encodeURIComponent(
@@ -32,20 +32,10 @@
     ')+ '"'), document.documentElement);
 })();
   ]]></script>
-  <script type="application/javascript" src="chrome://browser/content/places/places.js"/>
-  
-     <commandset id="mainCommandSet">
-    <command id="OrganizerCommand_export"
-             oncommand="PlacesOrganizer.exportBookmarks();"/>
-    <command id="OrganizerCommand_import"
-             oncommand="PlacesOrganizer.importFromFile();"/>
-    <command id="OrganizerCommand_browserImport"
-             oncommand="PlacesOrganizer.importFromBrowser();"/>
-  </commandset>
-   
+ 
   	<toolbarpalette id="nav-bar">
         <toolbarbutton id="classic-bookmark-toolbar-button"  insertbefore="urlbar-container"
-					   image="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABSUlEQVQ4jZWSsWvCQBhH70/pLIWCXVoH6RIodBSkk3V3OacOahczJSZD7wY76CAIToVklYKLYAcXFwcJZCvOLhnC/RzKd0S9aBt4Q+De+467Y4wx5nleyfd73Z73Hksh4boOXj++8OKFGssOUGpNUOQjVWj0UWj0wejz/V5XConNdockVX/iICCFxH8mb7Y7c0AKieE8hjON4EwjtMM12uEafLwCH69QGyzOB1zXOQlk5dyA6zogsnK4jA/kipiZA53OG4js1pNU6UBFzC4Hmpxr+Tv6QZIqbLY7HbDswBxocg6CxGPCZZx/BvV6XRF8vNLbJ9rhWl+nMfBcrYKoDRZwppGemqQKw3mMUmuSH6g8PUIjZhjOf0/fsgP9n31MJ4HyQxmEZQcamlrkI0UYA3e3NyCyokm+GDgnHqMDV9f3nxTIW2wUGWN7VuRUB5u+WVcAAAAASUVORK5CYII="
+					   image= "chrome://browser/skin/places/allBookmarks.png"
 					   style = "-moz-appearance: none !important;border-style: none !important;border-radius: 0 !important;padding: 0 2px !important;margin: 0 !important;background: transparent !important;box-shadow: none !important;-moz-box-align: center !important;-moz-box-pack: center !important;min-width: 18px !important;min-height: 18px !important;"
                        type="menu"
                        class="toolbarbutton-1 chromeclass-toolbar-additional"
@@ -85,29 +75,6 @@
                       label="&bookmarkThisPageCmd.label;"
                       command="Browser:AddBookmarkAs"
                       key="addBookmarkAsKb"/>
-    <menu accesskey="&maintenance.accesskey;"
-          class="menu-iconic"
-          id="cm-menu-maintenance"
-          insertafter="BMB_bookmarksShowAll"
-          label="&#23548;&#20837;&#21644;&#23548;&#20986;"
-          tooltiptext="&maintenance.tooltip;">
-      <menupopup id="maintenanceButtonPopup">
-
-        <menuitem id="fileImport"
-                  command="OrganizerCommand_import"
-                  label="&importBookmarksFromHTML.label;"
-                  accesskey="&importBookmarksFromHTML.accesskey;"/>
-        <menuitem id="fileExport"
-                  command="OrganizerCommand_export"
-                  label="&exportBookmarksToHTML.label;"
-                  accesskey="&exportBookmarksToHTML.accesskey;"/>
-            <menuseparator/>
-            <menuitem id="browserImport"
-                      command="OrganizerCommand_browserImport"
-                      label="&importOtherBrowser.label;"
-                      accesskey="&importOtherBrowser.accesskey;"/>
-      </menupopup>
-    </menu>
             <menuitem id="BMB_subscribeToPageMenuitem"
                       class="menuitem-iconic"
                       label="&subscribeToPageMenuitem.label;"
