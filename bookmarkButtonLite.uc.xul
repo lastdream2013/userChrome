@@ -15,10 +15,10 @@
 // @include        chrome://browser/content/places/places.xul
 // @include        chrome://browser/content/bookmarks/bookmarksPanel.xul
 // @author         lastdream2013
-// @version        0.1
+// @version        0.11
 // ==/UserScript==
  -->
-  <script type="application/x-javascript" xmlns="http://www.w3.org/1999/xhtml"><![CDATA[
+	<script type="application/x-javascript" xmlns="http://www.w3.org/1999/xhtml"><![CDATA[
 (function () {
     //css
     document.insertBefore(document.createProcessingInstruction('xml-stylesheet','type="text/css" href="data:text/css;utf-8,'  + encodeURIComponent(
@@ -36,7 +36,7 @@
    
   	<toolbarpalette id="nav-bar">
         <toolbarbutton id="classic-bookmark-toolbar-button-lite"  insertbefore="urlbar-container"
-					   image="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABSUlEQVQ4jZWSsWvCQBhH70/pLIWCXVoH6RIodBSkk3V3OacOahczJSZD7wY76CAIToVklYKLYAcXFwcJZCvOLhnC/RzKd0S9aBt4Q+De+467Y4wx5nleyfd73Z73Hksh4boOXj++8OKFGssOUGpNUOQjVWj0UWj0wejz/V5XConNdockVX/iICCFxH8mb7Y7c0AKieE8hjON4EwjtMM12uEafLwCH69QGyzOB1zXOQlk5dyA6zogsnK4jA/kipiZA53OG4js1pNU6UBFzC4Hmpxr+Tv6QZIqbLY7HbDswBxocg6CxGPCZZx/BvV6XRF8vNLbJ9rhWl+nMfBcrYKoDRZwppGemqQKw3mMUmuSH6g8PUIjZhjOf0/fsgP9n31MJ4HyQxmEZQcamlrkI0UYA3e3NyCyokm+GDgnHqMDV9f3nxTIW2wUGWN7VuRUB5u+WVcAAAAASUVORK5CYII="
+					   image= "chrome://browser/skin/places/allBookmarks.png"
 					   style = "-moz-appearance: none !important;border-style: none !important;border-radius: 0 !important;padding: 0 2px !important;margin: 0 !important;background: transparent !important;box-shadow: none !important;-moz-box-align: center !important;-moz-box-pack: center !important;min-width: 18px !important;min-height: 18px !important;"
                        type="menu"
                        class="toolbarbutton-1 chromeclass-toolbar-additional"
