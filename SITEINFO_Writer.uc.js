@@ -15,7 +15,7 @@
 (function(css){
 
 if (window.siteinfo_writer) {
-  window.siteinfo_writer.destroy();
+	window.siteinfo_writer.destroy();
 	delete window.siteinfo_writer;
 }
 
@@ -176,7 +176,7 @@ window.siteinfo_writer = {
 		alert(json);
 	},
 	launch: function() {
-		if (content.ap) return alert("Läuft bereits");
+		if (content.ap) return alert("已经运行");
 
 		var i = {};
 		["url", "nextLink", "pageElement", "insertBefore"].forEach(function(type) {
@@ -184,16 +184,16 @@ window.siteinfo_writer = {
 				i[type] = this[type].value
 		}, this);
 		if (!i.url || !i.nextLink || !i.pageElement)
-			return alert("Ungültige Wertangabe");
+			return alert("指定的值无效");
 
 		let [index, info] = uAutoPagerize.getInfo([i], content);
 
 		if (index === 0) {
 			if (content.AutoPagerize && content.AutoPagerize.launchAutoPager)
 				content.AutoPagerize.launchAutoPager([i]);
-			else alert("SITEINFO ist ok uAutoPagerize konnte nicht ausgeführt werden");
+			else alert("SITEINFO OK  uAutoPagerize无法执行");
 		} else {
-			alert("SITEINFO stimmt nicht überein");
+			alert("SITEINFO不匹配");
 		}
 	},
 	inspect: function(aType) {
