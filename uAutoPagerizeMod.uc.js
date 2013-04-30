@@ -6,8 +6,8 @@
 // @compatibility  Firefox 17
 // @charset        UTF-8
 // @version        0.3.0
+// @note           version 20130430: modify by lastdream2013 show real page num(forum search engine only), add max pager limit
 // @note           添加 Super_preloader 的数据库支持及更新 By ywzhaiqi。
-// @note           20130429 testversion: modify by lastdream2013 for show real page num, add max pager limit
 // @note           0.3.0 本家に倣って Cookie の処理を変更した
 // @note           0.2.9 remove E4X
 // @note           0.2.8 履歴に入れる機能を廃止
@@ -56,11 +56,17 @@ var NLF_DB_FILENAME =  "uSuper_preloader.db.js";
 var AUTO_NEXT_XPATH = '//a[descendant-or-self::*[contains(text(), "下一页")]][@href] \
 	| //a[descendant-or-self::*[contains(text(), "下一章")]][@href] \
 	| //a[descendant-or-self::*[contains(text(), "下页")]][@href] ';
+
+//Super_preloader的翻页规则更新地址
+var SITEINFO_NLF_IMPORT_URLS = [
+	"http://simpleu.googlecode.com/svn/trunk/scripts/Super_preloader.db.js"
+];
 	
 //官方规则， 太大了，先注释掉，默认用uSuper_preloader.db.js
 var SITEINFO_IMPORT_URLS = [
     /*'http://wedata.net/databases/AutoPagerize/items.json',*/ 
 ];
+
 	
 	
 // ワイルドカード(*)で記述する
@@ -113,6 +119,12 @@ var MY_SITEINFO = [
 		,nextLink    : 'id("AutoPagerizeNextLink")'
 		,pageElement : '//tr[@class="bgColor02"][1]|//tr[@class="bgColor02"][1]/following-sibling::tr'
 		,exampleUrl  : 'http://kakaku.com/specsearch/0150/'
+	},
+	{	siteName:'顶点小说',
+		url: '^http://www\\.23us\\.com/html/.+\\.html',
+		siteExample:'http://www.23us.com/html/26/26627/16952316.html',
+		nextLink:' //dd[@id="footlink"]/descendant::a[text()="下一页"]',
+		pageElement: 'id("amain")/dl/dd/h1 | id("contents")'
 	},
 ];
 
@@ -697,21 +709,20 @@ function AutoPager(doc, info, nextLink) {
 	this.init.apply(this, arguments);
 };
 AutoPager.prototype = {
-	req: null,
-	pageNum: 1,
-	lastPageURL: '',
-	_state: 'disable',
-	get state() this._state,
+	req : null,
+	pageNum : 1,
+	lastPageURL : '',
+	_state : 'disable',
+	get state()this._state,
 	set state(state) {
 		if (this.state !== "terminated" && this.state !== "error") {
 			if (state === "disable") {
 				this.abort();
-			}
-			else if (state === "terminated" && state === "error") {
+			} else if (state === "terminated" && state === "error") {
 				this.removeListener();
 			}
 			if (this.state !== "loading" && state !== "loading" || this.isFrame) {
-				Array.forEach(this.doc.getElementsByClassName('autopagerize_icon'), function(e) {
+				Array.forEach(this.doc.getElementsByClassName('autopagerize_icon'), function (e) {
 					e.style.backgroundColor = COLOR[state];
 					e.setAttribute("state", state);
 				});
@@ -721,7 +732,7 @@ AutoPager.prototype = {
 		}
 		return state;
 	},
-	init: function(doc, info, nextLink) {
+	init : function (doc, info, nextLink) {
 		this.doc = doc;
 		this.win = doc.defaultView;
 		this.documentElement = doc.documentElement;
@@ -729,17 +740,17 @@ AutoPager.prototype = {
 		this.isXML = this.doc.contentType.indexOf('xml') > 0;
 		this.isFrame = this.win.top != this.win;
 		this.info = {};
-		for (let [key, val] in Iterator(info)) {
+		for (let[key, val]in Iterator(info)) {
 			this.info[key] = val;
 		}
-		
+
 		var url;
-		if(nextLink){
+		if (nextLink) {
 			url = nextLink;
-		}else{
+		} else {
 			url = this.getNextURL(this.doc);
 		}
-		if ( !url ) {
+		if (!url) {
 			debug("getNextURL returns null.", this.info.nextLink);
 			return;
 		}
@@ -768,7 +779,7 @@ AutoPager.prototype = {
 		if (this.getScrollHeight() == this.win.innerHeight)
 			this.body.style.minHeight = (this.win.innerHeight + 1) + 'px';
 	},
-	destroy: function(isRemoveAddPage) {
+	destroy : function (isRemoveAddPage) {
 		this.state = "disable";
 		this.win.removeEventListener("pagehide", this, false);
 		this.removeListener();
@@ -791,62 +802,64 @@ AutoPager.prototype = {
 		this.win.ap = null;
 		updateIcon();
 	},
-	addListener: function() {
+	addListener : function () {
 		this.win.addEventListener("scroll", this, false);
 		this.doc.addEventListener("AutoPagerizeToggleRequest", this, false);
 		this.doc.addEventListener("AutoPagerizeEnableRequest", this, false);
 		this.doc.addEventListener("AutoPagerizeDisableRequest", this, false);
 	},
-	removeListener: function() {
+	removeListener : function () {
 		this.win.removeEventListener("scroll", this, false);
 		this.doc.removeEventListener("AutoPagerizeToggleRequest", this, false);
 		this.doc.removeEventListener("AutoPagerizeEnableRequest", this, false);
 		this.doc.removeEventListener("AutoPagerizeDisableRequest", this, false);
 	},
-	handleEvent: function(event) {
-		switch(event.type) {
-			case "scroll":
-				if (this.timer)
-					this.win.clearTimeout(this.timer);
-				this.timer = this.win.setTimeout(function(){
+	handleEvent : function (event) {
+		switch (event.type) {
+		case "scroll":
+			if (this.timer)
+				this.win.clearTimeout(this.timer);
+			this.timer = this.win.setTimeout(function () {
 					this.scroll();
 					this.timer = null;
-				}.bind(this), 100);
-				break;
-			case "click":
-				this.stateToggle();
-				break;
-			case "pagehide":
-				this.abort();
-				break;
-			case "AutoPagerizeToggleRequest":
-				this.stateToggle();
-				break;
-			case "AutoPagerizeEnableRequest":
-				this.state = "enable";
-				break;
-			case "AutoPagerizeDisableRequest":
-				this.state = "disable";
-				break;
+				}
+					.bind(this), 100);
+			break;
+		case "click":
+			this.stateToggle();
+			break;
+		case "pagehide":
+			this.abort();
+			break;
+		case "AutoPagerizeToggleRequest":
+			this.stateToggle();
+			break;
+		case "AutoPagerizeEnableRequest":
+			this.state = "enable";
+			break;
+		case "AutoPagerizeDisableRequest":
+			this.state = "disable";
+			break;
 		}
 	},
-	stateToggle: function() {
-		this.state = this.state == 'disable'? 'enable' : 'disable';
+	stateToggle : function () {
+		this.state = this.state == 'disable' ? 'enable' : 'disable';
 	},
-	scroll : function(){
-		if (this.state !== 'enable' || !ns.AUTO_START) return;
+	scroll : function () {
+		if (this.state !== 'enable' || !ns.AUTO_START)
+			return;
 		var remain = this.getScrollHeight() - this.win.innerHeight - this.win.scrollY;
 		if (remain < this.remainHeight) {
 			this.request();
 		}
 	},
-	abort: function() {
+	abort : function () {
 		if (this.req) {
 			this.req.abort();
 			this.req = null;
 		}
 	},
-	isThridParty: function(aHost, bHost) {
+	isThridParty : function (aHost, bHost) {
 		try {
 			var aTLD = Services.eTLD.getBaseDomainFromHost(aHost);
 			var bTLD = Services.eTLD.getBaseDomainFromHost(bHost);
@@ -855,12 +868,17 @@ AutoPager.prototype = {
 			return aHost === bHost;
 		}
 	},
-	request : function(){
-//		if (!this.requestURL || this.lastRequestURL == this.requestURL) return;
-		if (!this.requestURL || this.loadedURLs[this.requestURL]) return;
+	request : function () {
+		//		if (!this.requestURL || this.lastRequestURL == this.requestURL) return;
+		if (!this.requestURL || this.loadedURLs[this.requestURL])
+			return;
 
-		var [reqScheme,,reqHost] = this.requestURL.split('/');
-		var {protocol, host} = this.win.location;
+		var[reqScheme, , reqHost] = this.requestURL.split('/');
+		var {
+			protocol,
+			host
+		}
+			 = this.win.location;
 		if (reqScheme !== protocol) {
 			log(protocol + " が " + reqScheme + "にリクエストを送ることはできません");
 			this.state = "error";
@@ -878,40 +896,49 @@ AutoPager.prototype = {
 		if (isSameDomain)
 			headers.Cookie = getCookie(reqHost, reqScheme === 'https');
 		var opt = {
-			method: 'get',
-			get url() self.requestURL,
-			set url(url) self.requestURL = url,
-			headers: headers,
-			overrideMimeType: 'text/html; charset=' + this.doc.characterSet,
-			onerror: function(){ self.state = 'error'; self.req = null; },
-			onload: function(res) { self.requestLoad.apply(self, [res]); self.req = null; }
+			method : 'get',
+			get url()self.requestURL,
+			set url(url)self.requestURL = url,
+			headers : headers,
+			overrideMimeType : 'text/html; charset=' + this.doc.characterSet,
+			onerror : function () {
+				self.state = 'error';
+				self.req = null;
+			},
+			onload : function (res) {
+				self.requestLoad.apply(self, [res]);
+				self.req = null;
+			}
 		}
-		this.win.requestFilters.forEach(function(i) { i(opt) }, this);
+		this.win.requestFilters.forEach(function (i) {
+			i(opt)
+		}, this);
 		this.state = 'loading';
 		this.req = GM_xmlhttpRequest(opt);
 	},
-	getRalativePageNumArray : function(lasturl, url){
-		if (!lasturl || !url) 
-		{
+	getRalativePageNumArray : function (lasturl, url) {
+		if (!lasturl || !url) {
 			//log("getRalativePageNumArray error");
 			return [0, 0];
 		}
 
-		var lasturlarray = lasturl.split(/-|\.|\&|\/|=/); 
-		var urlarray = url.split(/-|\.|\&|\/|=/); 
-		while ( urlarray.length != 0 ) {
-		    url_info = urlarray.pop();
+		var lasturlarray = lasturl.split(/-|\.|\&|\/|=|#/);
+		var urlarray = url.split(/-|\.|\&|\/|=|#/);
+		//log("lasturlarray: " + lasturlarray);
+		//log("urlarray    : " + urlarray);
+		while (urlarray.length != 0) {
+			url_info = urlarray.pop();
 			lasturl_info = lasturlarray.pop();
-			if ( url_info  != lasturl_info ) {
+			if (url_info != lasturl_info) {
 				if (/[0-9]+/.test(lasturl_info) && /[0-9]+/.test(url_info))
 					return [lasturl_info, url_info];
 			}
 		}
 		return [0, 0];
 	},
-	requestLoad : function(res){
+	requestLoad : function (res) {
 		var before = res.URI.host;
-		var after  = res.originalURI.host;
+		var after = res.originalURI.host;
 		if (before != after && !this.isThridParty(before, after)) {
 			log(before + " 被重新定向到 " + after);
 			this.state = 'error';
@@ -920,7 +947,9 @@ AutoPager.prototype = {
 		delete res.URI;
 		delete res.originalURI;
 
-		this.win.responseFilters.forEach(function(i) { i(res, this.requestURL) }, this);
+		this.win.responseFilters.forEach(function (i) {
+			i(res, this.requestURL)
+		}, this);
 		if (res.finalUrl)
 			this.requestURL = res.finalUrl;
 
@@ -937,13 +966,14 @@ AutoPager.prototype = {
 			htmlDoc.documentElement.appendChild(range.createContextualFragment(str));
 			range.detach();
 		}
-		this.win.documentFilters.forEach(function(i) { i(htmlDoc, this.requestURL, this.info) }, this);
+		this.win.documentFilters.forEach(function (i) {
+			i(htmlDoc, this.requestURL, this.info)
+		}, this);
 
 		try {
 			var page = getElementsMix(this.info.pageElement, htmlDoc);
 			var url = this.getNextURL(htmlDoc);
-		}
-		catch(e){
+		} catch (e) {
 			//log("Get page and url Error: ", e);
 			this.state = 'error';
 			return;
@@ -951,8 +981,8 @@ AutoPager.prototype = {
 
 		var innerHTMLstr = '<a class="autopagerize_link" href="' + this.requestURL.replace(/&/g, '&amp;') + '" >';
 
-		if (!page || page.length < 1 ) {
-			debug('pageElement not found.' , this.info.pageElement);
+		if (!page || page.length < 1) {
+			debug('pageElement not found.', this.info.pageElement);
 			this.state = 'terminated';
 			return;
 		}
@@ -962,52 +992,57 @@ AutoPager.prototype = {
 			this.state = 'terminated';
 			return;
 		}
+			log("this.requestURL" + this.requestURL);
+		//论坛和搜索引擎网页显示实际页面信息
+		if (this.requestURL.indexOf('search?') != -1 || 
+			this.requestURL.indexOf('forum')   != -1 ||
+			this.requestURL.indexOf('thread')  != -1 || 
+			this.requestURL.indexOf('baidu')  != -1 ) {
 
-		var ralativePageNumarray = [];
-		if ( url ){
-				ralativePageNumarray = this.getRalativePageNumArray( this.requestURL, url );
-		}
-		else {
-			ralativePageNumarray = this.getRalativePageNumArray(this.lastPageURL, this.requestURL );
-			var ralativeOff = parseInt(ralativePageNumarray[1]) - parseInt(ralativePageNumarray[0]); //用的上一页的相对信息比较的，要补充差值……
-			ralativePageNumarray[1] = parseInt(ralativePageNumarray[1]) + ralativeOff;
-			ralativePageNumarray[0] = parseInt(ralativePageNumarray[0]) + ralativeOff;
-		}
+			var ralativePageNumarray = [];
+			if (url) {
+				ralativePageNumarray = this.getRalativePageNumArray(this.requestURL, url);
+			} else {
+				ralativePageNumarray = this.getRalativePageNumArray(this.lastPageURL, this.requestURL);
+				var ralativeOff = parseInt(ralativePageNumarray[1]) - parseInt(ralativePageNumarray[0]); //用的上一页的相对信息比较的，要补充差值……
+				ralativePageNumarray[1] = parseInt(ralativePageNumarray[1]) + ralativeOff;
+				ralativePageNumarray[0] = parseInt(ralativePageNumarray[0]) + ralativeOff;
+			}
 
-
-		if  (ralativePageNumarray[1] - ralativePageNumarray[0] > 1 ) //一般是搜索引擎的第10 - 20项……
-		{
-			var ralativePageStr = ' [ 实际网页：  第 <font color="red">' + ralativePageNumarray[0] + ' - ' + ralativePageNumarray[1]  + '</font> 项 ]';
+			if (ralativePageNumarray[1] - ralativePageNumarray[0] > 1) //一般是搜索引擎的第10 - 20项……
+			{
+				var ralativePageStr = ' [ 实际网页：  第 <font color="red">' + ralativePageNumarray[0] + ' - ' + ralativePageNumarray[1] + '</font> 项 ]';
+			} else if ((ralativePageNumarray[1] - ralativePageNumarray[0]) == 1) //一般的翻页数，差值应该是1
+			{
+				var ralativePageStr = ' [ 实际网页：  第 <font color="red">' + ralativePageNumarray[0] + '</font> 页 ]';
+			} else if ((ralativePageNumarray[0] == 0 && ralativePageNumarray[1]) == 0) //找不到的话……
+			{
+				var ralativePageStr = ' [ 实际网页结束 ]';
+			}
+		} else {
+			ralativePageStr = '';
 		}
-		else if  ( (ralativePageNumarray[1] - ralativePageNumarray[0]) == 1 ) //一般的翻页数，差值应该是1
-		{
-			var ralativePageStr = ' [ 实际网页：  第 <font color="red">' + ralativePageNumarray[0] + '</font> 页 ]';
-		}
-		else if  ( (ralativePageNumarray[0] == 0 &&  ralativePageNumarray[1]) == 0 )  //找不到的话……
-		{
-			var ralativePageStr = ' [ 实际网页结束 ]';
-		}
+		log("ralativePageStr" + ralativePageStr);
 		var pagerCurStr;
-		if ( MAX_PAGER_NUM != -1 )
-		{
+		if (MAX_PAGER_NUM != -1) {
 			pagerCurStr = ' 自动翻页：第 <font color="red"> ' + (++this.pageNum) + '/' + MAX_PAGER_NUM + '</font> 页 ';
+		} else {
+			pagerCurStr = ' 自动翻页：第 <font color="red"> ' + (++this.pageNum) + '</font> 页 ';
 		}
-		else
-		{
-			pagerCurStr = ' 自动翻页：第 <font color="red"> ' + (++this.pageNum)  + '</font> 页 ';
-		}
-		
-		if ( MAX_PAGER_NUM != -1 && this.pageNum > MAX_PAGER_NUM ) {
-			debug('page number > :', this.pageNum,  MAX_PAGER_NUM );
+
+		if (MAX_PAGER_NUM != -1 && this.pageNum > MAX_PAGER_NUM) {
+			debug('page number > :', this.pageNum, MAX_PAGER_NUM);
 			var fragment = this.doc.createDocumentFragment();
 			var lastHTMLstr = innerHTMLstr + ' 达到设置的最大自动翻页数，点击进入下一页' + ralativePageStr + ' </a> ';
 			this.addSeparator(fragment, page, lastHTMLstr);
 			this.state = 'terminated';
 			return;
 		}
-		
+
 		if (typeof this.win.ap == 'undefined') {
-			this.win.ap = { state: 'enabled' };
+			this.win.ap = {
+				state : 'enabled'
+			};
 			updateIcon();
 		}
 		this.loadedURLs[this.requestURL] = true;
@@ -1020,10 +1055,12 @@ AutoPager.prototype = {
 			}
 			this.setRemainHeight();
 		}
-	
+
 		var nextHTMLstr = innerHTMLstr + pagerCurStr + ralativePageStr + ' </a> ';
 		page = this.addPage(htmlDoc, page, nextHTMLstr);
-		this.win.filters.forEach(function(i) { i(page) });
+		this.win.filters.forEach(function (i) {
+			i(page)
+		});
 		this.lastPageURL = this.requestURL;
 		this.requestURL = url;
 		this.state = 'enable';
@@ -1037,7 +1074,7 @@ AutoPager.prototype = {
 		ev.initEvent('GM_AutoPagerizeNextPageLoaded', true, false);
 		this.doc.dispatchEvent(ev);
 	},
-	addSeparator : function(fragment, page, innerHtmlStr){
+	addSeparator : function (fragment, page, innerHtmlStr) {
 		if (this.info.wrap) {
 			var div = this.doc.createElement("div");
 			div.setAttribute("class", "uAutoPagerize-wrapper");
@@ -1049,7 +1086,7 @@ AutoPager.prototype = {
 		var hr = this.doc.createElement('hr');
 		hr.setAttribute('class', 'autopagerize_page_separator');
 		hr.setAttribute('style', 'clear: both;');
-		var p  = this.doc.createElement('p');
+		var p = this.doc.createElement('p');
 		p.setAttribute('class', 'autopagerize_page_info');
 		p.setAttribute('style', 'clear: both;text-align: center;');
 		p.innerHTML = innerHtmlStr;
@@ -1059,13 +1096,7 @@ AutoPager.prototype = {
 			o.setAttribute('class', 'autopagerize_icon');
 			o.setAttribute('state', 'enable');
 			o.style.cssText = [
-				'background: ', COLOR['enable'], ';'
-				,'width: 10px;'
-				,'height: 10px;'
-				,'padding: 0px;'
-				,'margin-right: 3px;'
-				,'display: inline-block;'
-				,'vertical-align: middle;'
+				'background: ', COLOR['enable'], ';', 'width: 10px;', 'height: 10px;', 'padding: 0px;', 'margin-right: 3px;', 'display: inline-block;', 'vertical-align: middle;'
 			].join('');
 			o.addEventListener('click', this, false);
 		}
@@ -1091,20 +1122,24 @@ AutoPager.prototype = {
 		}
 
 		insertParent.insertBefore(fragment, this.insertPoint);
-		return page.map(function(pe) {
+		return page.map(function (pe) {
 			var ev = this.doc.createEvent('MutationEvent');
 			ev.initMutationEvent('AutoPagerize_DOMNodeInserted', true, false,
-			                     insertParent, null,
-			                     this.requestURL, null, null);
+				insertParent, null,
+				this.requestURL, null, null);
 			pe.dispatchEvent(ev);
 			return pe;
 		}, this);
 	},
-	
-	addPage : function(htmlDoc, page, innerHTMLstr){
+
+	addPage : function (htmlDoc, page, innerHTMLstr) {
 		var fragment = this.doc.createDocumentFragment();
-		page.forEach(function(i) { fragment.appendChild(i); });
-		this.win.fragmentFilters.forEach(function(i) { i(fragment, htmlDoc, page) }, this);
+		page.forEach(function (i) {
+			fragment.appendChild(i);
+		});
+		this.win.fragmentFilters.forEach(function (i) {
+			i(fragment, htmlDoc, page)
+		}, this);
 		this.addSeparator(fragment, page, innerHTMLstr);
 	},
 	getNextURL : function(doc) {
@@ -1181,14 +1216,9 @@ AutoPager.prototype = {
 };
 
 (function(){
-
-	var SITEINFO_IMPORT_URLS = [
-		"http://simpleu.googlecode.com/svn/trunk/scripts/Super_preloader.db.js"
-	];
-
 	ns.resetSITEINFO_NLF = function(){
 		if (confirm('确定要更新 Super_preloader.db 数据库吗？'))
-			requestSITEINFO(SITEINFO_IMPORT_URLS);
+			requestSITEINFO_NLF(SITEINFO_NLF_IMPORT_URLS);
 	};
 	
 	ns.loadSetting_NLF = function(isAlert) {
@@ -1230,12 +1260,12 @@ AutoPager.prototype = {
 		return true;
 	};
 
-	ns.requestSITEINFO_NLF = requestSITEINFO;
+	ns.requestSITEINFO_NLF = requestSITEINFO_NLF;
 
-	function requestSITEINFO(){
+	function requestSITEINFO_NLF(){
 		debug(" request Super_preloader.db");
 		var xhrStates = {};
-		SITEINFO_IMPORT_URLS.forEach(function(i) {
+		SITEINFO_NLF_IMPORT_URLS.forEach(function(i) {
 			var opt = {
 				method: 'get',
 				url: i,
