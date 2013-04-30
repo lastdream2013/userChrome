@@ -71,10 +71,11 @@ var SITEINFO_NLF_IMPORT_URLS = [
 	
 //官方规则， 太大了，先注释掉，默认用uSuper_preloader.db.js
 var SITEINFO_IMPORT_URLS = [
-    /*'http://wedata.net/databases/AutoPagerize/items.json',*/ 
+    /*'http://wedata.net/databases/AutoPagerize/items.json',*/
 ];
 
-	
+// 希望在自动翻页后附加显示真实相对页面（相对项数）的站点url特征字符串，一般是搜索引擎或论坛，不希望加进入的最好不要乱加，一些不规律的站点显示出来的数字也没有意义
+var REALPAGE_SITE_PATTERN = ['search?', 'forum', 'thread', 'google','baidu', 'ppxclub'];	
 	
 // ワイルドカード(*)で記述する
 var INCLUDE = [
@@ -975,12 +976,17 @@ AutoPager.prototype = {
 			return;
 		}
 
+		var realPageSiteMatch = false; 
+		for (let sitePattern of REALPAGE_SITE_PATTERN) { 
+			log(realPageSiteMatch);
+			if ( this.requestURL.indexOf(sitePattern) >= 0 )
+			{
+				realPageSiteMatch = true;
+				break;
+			}
+		}
 		//论坛和搜索引擎网页显示实际页面信息
-		if (this.requestURL.indexOf('search?') != -1 || 
-			this.requestURL.indexOf('forum')   != -1 ||
-			this.requestURL.indexOf('thread')  != -1 || 
-			this.requestURL.indexOf('baidu')  != -1 ) {
-
+		if ( realPageSiteMatch ) {
 			var ralativePageNumarray = [];
 			if (url) {
 				ralativePageNumarray = this.getRalativePageNumArray(this.requestURL, url);
