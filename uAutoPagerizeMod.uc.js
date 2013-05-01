@@ -6,8 +6,8 @@
 // @compatibility  Firefox 17
 // @charset        UTF-8
 // @version        0.3.0
+// @note           20130501 testversion: modify by lastdream2013 for show real page num, add max pager limit
 // @note           添加 Super_preloader 的数据库支持及更新 By ywzhaiqi。
-// @note           20130429 testversion: modify by lastdream2013 for show real page num, add max pager limit
 // @note           0.3.0 本家に倣って Cookie の処理を変更した
 // @note           0.2.9 remove E4X
 // @note           0.2.8 履歴に入れる機能を廃止
@@ -39,7 +39,6 @@
 (function(css) {
 
 // 以下 設定が無いときに利用する
-var isUrlbar = true;   // 放置的位置，true为地址栏，否则附加组件栏。
 var FORCE_TARGET_WINDOW = true;
 var BASE_REMAIN_HEIGHT = 600;
 var MAX_PAGER_NUM = 10;   //默认最大翻页数， -1表示无限制
@@ -74,8 +73,9 @@ var SITEINFO_IMPORT_URLS = [
     /*'http://wedata.net/databases/AutoPagerize/items.json',*/
 ];
 
-// 希望在自动翻页后附加显示真实相对页面（相对项数）的站点url特征字符串，一般是搜索引擎或论坛，不希望加进入的最好不要乱加，一些不规律的站点显示出来的数字也没有意义
-var REALPAGE_SITE_PATTERN = ['search?', 'search_', 'forum', 'thread', 'google','baidu', 'ppxclub'];	
+// 出在自动翻页信息附加显示真实相对页面信息，一般能智能识别出来。如果还有站点不能识别，可以把地址的特征字符串加到下面
+// 最好不要乱加，一些不规律的站点显示出来的数字也没有意义
+var REALPAGE_SITE_PATTERN = ['search?', 'search_', 'forum', 'thread'];	
 	
 // ワイルドカード(*)で記述する
 var INCLUDE = [
@@ -250,25 +250,15 @@ var ns = window.uAutoPagerize = {
 	init: function() {
 		ns.style = addStyle(css);
 		
-		if(isUrlbar){
-			ns.icon = $('urlbar-icons').appendChild($C("image", {
-				id: "uAutoPagerize-icon",
-				state: "disable",
-				tooltiptext: "disable",
-				onclick: "if (event.button != 2) uAutoPagerize.iconClick(event);",
-				context: "uAutoPagerize-popup",
-				style: "padding: 0px 2px;",
-			}));
-		}else{
-			ns.icon = $('status-bar').appendChild($C("statusbarpanel", {
-				id: "uAutoPagerize-icon",
-				class: "statusbarpanel-iconic-text",
-				state: "disable",
-				tooltiptext: "disable",
-				onclick: "if (event.button != 2) uAutoPagerize.iconClick(event);",
-				context: "uAutoPagerize-popup",
-			}));
-		}
+		ns.icon = $('urlbar-icons').appendChild($C("image", {
+			id: "uAutoPagerize-icon",
+			state: "disable",
+			tooltiptext: "disable",
+			onclick: "if (event.button != 2) uAutoPagerize.iconClick(event);",
+			context: "uAutoPagerize-popup",
+			style: "padding: 0px 2px;",
+		}));
+
 
 		var xml = '\
 			<menupopup id="uAutoPagerize-popup"\
@@ -917,7 +907,7 @@ AutoPager.prototype = {
 			lasturl_info = lasturlarray.pop();
 			if (url_info != lasturl_info) {
 				if (/[0-9]+/.test(lasturl_info) && /[0-9]+/.test(url_info))
-					return [lasturl_info, url_info];
+					return [parseInt(lasturl_info), parseInt(url_info)];
 			}
 		}
 		return [0, 0];
@@ -976,16 +966,42 @@ AutoPager.prototype = {
 			return;
 		}
 
-		var realPageSiteMatch = false; 
-		for (let sitePattern of REALPAGE_SITE_PATTERN) { 
-			if ( this.requestURL.indexOf(sitePattern) >= 0 )
-			{
+		//论坛和搜索引擎网页显示实际页面信息
+		var ralativePageNumarray = [];
+		if (url) {
+			ralativePageNumarray = this.getRalativePageNumArray(this.requestURL, url);
+		} else {
+			ralativePageNumarray = this.getRalativePageNumArray(this.lastPageURL, this.requestURL);
+			var ralativeOff = ralativePageNumarray[1] - ralativePageNumarray[0]; //用的上一页的相对信息比较的，要补充差值……
+			ralativePageNumarray[1] = ralativePageNumarray[1] + ralativeOff;
+			ralativePageNumarray[0] = ralativePageNumarray[0] + ralativeOff;
+		}
+		
+
+		var realPageSiteMatch = false;
+		var ralativeOff = ralativePageNumarray[1] - ralativePageNumarray[0];
+		//上一页与下一页差值为1，并最大数值不超过10000(一般论坛也不会超过这么多页……)
+		if (ralativeOff === 1 && ralativePageNumarray[1] < 10000) { 
 				realPageSiteMatch = true;
-				break;
+		}
+		//上一页与下一页差值不为1，但上一页与下一页差值能被上一页与下一面所整除的，有规律的页面
+		if ( !realPageSiteMatch && ralativeOff !== 1 ) {
+			if  ( (ralativePageNumarray[1]%ralativeOff) == 0 && (ralativePageNumarray[0]%ralativeOff) == 0 ){
+				realPageSiteMatch = true; 
 			}
 		}
-		//论坛和搜索引擎网页显示实际页面信息
-		if ( realPageSiteMatch ) {
+
+ 		if ( !realPageSiteMatch  ) { //不满足以上条件，再根据地址特征来匹配
+			for (let sitePattern of REALPAGE_SITE_PATTERN) { 
+				if ( this.requestURL.toLocaleLowerCase().indexOf(sitePattern) >= 0 )
+				{
+					realPageSiteMatch = true;
+					break;
+				}
+			}
+		}
+		
+		if ( realPageSiteMatch ) { //如果匹配就显示实际网页信息
 			var ralativePageNumarray = [];
 			if (url) {
 				ralativePageNumarray = this.getRalativePageNumArray(this.requestURL, url);
@@ -996,7 +1012,7 @@ AutoPager.prototype = {
 				ralativePageNumarray[0] = parseInt(ralativePageNumarray[0]) + ralativeOff;
 			}
 
-			if (ralativePageNumarray[1] - ralativePageNumarray[0] > 1) //一般是搜索引擎的第10 - 20项……
+			if (ralativePageNumarray[1] - ralativePageNumarray[0] > 1) //一般是搜索引擎的第xx - xx项……
 			{
 				var ralativePageStr = ' [ 实际网页：  第 <font color="red">' + ralativePageNumarray[0] + ' - ' + ralativePageNumarray[1] + '</font> 项 ]';
 			} else if ((ralativePageNumarray[1] - ralativePageNumarray[0]) == 1) //一般的翻页数，差值应该是1
