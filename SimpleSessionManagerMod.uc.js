@@ -9,7 +9,7 @@
 // ==/UserScript==
 (function () {
     var overwrite = 1, //设置恢复会话时是否覆盖已打开的页面，0为不覆盖，1为覆盖，2为不覆盖且在新窗口恢复会话
-  _prefs = null,
+	_prefs = null,
     Cc = Components.classes,
     Ci = Components.interfaces,
     Cu = Components.utils,
@@ -198,7 +198,7 @@
         }
     }
     
-    //选择性恢复回话（利用firefox自带的崩溃恢复机制）
+    //选择性恢复会话（利用firefox自带的崩溃恢复机制）
     function restoreSessionSelectively() {
         var name = this.parentNode.parentNode.getAttribute("label");
         var data = loadFile();
@@ -246,7 +246,7 @@
         gBrowser.selectedTab = newTab;
     }
     
-    //生成已保存回话的右键菜单
+    //生成已保存会话的右键菜单
     function makeitems(name) {
         var ss = document.createElement("menu");
         ss.setAttribute("label", name);
@@ -307,7 +307,7 @@
     menupopup.appendChild(scds);
 
 	var mids = document.createElement("menuitem");
-	mids.setAttribute("label", "启动时恢复上一次回话");
+	mids.setAttribute("label", "启动时恢复上一次会话");
 	mids.setAttribute("type", "checkbox");
 	mids.setAttribute("checked", true == gPrefService.getBoolPref("SimpleSessionManager.restoreLastSession"));
 	mids.setAttribute("oncommand", 'gPrefService.setBoolPref("SimpleSessionManager.restoreLastSession", !gPrefService.getBoolPref("SimpleSessionManager.restoreLastSession"));');
