@@ -188,7 +188,7 @@ window.siteinfo_writer = {
 		json += "\turl         : '" + this.url.value.replace(/\\/g, "\\\\") + "',\n";
 		json += "\tnextLink    : '" + this.nextLink.value + "',\n";
 		json += "\tpageElement : '" + this.pageElement.value + "',\n";
-		json += "\tinsertBefore: '" + this.insertBefore.value + "',\n";
+		if ( this.insertBefore.value != '' ) {json += "\tinsertBefore: '" + this.insertBefore.value + "',\n";}
 		json += "\texampleUrl  : '" + content.location.href + "',\n";
 		json += "},";
 		var r=confirm("翻页规则（按OK键将其复制到剪贴板）："+'\n\n' + json);
