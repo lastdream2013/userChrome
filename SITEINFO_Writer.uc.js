@@ -43,11 +43,19 @@ window.siteinfo_writer = {
 			      </columns>\
 			      <rows>\
 			        <row>\
+			          <label value="siteName" />\
+			          <textbox id="sw-siteName"/>\
+			          <hbox />\
+			          <toolbarbutton class="inspect"\
+			                         tooltiptext="提取网站名称"\
+			                         oncommand="siteinfo_writer.siteName.value = content.document.title;"/>\
+			        </row>\
+			        <row>\
 			          <label value="url" />\
 			          <textbox id="sw-url" oninput="siteinfo_writer.onInput(event);"/>\
 			          <hbox />\
 			          <toolbarbutton class="inspect"\
-			                         tooltiptext="提取Url"\
+			                         tooltiptext="提取地址"\
 			                         oncommand="siteinfo_writer.url.value = \'^\' + content.location.href.replace(/[()\[\]{}|+.,^$?\\]/g, \'\\$&amp;\');"/>\
 			        </row>\
 			        <row>\
@@ -101,7 +109,7 @@ window.siteinfo_writer = {
 			var menuitem = $C("menuitem",
 				{
 					class : "sw-add-element",
-					label : "启动SITEINFO Writer",
+					label : "辅助查找翻页规则",
 					oncommand : "siteinfo_writer.show();",
 				}
 				);
@@ -125,6 +133,7 @@ window.siteinfo_writer = {
 
 			this.container = $("sw-container");
 			this.url = $("sw-url");
+			this.siteName =  $("sw-siteName");
 			this.nextLink = $("sw-nextLink");
 			this.pageElement = $("sw-pageElement");
 			this.insertBefore = $("sw-insertBefore");
@@ -164,6 +173,7 @@ window.siteinfo_writer = {
 	},
 	show: function() {
 		this.setUrl();
+		this.siteName.value = content.document.title;
 		this.nextLink.value = "";
 		this.pageElement.value = "";
 		this.insertBefore.value = "";
@@ -174,6 +184,7 @@ window.siteinfo_writer = {
 	},
 	toJSON: function() {
 		var json = "{\n";
+		json += "\tsiteName    : '" + this.siteName.value + "',\n";
 		json += "\turl         : '" + this.url.value.replace(/\\/g, "\\\\") + "',\n";
 		json += "\tnextLink    : '" + this.nextLink.value + "',\n";
 		json += "\tpageElement : '" + this.pageElement.value + "',\n";
