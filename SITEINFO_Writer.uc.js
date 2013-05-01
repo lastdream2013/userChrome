@@ -30,7 +30,8 @@ window.siteinfo_writer = {
         <window id="main-window">\
 			<vbox id="sw-container" class="sw-add-element" hidden="true">\
 			    <hbox id="sw-hbox">\
-			      <toolbarbutton label="查看规则" oncommand="siteinfo_writer.toJSON();"/>\
+			      <toolbarbutton label="查看规则(AutoPagerize格式)" oncommand="siteinfo_writer.toJSON();"/>\
+			      <toolbarbutton label="查看规则(super_preloader格式)" oncommand="siteinfo_writer.toSuperPreLoaderFormat();"/>\
 			      <toolbarbutton id="sw-launch" label="启动规则" tooltiptext="启动uAutoPagerize" oncommand="siteinfo_writer.launch();"/>\
 			      <spacer flex="1"/>\
 			      <toolbarbutton class="tabs-closebutton" oncommand="siteinfo_writer.hide();"/>\
@@ -196,6 +197,28 @@ window.siteinfo_writer = {
 		if(r==true){
 			try{
 				Components.classes["@mozilla.org/widget/clipboardhelper;1"].getService(Components.interfaces.nsIClipboardHelper).copyString(json);
+			}
+			catch(e){
+				alert(e);
+			}
+		}
+	},
+	toSuperPreLoaderFormat: function() {
+		var spdb = "\t{\n";
+		spdb += "\t\tsiteName    : '" + this.siteName.value + "',\n";
+		spdb += "\t\turl         : /" + this.url.value.replace(/\\/g, "\\\\") + "/i,\n";
+		spdb += "\t\tsiteExample : '" + content.location.href + "',\n";
+		spdb += "\t\tnextLink    : '" + this.nextLink.value + "',\n";
+		spdb += "\t\tautopager: {\n";
+		spdb += "\t\t\tuseiframe   : true,\n";
+		spdb += "\t\t\tpageElement : '" + this.pageElement.value + "',\n";
+		if ( this.insertBefore.value != '' ) {spdb += "\t\t\tHT_insert   : ['" + this.insertBefore.value + "', 1],\n";}
+		spdb += "\t\t}\n";
+		spdb += "\t},";
+		var r=confirm("翻页规则(SuperPreLoader格式)（按OK键将其复制到剪贴板）："+'\n\n' + spdb);
+		if(r==true){
+			try{
+				Components.classes["@mozilla.org/widget/clipboardhelper;1"].getService(Components.interfaces.nsIClipboardHelper).copyString(spdb);
 			}
 			catch(e){
 				alert(e);
