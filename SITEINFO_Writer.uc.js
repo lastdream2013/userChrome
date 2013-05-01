@@ -206,7 +206,7 @@ window.siteinfo_writer = {
 	toSuperPreLoaderFormat: function() {
 		var spdb = "\t{\n";
 		spdb += "\t\tsiteName    : '" + this.siteName.value + "',\n";
-		spdb += "\t\turl         : /" + this.url.value.replace(/\\/g, "\\\\") + "/i,\n";
+		spdb += "\t\turl         : /" + this.url.value.replace(/\//g, "\\\/") + "/i,\n";
 		spdb += "\t\tsiteExample : '" + content.location.href + "',\n";
 		spdb += "\t\tnextLink    : '" + this.nextLink.value + "',\n";
 		spdb += "\t\tautopager: {\n";
