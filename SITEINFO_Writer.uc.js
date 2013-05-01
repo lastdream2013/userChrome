@@ -29,8 +29,8 @@ window.siteinfo_writer = {
         <window id="main-window">\
 			<vbox id="sw-container" class="sw-add-element" hidden="true">\
 			    <hbox id="sw-hbox">\
-			      <toolbarbutton label="JSON" oncommand="siteinfo_writer.toJSON();"/>\
-			      <toolbarbutton id="sw-launch" label="launch" tooltiptext="uAutoPagerize im Vorfeld ausführen" oncommand="siteinfo_writer.launch();"/>\
+			      <toolbarbutton label="查看规则" oncommand="siteinfo_writer.toJSON();"/>\
+			      <toolbarbutton id="sw-launch" label="启动规则" tooltiptext="启动uAutoPagerize" oncommand="siteinfo_writer.launch();"/>\
 			      <spacer flex="1"/>\
 			      <toolbarbutton class="tabs-closebutton" oncommand="siteinfo_writer.hide();"/>\
 			    </hbox>\
@@ -47,37 +47,37 @@ window.siteinfo_writer = {
 			          <textbox id="sw-url" oninput="siteinfo_writer.onInput(event);"/>\
 			          <hbox />\
 			          <toolbarbutton class="inspect"\
-			                         tooltiptext="Url Abruf"\
+			                         tooltiptext="提取Url"\
 			                         oncommand="siteinfo_writer.url.value = \'^\' + content.location.href.replace(/[()\[\]{}|+.,^$?\\]/g, \'\\$&amp;\');"/>\
 			        </row>\
 			        <row>\
 			          <label value="nextLink" />\
 			          <textbox id="sw-nextLink" multiline="true"/>\
 			          <toolbarbutton class="check"\
-			                         tooltiptext="XPath Test"\
+			                         tooltiptext="测试XPath"\
 			                         oncommand="siteinfo_writer.xpathTest(\'nextLink\');"/>\
 			          <toolbarbutton class="inspect"\
-			                         tooltiptext="XPath Abruf"\
+			                         tooltiptext="提取XPath"\
 			                         oncommand="siteinfo_writer.inspect(\'nextLink\');"/>\
 			        </row>\
 			        <row>\
 			          <label value="pageElement" />\
 			          <textbox id="sw-pageElement" multiline="true"/>\
 			          <toolbarbutton class="check"\
-			                         tooltiptext="XPath Test"\
+			                         tooltiptext="测试XPath"\
 			                         oncommand="siteinfo_writer.xpathTest(\'pageElement\');"/>\
 			          <toolbarbutton class="inspect"\
-			                         tooltiptext="XPath Abruf"\
+			                         tooltiptext="提取XPath"\
 			                         oncommand="siteinfo_writer.inspect(\'pageElement\');"/>\
 			        </row>\
 			        <row>\
 			          <label value="insertBefore" />\
 			          <textbox id="sw-insertBefore" multiline="true"/>\
 			          <toolbarbutton class="check"\
-			                         tooltiptext="XPath Test"\
+			                         tooltiptext="测试XPath"\
 			                         oncommand="siteinfo_writer.xpathTest(\'insertBefore\');"/>\
 			          <toolbarbutton class="inspect"\
-			                         tooltiptext="XPath Abruf"\
+			                         tooltiptext="提取XPath"\
 			                         oncommand="siteinfo_writer.inspect(\'insertBefore\');"/>\
 			        </row>\
 			      </rows>\
@@ -88,46 +88,53 @@ window.siteinfo_writer = {
     overlay = "data:application/vnd.mozilla.xul+xml;charset=utf-8," + encodeURI(overlay);
     window.userChrome_js.loadOverlay(overlay, window.siteinfo_writer);
 },
-  observe: function(aSubject, aTopic, aData){
-    	if (aTopic == "xul-overlay-merged") {
+	observe : function (aSubject, aTopic, aData) {
+		if (aTopic == "xul-overlay-merged")
+		{
+			this.popup = $("mainPopupSet").appendChild($C("menupopup",
+					{
+						id : "sw-popup",
+						class : "sw-add-element",
+					}
+					));
 
-		this.popup = $("mainPopupSet").appendChild($C("menupopup",{
-		 id: "sw-popup",
-		 class: "sw-add-element",
-		 }));
+			var menuitem = $C("menuitem",
+				{
+					class : "sw-add-element",
+					label : "启动SITEINFO Writer",
+					oncommand : "siteinfo_writer.show();",
+				}
+				);
+			$("devToolsSeparator").parentNode.insertBefore(menuitem, $("devToolsSeparator"));
 
-		var menuitem = $C("menuitem", {
-			 class: "sw-add-element",
-			 label: "SITEINFO Writer starten",
-			 oncommand: "siteinfo_writer.show();",
-			 });
-		$("devToolsSeparator").parentNode.insertBefore(menuitem, $("devToolsSeparator"));
-		
-		setTimeout(function() {
-			if (!window.uAutoPagerize) {
-				$("sw-launch").hidden = true;
-				return;
-			};
-			
-			let aupPopup = $("uAutoPagerize-popup");
-			if (aupPopup) {
-				aupPopup.appendChild(document.createElement("menuseparator")).setAttribute("class", "sw-add-element");
-				aupPopup.appendChild(menuitem.cloneNode(false));
-			}
-		}, 2000);
+			setTimeout(function ()
+			{
+				if (!window.uAutoPagerize)
+				{
+					$("sw-launch").hidden = true;
+					return;
+				};
 
-		this.container = $("sw-container"); 
-		this.url = $("sw-url");
-		this.nextLink = $("sw-nextLink");
-		this.pageElement = $("sw-pageElement");
-		this.insertBefore = $("sw-insertBefore"); 
+				let aupPopup = $("uAutoPagerize-popup");
+				if (aupPopup)
+				{
+					aupPopup.appendChild(document.createElement("menuseparator")).setAttribute("class", "sw-add-element");
+					aupPopup.appendChild(menuitem.cloneNode(false));
+				}
+			}, 2000);
 
-		this.nextLink.addEventListener("popupshowing", siteinfo_writer.pps, false);
-		this.pageElement.addEventListener("popupshowing", siteinfo_writer.pps, false);
-		this.insertBefore.addEventListener("popupshowing", siteinfo_writer.pps, false);
-	}
+			this.container = $("sw-container");
+			this.url = $("sw-url");
+			this.nextLink = $("sw-nextLink");
+			this.pageElement = $("sw-pageElement");
+			this.insertBefore = $("sw-insertBefore");
+
+			this.nextLink.addEventListener("popupshowing", siteinfo_writer.pps, false);
+			this.pageElement.addEventListener("popupshowing", siteinfo_writer.pps, false);
+			this.insertBefore.addEventListener("popupshowing", siteinfo_writer.pps, false);
+		}
 	},
-	uninit: function() {
+	uninit : function ()  {
 	},
 
 	pps: function(event) {
@@ -167,13 +174,21 @@ window.siteinfo_writer = {
 	},
 	toJSON: function() {
 		var json = "{\n";
-		json += "\turl          : '" + this.url.value.replace(/\\/g, "\\\\") + "'\n";
-		json += "\t,nextLink    : '" + this.nextLink.value + "'\n";
-		json += "\t,pageElement : '" + this.pageElement.value + "'\n";
-		json += "\t,insertBefore: '" + this.insertBefore.value + "'\n";
-		json += "\t,exampleUrl  : '" + content.location.href + "'\n";
-		json += "}";
-		alert(json);
+		json += "\turl         : '" + this.url.value.replace(/\\/g, "\\\\") + "',\n";
+		json += "\tnextLink    : '" + this.nextLink.value + "',\n";
+		json += "\tpageElement : '" + this.pageElement.value + "',\n";
+		json += "\tinsertBefore: '" + this.insertBefore.value + "',\n";
+		json += "\texampleUrl  : '" + content.location.href + "',\n";
+		json += "},";
+		var r=confirm("翻页规则（按OK键将其复制到剪贴板）："+'\n\n' + json);
+		if(r==true){
+			try{
+				Components.classes["@mozilla.org/widget/clipboardhelper;1"].getService(Components.interfaces.nsIClipboardHelper).copyString(json);
+			}
+			catch(e){
+				alert(e);
+			}
+		}
 	},
 	launch: function() {
 		if (content.ap) return alert("已经运行");
