@@ -56,7 +56,7 @@ window.siteinfo_writer = {
 			          <hbox />\
 			          <toolbarbutton class="inspect"\
 			                         tooltiptext="提取地址"\
-			                         oncommand="siteinfo_writer.url.value = \'^\' + content.location.href.replace(/[()\[\]{}|+.,^$?\\]/g, \'\\$&amp;\');"/>\
+			                         oncommand="siteinfo_writer.setUrl();"/>\
 			        </row>\
 			        <row>\
 			          <label value="nextLink" />\
