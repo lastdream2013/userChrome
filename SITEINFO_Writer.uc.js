@@ -7,6 +7,7 @@
 // @compatibility  Firefox 5 - firefox 23a1
 // @charset        UTF-8
 // @version        下書き1
+// @note           同步：增加下一页中文选择xpath By ywzhaiqi@gmail.com
 // @note           fix compatibility for firefox 23a1 by lastdream2013
 // @note           まだこれからつくり込む段階
 // @note           ツールメニューから起動する
@@ -183,14 +184,14 @@ window.siteinfo_writer = {
 		this.container.hidden = true;
 	},
 	toJSON: function() {
-		var json = "{\n";
-		json += "\tsiteName    : '" + this.siteName.value + "',\n";
-		json += "\turl         : '" + this.url.value.replace(/\\/g, "\\\\") + "',\n";
-		json += "\tnextLink    : '" + this.nextLink.value + "',\n";
-		json += "\tpageElement : '" + this.pageElement.value + "',\n";
-		if ( this.insertBefore.value != '' ) {json += "\tinsertBefore: '" + this.insertBefore.value + "',\n";}
-		json += "\texampleUrl  : '" + content.location.href + "',\n";
-		json += "},";
+		var json = "\t{\n";
+		json += "\t\tsiteName    : '" + this.siteName.value + "',\n";
+		json += "\t\turl         : '" + this.url.value.replace(/\\/g, "\\\\") + "',\n";
+		json += "\t\tnextLink    : '" + this.nextLink.value + "',\n";
+		json += "\t\tpageElement : '" + this.pageElement.value + "',\n";
+		if ( this.insertBefore.value != '' ) {json += "\t\tinsertBefore: '" + this.insertBefore.value + "',\n";}
+		json += "\t\texampleUrl  : '" + content.location.href + "',\n";
+		json += "\t},";
 		var r=confirm("翻页规则（按OK键将其复制到剪贴板）："+'\n\n' + json);
 		if(r==true){
 			try{
@@ -217,9 +218,9 @@ window.siteinfo_writer = {
 		if (index === 0) {
 			if (content.AutoPagerize && content.AutoPagerize.launchAutoPager)
 				content.AutoPagerize.launchAutoPager([i]);
-			else alert("SITEINFO OK  uAutoPagerize无法执行");
+			else alert("翻页规则语法正确，但uAutoPagerize无法执行，可能uAutoPagerize被禁用或没有安装脚本");
 		} else {
-			alert("SITEINFO不匹配");
+			alert("翻页规则不匹配");
 		}
 	},
 	inspect: function(aType) {
@@ -388,6 +389,9 @@ Inspector.prototype = {
 	ATTR_CLASS: 2,
 	ATTR_NOT_CLASSID: 3,
 	ATTR_FULL: 4,
+	TEXT: 5,
+	NEXT_REG: /[下后][一]?[页张个篇章节步]/,
+	NEXT_REG_A: /^[下后][一]?[页张个篇章节步]$/,
 	getXPath: function(originalTarget) {
 		var nodes = getElementsByXPath(
 			'ancestor-or-self::*[not(local-name()="html" or local-name()="HTML" or local-name()="body" or local-name()="BODY")]', originalTarget).reverse();
@@ -401,11 +405,13 @@ Inspector.prototype = {
 		obj.self_class       = this.getElementXPath(current, this.ATTR_CLASS);
 		obj.self_attr        = this.getElementXPath(current, this.ATTR_NOT_CLASSID);
 		obj.self_full        = this.getElementXPath(current, this.ATTR_FULL);
+		obj.self_text        = this.getElementXPath(current, this.TEXT);
 		obj.ancestor_classid = obj.self_classid;
 		obj.ancestor_id      = obj.self_id;
 		obj.ancestor_class   = obj.self_class;
 		obj.ancestor_attr    = obj.self_attr;
 		obj.ancestor_full    = obj.self_full;
+		obj.ancestor_text    = obj.self_text;
 
 		var hasId = current.getAttribute("id");
 		for (let [i, elem] in Iterator(nodes)) {
@@ -416,6 +422,7 @@ Inspector.prototype = {
 				obj.ancestor_classid = this.getElementXPath(elem, this.ATTR_CLASSID) + "/" + obj.ancestor_classid;
 				obj.ancestor_id = this.getElementXPath(elem, this.ATTR_ID) + "/" + obj.ancestor_id;
 				obj.ancestor_full = this.getElementXPath(elem, this.ATTR_FULL) + "/" + obj.ancestor_full;
+				obj.ancestor_text = this.getElementXPath(elem, this.ATTR_ID) + "/" + obj.ancestor_text;
 			}
 			obj.ancestor_class = this.getElementXPath(elem, this.ATTR_NOT_CLASS) + "/" + obj.ancestor_class;
 			obj.ancestor_attr = this.getElementXPath(elem, this.ATTR_NOT_CLASSID) + "/" + obj.ancestor_attr;
@@ -459,6 +466,17 @@ Inspector.prototype = {
 				return elem.nodeName.toLowerCase() + '[@class="' + elem.getAttribute("class") + '"]';
 			return elem.nodeName.toLowerCase();
 		}
+		if(this.TEXT == constant){
+			var elemHtml = elem.textContent;
+			if(elemHtml.length < 20  && elemHtml.match(this.NEXT_REG)){
+				if(elemHtml.match(this.NEXT_REG_A)){
+					return elem.nodeName.toLowerCase() + '[text()="' + elemHtml + '"]';
+				}
+				return elem.nodeName.toLowerCase() + '[contains(text(), "' + elemHtml + '")]';
+			}
+			return elem.nodeName.toLowerCase();
+		}
+
 		var xpath = elem.nodeName.toLowerCase();
 		if (this.ATTR_FULL == constant) {
 			let x = [];
