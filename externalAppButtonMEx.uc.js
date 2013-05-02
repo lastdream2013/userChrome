@@ -5,16 +5,17 @@
 // @include        main
 // @author         ithinc &  lastdream2013
 // @charset        UTF-8
+// @version        20130502.1.1.2 updated by  lastdream2013 : minor fix
 // @version        20130416.1.1.1 delay load exefile, may speedup firefox startup 
 // @version        20130414.1.1.0 updated by  lastdream2013 : support submenu
-// @version        20130402.1.0.1 modified by lastdream2013
 // @version        20091216.1.0.0 Final release
 // @version        20091215.0.0.2 Handle toolbar apps and menu apps separately
 // @version        20091212.0.0.1 Initial release
 // ==/UserScript==
 
 var gExternalAppbuttonMEx = {
-  autohideEmptySubDirs: true,  //自动隐藏没有一个子项目的子目录菜单
+	autohideEmptySubDirs: true,  //自动隐藏没有一个子项目的子目录菜单
+	moveSubDirstoBottom: false,  //把主菜单下的子目录移动到最下面
       subdirPopupHash: [],
       subdirMenuHash: [],
       toolbar: {
@@ -227,10 +228,21 @@ var gExternalAppbuttonMEx = {
 	{
 		for (let [name, popup] in Iterator(gExternalAppbuttonMEx.subdirPopupHash )) {
 			//Application.console.log("popup: " + popup);
-			if ( popup.hasChildNodes() )
+			if ( popup.hasChildNodes() ) {
 			   continue;
-			else  
+			}
+			else {
 			    gExternalAppbuttonMEx.subdirMenuHash[name].setAttribute("hidden", "true");	
+			} 
+		}
+	}
+
+	if ( this.moveSubDirstoBottom )
+	{
+		let i = ExternalAppPopup.childNodes.length;
+		while ( ExternalAppPopup.firstChild.getAttribute('class') != 'menuitem-iconic' && i-- != 0 )
+		{
+			ExternalAppPopup.appendChild(ExternalAppPopup.firstChild);
 		}
 	}
 	this._isready = true;
