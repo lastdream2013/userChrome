@@ -6,7 +6,7 @@
 
 (function () {
 	var googleicon = function (doc) {
-		if (doc.location.href.match(/^https?:\/\/.*\.google\..*\/search?.*$/i)) {
+		if (doc && doc.location.href.match(/^https?:\/\/.*\.google\..*\/search?.*$/i)) {
 
 			// Check if already loaded  原来要注释掉了，为配合uAutoPagerize翻页
 			//if(doc.getElementById("googleicon")) return;
