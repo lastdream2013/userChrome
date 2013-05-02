@@ -18,7 +18,6 @@
 
 			var results = doc.evaluate("//h3[contains(@class,'r')]/a", doc, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
 			for (var i = results.snapshotLength - 1; i >= 0; i--) {
-				Application.console.log(i);
 				var result = results.snapshotItem(i);
 
 				if (result.firstChild.className == "googleicon") //Check if already loaded
