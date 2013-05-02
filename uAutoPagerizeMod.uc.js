@@ -6,8 +6,8 @@
 // @compatibility  Firefox 17
 // @charset        UTF-8
 // @version        0.3.0
-// @note           20130501 testversion: modify by lastdream2013 for show real page num, add max pager limit
 // @note           添加 Super_preloader 的数据库支持及更新 By ywzhaiqi。
+// @note           20130502 testversion: modify by lastdream2013 for show real page num, add max pager limit
 // @note           0.3.0 本家に倣って Cookie の処理を変更した
 // @note           0.2.9 remove E4X
 // @note           0.2.8 履歴に入れる機能を廃止
@@ -91,6 +91,12 @@ var EXCLUDE = [
 ];
 
 var MY_SITEINFO = [
+	{siteName: "google"
+		,url          : '^https?\\:\\/\\/(www|encrypted)\\.google\\..{2,9}\\/(webhp|search|#|$|\\?)'
+		,nextLink    : "//a[div[@id=('nn')]] | //a[span/@id='nn'] | id('nav')//td[last()]/a | id('nn')/parent::a"
+		,pageElement : "//div[@id='ires']"
+		,exampleUrl  : 'http://www.google.com.hk/'
+	},
 	{
 		url         : 'http://eow\\.alc\\.co\\.jp/[^/]+'
 		,nextLink   : 'id("AutoPagerizeNextLink")'
@@ -273,8 +279,6 @@ var ns = window.uAutoPagerize = {
 				          oncommand="uAutoPagerize.toggle(event);"/>\
 				<menuitem label="重载配置文件"\
 				          oncommand="uAutoPagerize.loadSetting(true);"/>\
-				<menuitem label="重载配置文件(Super_perloader)"\
-				          oncommand="uAutoPagerize.loadSetting_NLF(true);"/>\
 				<menuitem label="重置站点信息(Super_perloader)"\
 				          oncommand="uAutoPagerize.resetSITEINFO_NLF();"/>\
 				<menuitem label="重置站点信息(官方)"\
@@ -472,10 +476,9 @@ var ns = window.uAutoPagerize = {
 			});
 		});
 
-		// 原脚本检测下一页链接2次，这里传递一个变量。
-		var index = -1, info, nextLink;
+		var index = -1, info;
 
-		if (/\bgoogle\.(?:com|co\.jp)$/.test(win.location.host)) {
+		if (/\bgoogle\.(?:com|co\.jp|com\.hk)$/.test(win.location.host)) {
 			if (!timer || timer < 400) timer = 400;
 			win.addEventListener("hashchange", function(event) {
 				if (!win.ap) {
@@ -571,13 +574,36 @@ var ns = window.uAutoPagerize = {
 					img.removeAttribute('data-src');
 				});
 			});
+		} 
+		// 水木清华社区延迟加载及下一页的重新启用
+		else if (/www\.newsmth\.net$/.test(win.location.host)) {
+			timer = 1000;   // 这个网站 =400 则找到的下一页链接会错误
+			win.addEventListener("hashchange", function(event) {
+				debug("hashchanged: " + win.location.href);
+				if (!win.ap) {
+					win.setTimeout(function(){
+						let [index, info] = [-1, null];
+						if (!info) [, info] = ns.getInfo(ns.MY_SITEINFO, win);
+						if (!info) [, info] = ns.getInfo(null, win);
+						if (info) win.ap = new AutoPager(win.document, info);
+						updateIcon();
+					}, timer);
+					return;
+				}
+				let info = win.ap.info;
+				win.ap.destroy(true);
+				win.setTimeout(function(){
+					win.ap = new AutoPager(win.document, info);
+					updateIcon();
+				}, timer);
+			}, false);
 		}
 
 		win.setTimeout(function(){
 			win.ap = null;
 			miscellaneous.forEach(function(func){ func(doc, locationHref); });
 			var index = -1;
-			if (!info) [, info, nextLink] = ns.getInfo(ns.MY_SITEINFO, win);
+			if (!info) [, info] = ns.getInfo(ns.MY_SITEINFO, win);
 			if (info) {
 				if (info.requestFilter)
 					win.requestFilters.push(info.requestFilter.bind(win));
@@ -601,16 +627,17 @@ var ns = window.uAutoPagerize = {
 				}
 			}
 
+			// 第二检测 Super_preloader.db 的数据库
 			// var s = new Date().getTime();
-			if(!info) [index, info, nextLink] = ns.getInfo(ns.NLF_SITEINFO, win);
+			if(!info) [index, info] = ns.getInfo(ns.NLF_SITEINFO, win);
 			// debug(index + 'th/' + (new Date().getTime() - s) + 'ms');
 
 			// var s = new Date().getTime();
-			if (!info) [index, info, nextLink] = ns.getInfo(ns.SITEINFO, win);
+			if (!info) [index, info] = ns.getInfo(ns.SITEINFO, win);
 			// debug(index + 'th/' + (new Date().getTime() - s) + 'ms');
-			if (!info) [, info, nextLink] = ns.getInfo(ns.MICROFORMAT, win);
+			if (!info) [, info] = ns.getInfo(ns.MICROFORMAT, win);
 			if (info) {
-				win.ap = new AutoPager(win.document, info, nextLink && nextLink.href);
+				win.ap = new AutoPager(win.document, info);
 			}else{
 				debug("没有找到当前站点的配置: " + win.location.href);
 			}
@@ -618,12 +645,10 @@ var ns = window.uAutoPagerize = {
 			updateIcon();
 		}, timer||0);
 	},
-
 	search: function(){
 		var keyword = encodeURIComponent(content.location.href);
 		openLinkIn('http://ap.teesoft.info/?exp=0&url=' + keyword, 'tab', {});
 	},
-
 	iconClick: function(event){
 		if (!event || !event.button) {
 			ns.toggle();
@@ -647,7 +672,7 @@ var ns = window.uAutoPagerize = {
 		}
 	},
 	getInfo: function (list, win) {
-		if (!list) list = ns.NLF_SITEINFO || ns.SITEINFO;
+		if (!list) list = ns.NLF_SITEINFO.concat(ns.SITEINFO);
 		if (!win)  win  = content;
 		var doc = win.document;
 		var locationHref = doc.location.href;
@@ -664,7 +689,7 @@ var ns = window.uAutoPagerize = {
 					// FIXME microformats case detection.
 					// limiting greater than 12 to filter microformats like SITEINFOs.
 					if (info.url.length > 12)
-						debug('nextLink not found. getInfo(). ', info.nextLink);
+						debug('nextLink not found. getInfo(). ', String(info.nextLink));
 					continue;
 				}
 				var pageElement = getElementMix(info.pageElement, doc);
@@ -682,7 +707,7 @@ var ns = window.uAutoPagerize = {
 	},
 	getInfoFromURL: function (url) {
 		if (!url) url = content.location.href;
-		var list = ns.NLF_SITEINFO ||ns.SITEINFO;
+		var list = ns.NLF_SITEINFO.concat(ns.SITEINFO);
 		return list.filter(function(info, index, array) {
 			try {
 				var exp = info.url_regexp || Object.defineProperty(info, "url_regexp", {
@@ -697,7 +722,7 @@ var ns = window.uAutoPagerize = {
 
 var cplink;
 // Class
-function AutoPager(doc, info, nextLink) {
+function AutoPager(doc, info) {
 	this.init.apply(this, arguments);
 };
 AutoPager.prototype = {
@@ -725,7 +750,7 @@ AutoPager.prototype = {
 		}
 		return state;
 	},
-	init: function(doc, info, nextLink) {
+	init: function(doc, info) {
 		this.doc = doc;
 		this.win = doc.defaultView;
 		this.documentElement = doc.documentElement;
@@ -737,12 +762,7 @@ AutoPager.prototype = {
 			this.info[key] = val;
 		}
 		
-		var url;
-		if(nextLink){
-			url = nextLink;
-		}else{
-			url = this.getNextURL(this.doc);
-		}
+		var url = this.getNextURL(this.doc);
 		if ( !url ) {
 			debug("getNextURL returns null.", this.info.nextLink);
 			return;
@@ -893,24 +913,72 @@ AutoPager.prototype = {
 		this.state = 'loading';
 		this.req = GM_xmlhttpRequest(opt);
 	},
-	getRalativePageNumArray : function (lasturl, url) {
-		if (!lasturl || !url) {
+	getRalativePageStr : function (lastUrl, CurrentUrl, NextUrl) {
+		let getRalativePageNumArray = function (lasturl, url) {
+			if (!lasturl || !url) {
+				return [0, 0];
+			}
+
+			var lasturlarray = lasturl.split(/-|\.|\&|\/|=|#/);
+			var urlarray = url.split(/-|\.|\&|\/|=|#/);
+			while (urlarray.length != 0) {
+				let url_info = urlarray.pop(),
+				lasturl_info = lasturlarray.pop();
+				if (url_info != lasturl_info) {
+					if (/[0-9]+/.test(lasturl_info) && /[0-9]+/.test(url_info))
+						return [parseInt(lasturl_info), parseInt(url_info)];
+				}
+			}
 			return [0, 0];
+		};
+		//论坛和搜索引擎网页显示实际页面信息
+		var ralativePageNumarray = [];
+		if (NextUrl) {
+			ralativePageNumarray = getRalativePageNumArray(CurrentUrl, NextUrl);
+		} else {
+			ralativePageNumarray = getRalativePageNumArray(lastUrl, CurrentUrl);
+			var ralativeOff = ralativePageNumarray[1] - ralativePageNumarray[0]; //用的上一页的相对信息比较的，要补充差值……
+			ralativePageNumarray[1] = ralativePageNumarray[1] + ralativeOff;
+			ralativePageNumarray[0] = ralativePageNumarray[0] + ralativeOff;
 		}
 
-		var lasturlarray = lasturl.split(/-|\.|\&|\/|=|#/);
-		var urlarray = url.split(/-|\.|\&|\/|=|#/);
-		//log("lasturlarray: " + lasturlarray);
-		//log("urlarray    : " + urlarray);
-		while (urlarray.length != 0) {
-			url_info = urlarray.pop();
-			lasturl_info = lasturlarray.pop();
-			if (url_info != lasturl_info) {
-				if (/[0-9]+/.test(lasturl_info) && /[0-9]+/.test(url_info))
-					return [parseInt(lasturl_info), parseInt(url_info)];
+		var realPageSiteMatch = false;
+		var ralativeOff = ralativePageNumarray[1] - ralativePageNumarray[0];
+		//上一页与下一页差值为1，并最大数值不超过10000(一般论坛也不会超过这么多页……)
+		if (ralativeOff === 1 && ralativePageNumarray[1] < 10000) {
+			realPageSiteMatch = true;
+		}
+		//上一页与下一页差值不为1，但上一页与下一页差值能被上一页与下一面所整除的，有规律的页面
+		if (!realPageSiteMatch && ralativeOff !== 1) {
+			if ((ralativePageNumarray[1] % ralativeOff) == 0 && (ralativePageNumarray[0] % ralativeOff) == 0) {
+				realPageSiteMatch = true;
 			}
 		}
-		return [0, 0];
+
+		if (!realPageSiteMatch) { //不满足以上条件，再根据地址特征来匹配
+			for (let sitePattern of REALPAGE_SITE_PATTERN) {
+				if (CurrentUrl.toLocaleLowerCase().indexOf(sitePattern) >= 0) {
+					realPageSiteMatch = true;
+					break;
+				}
+			}
+		}
+
+		if (realPageSiteMatch) { //如果匹配就显示实际网页信息
+			if (ralativePageNumarray[1] - ralativePageNumarray[0] > 1) //一般是搜索引擎的第xx - xx项……
+			{
+				var ralativePageStr = ' [ 实际网页：  第 <font color="red">' + ralativePageNumarray[0] + ' - ' + ralativePageNumarray[1] + '</font> 项 ]';
+			} else if ((ralativePageNumarray[1] - ralativePageNumarray[0]) == 1) //一般的翻页数，差值应该是1
+			{
+				var ralativePageStr = ' [ 实际网页：  第 <font color="red">' + ralativePageNumarray[0] + '</font> 页 ]';
+			} else if ((ralativePageNumarray[0] == 0 && ralativePageNumarray[1]) == 0) //找不到的话……
+			{
+				var ralativePageStr = ' [ 实际网页结束 ]';
+			}
+		} else {
+			ralativePageStr = '';
+		}
+		return ralativePageStr;
 	},
 	requestLoad : function(res){
 		var before = res.URI.host;
@@ -966,66 +1034,8 @@ AutoPager.prototype = {
 			return;
 		}
 
-		//论坛和搜索引擎网页显示实际页面信息
-		var ralativePageNumarray = [];
-		if (url) {
-			ralativePageNumarray = this.getRalativePageNumArray(this.requestURL, url);
-		} else {
-			ralativePageNumarray = this.getRalativePageNumArray(this.lastPageURL, this.requestURL);
-			var ralativeOff = ralativePageNumarray[1] - ralativePageNumarray[0]; //用的上一页的相对信息比较的，要补充差值……
-			ralativePageNumarray[1] = ralativePageNumarray[1] + ralativeOff;
-			ralativePageNumarray[0] = ralativePageNumarray[0] + ralativeOff;
-		}
+		ralativePageStr = this.getRalativePageStr(this.lastPageURL, this.requestURL, url);
 		
-
-		var realPageSiteMatch = false;
-		var ralativeOff = ralativePageNumarray[1] - ralativePageNumarray[0];
-		//上一页与下一页差值为1，并最大数值不超过10000(一般论坛也不会超过这么多页……)
-		if (ralativeOff === 1 && ralativePageNumarray[1] < 10000) { 
-				realPageSiteMatch = true;
-		}
-		//上一页与下一页差值不为1，但上一页与下一页差值能被上一页与下一面所整除的，有规律的页面
-		if ( !realPageSiteMatch && ralativeOff !== 1 ) {
-			if  ( (ralativePageNumarray[1]%ralativeOff) == 0 && (ralativePageNumarray[0]%ralativeOff) == 0 ){
-				realPageSiteMatch = true; 
-			}
-		}
-
- 		if ( !realPageSiteMatch  ) { //不满足以上条件，再根据地址特征来匹配
-			for (let sitePattern of REALPAGE_SITE_PATTERN) { 
-				if ( this.requestURL.toLocaleLowerCase().indexOf(sitePattern) >= 0 )
-				{
-					realPageSiteMatch = true;
-					break;
-				}
-			}
-		}
-		
-		if ( realPageSiteMatch ) { //如果匹配就显示实际网页信息
-			var ralativePageNumarray = [];
-			if (url) {
-				ralativePageNumarray = this.getRalativePageNumArray(this.requestURL, url);
-			} else {
-				ralativePageNumarray = this.getRalativePageNumArray(this.lastPageURL, this.requestURL);
-				var ralativeOff = parseInt(ralativePageNumarray[1]) - parseInt(ralativePageNumarray[0]); //用的上一页的相对信息比较的，要补充差值……
-				ralativePageNumarray[1] = parseInt(ralativePageNumarray[1]) + ralativeOff;
-				ralativePageNumarray[0] = parseInt(ralativePageNumarray[0]) + ralativeOff;
-			}
-
-			if (ralativePageNumarray[1] - ralativePageNumarray[0] > 1) //一般是搜索引擎的第xx - xx项……
-			{
-				var ralativePageStr = ' [ 实际网页：  第 <font color="red">' + ralativePageNumarray[0] + ' - ' + ralativePageNumarray[1] + '</font> 项 ]';
-			} else if ((ralativePageNumarray[1] - ralativePageNumarray[0]) == 1) //一般的翻页数，差值应该是1
-			{
-				var ralativePageStr = ' [ 实际网页：  第 <font color="red">' + ralativePageNumarray[0] + '</font> 页 ]';
-			} else if ((ralativePageNumarray[0] == 0 && ralativePageNumarray[1]) == 0) //找不到的话……
-			{
-				var ralativePageStr = ' [ 实际网页结束 ]';
-			}
-		} else {
-			ralativePageStr = '';
-		}
-		//log("ralativePageStr" + ralativePageStr);
 		var pagerCurStr;
 		if (MAX_PAGER_NUM != -1) {
 			pagerCurStr = ' 自动翻页：第 <font color="red"> ' + (++this.pageNum) + '/' + MAX_PAGER_NUM + '</font> 页 ';
@@ -1404,7 +1414,7 @@ function getXPathResult(xpath, node, resultType) {
 		try{
 			xpath = addDefaultPrefix(xpath, defaultPrefix);
 		}catch(e){
-			//log(xpath);
+			log(xpath);
 		}
 		
 		var defaultResolver = resolver;
@@ -1699,14 +1709,8 @@ function getElementMix(selector, doc, win){
 };
 
 function getElementsMix(selector, doc) {
-
 	if(selector.search(/^css;/i)==0){
-		var elems = [];
-		var nodes = doc.querySelectorAll(selector.slice(4));
-		for(var i = 0, l= nodes.length; i < l; i++){
-			elems[i] = nodes[i];
-		}
-		return elems;
+	return Array.prototype.slice.call(doc.querySelectorAll(selector.slice(4)));
 	}else{
 		return getElementsByXPath(selector, doc);
 	}
@@ -1789,7 +1793,9 @@ function hrefInc(obj,doc,win){
 		var ilresult;
 		try{
 			ilresult=obj.isLast(doc,win,_cplink);
-		}catch(e){}
+		}catch(e){
+			debug("Error: getNextUrl hrefInc().", e);
+		}
 		if(ilresult)return;
 		return aStr+nbStr;
 	};
