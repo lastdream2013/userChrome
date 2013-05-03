@@ -1,21 +1,22 @@
 // ==UserScript==
 // @include        chrome://browser/content/browser.xul
 // @name           qrReaderOnline.uc.js
-// @version         0.13
+// @version         0.14
+// @note            20130501 minor fix
 // @note            20130425 zxing.org返回数据又插了东西……再改 
-// @note            20130412 zxing.org改版了一点，解析数据又有问题了，再修正……希望现在的解析方式能应付得更长久一些
 // @note            20130331 修正escapeHTML字符未转化的问题
 // @note            20130331 修正url判定正则表达式不准确
 // @author         lastdream2013
 // ==/UserScript==
 
 var qrReaderOnline={
-  unescapeHTML:function ( input ) {
+	unescapeHTML:function ( input ) {
     		return String(input)
     	  .replace(/&amp;/g, '&')
     	  .replace(/&quot;/g, '"')
     	  .replace(/&lt;/g, '<')
-    	  .replace(/&gt;/g, '>');
+    	  .replace(/&gt;/g, '>')
+		  .replace(/&apos;/g, '\'');
 },
 	
 	initialize:function(){
