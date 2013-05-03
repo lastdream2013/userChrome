@@ -5,9 +5,9 @@
 // @include        main
 // @author         ithinc &  lastdream2013
 // @charset        UTF-8
-// @version        20130502.1.1.2 updated by  lastdream2013 : minor fix
-// @version        20130416.1.1.1 delay load exefile, may speedup firefox startup 
+// @version        20130504.1.1.3 delay load exefile, may speedup firefox startup 
 // @version        20130414.1.1.0 updated by  lastdream2013 : support submenu
+// @version        20130402.1.0.1 modified by lastdream2013
 // @version        20091216.1.0.0 Final release
 // @version        20091215.0.0.2 Handle toolbar apps and menu apps separately
 // @version        20091212.0.0.1 Initial release
@@ -125,7 +125,7 @@ var gExternalAppbuttonMEx = {
            {name: 'about:support', command: "getBrowser().selectedTab = getBrowser().addTab ('about:support')", subdir: 'about' },
             
 
-            {name: '选项', command: "openPreferences();", image: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADE0lEQVQ4jaXMTUhqaQDG8RfufmZ2bYpDSYkfCzlConCyz4XaIUQPBKVtMsjVDEjQIsl4tbA61GRGC4PatIo+IMvoSOmx9JxFQYtcFCG0nbu9cN/0mUXM4sJlYJgH/ruHHyGEEEmSviwuLv7yX5Ik6QshhJBIJGI5OjrSVVX9WqlU/lJV9eu/9c/n+PhYj0QiFiKK4lq9Xsfa2hoSiQQopaCUYnl5GclkEpRSpFIppFIpUEqRSCSwurqKer0OURTXSDAYlHVdb5pMpu+dnZ0tk8nU6u7ubrW1tbU4jmtxHNdqb29vdXR0tCwWS6urq6tlMpm+a5rWDAaDMgkEArKu63C73WxoaAgOhwOCIIBSitnZWWxubmJqagozMzOwWCwYGBhAf38/0zQNgUBAJn6/X9Y0DYODg8xut2N+fh5LS0t4enrCw8MDKpUKyuUy0uk0KKXweDzo6+tjuq7/CLjdbuZyuZBIJPDx8YGXlxdks1nEYjHs7+/j7e0Nl5eX4Hkevb29rFarwe/3y2RsbEzWdR08z7OFhQU8Pj7i+fkZk5OT4DgORqMRVqsVlFJkMhns7OwgHo+zUqn0CYiiKN/f38PlcrHp6WlomoatrS1wHIdcLgdN0zAyMgJZlvH6+or393ecnJywWq0GURQ/gUqlAqfTydbX13F7e4tYLIaenh5omoZGo4F4PI5yuYxms4m9vT2Mj4+zarUKn88nE5/PJ9/d3cHhcLCJiQmoqorDw0MYjUZIkoRoNIq5uTk0Gg3kcjkIgoBwOMxKpdIn4PV610ulEmw2GwuFQkgmk6hWq9jd3YXT6YTBYMDKygpubm4QDochSRJOT0+Zoijwer3rxOPx/KmqanN4ePibwWBgoVCIbWxssIODA3Z2dsZkWWbRaJTJsszS6TRzuVzMarV+U1W1OTo6ukkEQfg9n8+jUCigUCigWCzi/Pwc+XweiqLg+voaiqLg6uoKxWIRiqLg4uIC+XwegiD8QQghv5rN5pjdbs/yPJ+x2WzbPM9v8zy/bbPZflbGbrdnzWZzjBDyG/m/+xsCyiIj0Yng5AAAAABJRU5ErkJggg==", subdir: 'firefox常用功能' },
+           {name: '选项', command: "openPreferences();", image: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADE0lEQVQ4jaXMTUhqaQDG8RfufmZ2bYpDSYkfCzlConCyz4XaIUQPBKVtMsjVDEjQIsl4tbA61GRGC4PatIo+IMvoSOmx9JxFQYtcFCG0nbu9cN/0mUXM4sJlYJgH/ruHHyGEEEmSviwuLv7yX5Ik6QshhJBIJGI5OjrSVVX9WqlU/lJV9eu/9c/n+PhYj0QiFiKK4lq9Xsfa2hoSiQQopaCUYnl5GclkEpRSpFIppFIpUEqRSCSwurqKer0OURTXSDAYlHVdb5pMpu+dnZ0tk8nU6u7ubrW1tbU4jmtxHNdqb29vdXR0tCwWS6urq6tlMpm+a5rWDAaDMgkEArKu63C73WxoaAgOhwOCIIBSitnZWWxubmJqagozMzOwWCwYGBhAf38/0zQNgUBAJn6/X9Y0DYODg8xut2N+fh5LS0t4enrCw8MDKpUKyuUy0uk0KKXweDzo6+tjuq7/CLjdbuZyuZBIJPDx8YGXlxdks1nEYjHs7+/j7e0Nl5eX4Hkevb29rFarwe/3y2RsbEzWdR08z7OFhQU8Pj7i+fkZk5OT4DgORqMRVqsVlFJkMhns7OwgHo+zUqn0CYiiKN/f38PlcrHp6WlomoatrS1wHIdcLgdN0zAyMgJZlvH6+or393ecnJywWq0GURQ/gUqlAqfTydbX13F7e4tYLIaenh5omoZGo4F4PI5yuYxms4m9vT2Mj4+zarUKn88nE5/PJ9/d3cHhcLCJiQmoqorDw0MYjUZIkoRoNIq5uTk0Gg3kcjkIgoBwOMxKpdIn4PV610ulEmw2GwuFQkgmk6hWq9jd3YXT6YTBYMDKygpubm4QDochSRJOT0+Zoijwer3rxOPx/KmqanN4ePibwWBgoVCIbWxssIODA3Z2dsZkWWbRaJTJsszS6TRzuVzMarV+U1W1OTo6ukkEQfg9n8+jUCigUCigWCzi/Pwc+XweiqLg+voaiqLg6uoKxWIRiqLg4uIC+XwegiD8QQghv5rN5pjdbs/yPJ+x2WzbPM9v8zy/bbPZflbGbrdnzWZzjBDyG/m/+xsCyiIj0Yng5AAAAABJRU5ErkJggg==", subdir: 'firefox常用功能' },
            {name: '书签管理', command: "PlacesCommandHook.showPlacesOrganizer('AllBookmarks');", image: "chrome://browser/skin/places/allBookmarks.png", subdir: 'firefox常用功能' },
            {name: '历史', command: "PlacesCommandHook.showPlacesOrganizer('History');",  image: "chrome://browser/content/abouthome/history.png", subdir: 'firefox常用功能' },
            {name: 'separator', subdir: 'firefox常用功能' },
@@ -135,167 +135,168 @@ var gExternalAppbuttonMEx = {
            {name: '下载管理', command: "BrowserDownloadsUI();", image: "chrome://browser/skin/places/downloads.png" },
            {name: '附加组件', command: "getBrowser().selectedTab = getBrowser().addTab ('about:addons')", image: "chrome://mozapps/skin/extensions/extensionGeneric-16.png"},
            {name: 'about:config', command: "getBrowser().selectedTab = getBrowser().addTab ('about:config')", image:  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABxElEQVQ4jZXQzYsScRzH8d/f16lTFCwRdOoSUYddtlrUaXTVEdR1xqfysLtUrC2EujNjbplPjIGtJIZB6YLMjqu105/w7tQhMB8+99f7C18hVpiiKGiaRjqdJplMsor5B6dSKWzbxnVdVFVdL6CqKuPxmMlkgmmaxOPx9QKapmHbNt1uF0VREEKISCRCOBxmd3d3eSyRSDAcDmk2m4RCIYLBIPl8nsFggCzLiwOyLBOLxej3+7TbbSqVCuVymVqtRqPRQJKk+QE5bSLnPhGNRrEsi06ng2VZtFot6vU61WoVn883Hz/TDLLmhOSJQ/j1N3q9HqVSiUAggCzLSJKE1+udjyXNIKs7VLq/KZ+5hI/HbGd6+P3+5c/yqQYp3eHdmcvL6pT900sK7V94Ds656/+4OOBN6CSLDuXPLocfpqjFC56bE45bP9nKjbjjNf8f2Eno7BUcjI7L4fspe4ULMrrDm8aMzRcjbnuMxde3ckP0zhX7p5fE3tqkTxzy9RmPsiM2dpZgIYS4r32n0L4iY0xIFh2O6jMeZkfceroCFkKIe4qF5+Cco9qMV9UZD1I/uPl4Rfx3G7LFdd9Xrj35wo3t9fAfyK1fDftrXK0AAAAASUVORK5CYII="},
-              {name: '错误控制台', command: "toJavaScriptConsole();", image: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAYAAABWzo5XAAADbklEQVQ4jZXUS09TCRTA8UPShMBi1i7mQ7hhNcQMPmaiqVFDDDHER4ghWmxa+6BXevuilIulra0tfV36flFoeYmYGF3wCQQLOt+AGb/EfxaC3erivzy/5CzOEREZmLHYjLZZ5dTmesEvNauczlhsRhEZEBExWByzp7tv3/HpqMfh52MOeyccHX+hd/KV3sk/Z33l6PgLh70TDj8f8+mox+7bd1gcs6ciYhARGTTbHXw8OKCx3qXV2aS9uc3G9i6dnTd0d/fo7u7R2XnDxvYu7c1tWp1NGutdPh4cYLY7EJFBEZEhk/U5++8/UG60qLba1Nc7NDe+o2vdLda6W7Q6mzQ3utTXO1RbbcqNFvvvP2CyPkdEhkREhqdnzGzt7ZMtVdCrdYr1JqVGi0qrTXVtneraOpVWm1KjRbHeRK/WyZYqbO3tMz1jRkSGRUSGp56YaG/tkMjqpPQimUKZXKlKvlxDr9TRK3Xy5Rq5UpVMoUxKL5LI6rS3dph6YupDDx9PU2tvEI6niKUyxNM5ElmdZG6VVL5AKl8gmVslkdWJp3PEUhnC8RS19gYPH0/3oclHU5TqTRbCMbRYgnA8SeT1CtFkmlgqQyyVIZpME3m9QjieRIslWAjHKNWbTD6a6kMT9x+wUqqgLmj4tWWC4SihyCsWo3G0WAItlmAxGicUeUUwHMWvLaMuaKyUKkzcf9CHxu9NEknrOD0B5gIh1KCGN/QSv7ZMYClCYCmCX1vGG3qJGtSYC4RwegJE0jrj9yb70O27EyzG01gVFYfqx+UL8iIQwh3UUBeWUBeWcAc1XgRCuHxBHKofq6KyGE9z++5EHzLeGWd+OcEzh4JVUbG7fTg9gR/gOeD0BLC7fVgVlWcOhfnlBMY7433o+s1b+JeiPLXYMTsUrC439jkvTtXHrMfPrMePU/Vhn/NidbkxOxSeWuz4l6Jcv3mrD129YWQ+Esdkc2J2KlgVN3a3B6fqw+UN4PIGvkNuD1bFjdmpYLI5mY/EuXrD+AMaunTtr//m/EGS+QLpfIHsaolcsYJerlGo1ClU6ujlGrlihexqiXS+QDJfYM4f5NK1v7+dn8jgxZGRydE/x76Njl1hdOzyT3aFP8Yu/3txZGTy/GgNIvKbiFwQkd9/sQtnswY5e0qGM3XobN+faehsxiAiA/8DDnCW2sYeE5QAAAAASUVORK5CYII=" },
+           {name: '错误控制台', command: "toJavaScriptConsole();", image: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAYAAABWzo5XAAADbklEQVQ4jZXUS09TCRTA8UPShMBi1i7mQ7hhNcQMPmaiqVFDDDHER4ghWmxa+6BXevuilIulra0tfV36flFoeYmYGF3wCQQLOt+AGb/EfxaC3erivzy/5CzOEREZmLHYjLZZ5dTmesEvNauczlhsRhEZEBExWByzp7tv3/HpqMfh52MOeyccHX+hd/KV3sk/Z33l6PgLh70TDj8f8+mox+7bd1gcs6ciYhARGTTbHXw8OKCx3qXV2aS9uc3G9i6dnTd0d/fo7u7R2XnDxvYu7c1tWp1NGutdPh4cYLY7EJFBEZEhk/U5++8/UG60qLba1Nc7NDe+o2vdLda6W7Q6mzQ3utTXO1RbbcqNFvvvP2CyPkdEhkREhqdnzGzt7ZMtVdCrdYr1JqVGi0qrTXVtneraOpVWm1KjRbHeRK/WyZYqbO3tMz1jRkSGRUSGp56YaG/tkMjqpPQimUKZXKlKvlxDr9TRK3Xy5Rq5UpVMoUxKL5LI6rS3dph6YupDDx9PU2tvEI6niKUyxNM5ElmdZG6VVL5AKl8gmVslkdWJp3PEUhnC8RS19gYPH0/3oclHU5TqTRbCMbRYgnA8SeT1CtFkmlgqQyyVIZpME3m9QjieRIslWAjHKNWbTD6a6kMT9x+wUqqgLmj4tWWC4SihyCsWo3G0WAItlmAxGicUeUUwHMWvLaMuaKyUKkzcf9CHxu9NEknrOD0B5gIh1KCGN/QSv7ZMYClCYCmCX1vGG3qJGtSYC4RwegJE0jrj9yb70O27EyzG01gVFYfqx+UL8iIQwh3UUBeWUBeWcAc1XgRCuHxBHKofq6KyGE9z++5EHzLeGWd+OcEzh4JVUbG7fTg9gR/gOeD0BLC7fVgVlWcOhfnlBMY7433o+s1b+JeiPLXYMTsUrC439jkvTtXHrMfPrMePU/Vhn/NidbkxOxSeWuz4l6Jcv3mrD129YWQ+Esdkc2J2KlgVN3a3B6fqw+UN4PIGvkNuD1bFjdmpYLI5mY/EuXrD+AMaunTtr//m/EGS+QLpfIHsaolcsYJerlGo1ClU6ujlGrlihexqiXS+QDJfYM4f5NK1v7+dn8jgxZGRydE/x76Njl1hdOzyT3aFP8Yu/3txZGTy/GgNIvKbiFwQkd9/sQtnswY5e0qGM3XobN+faehsxiAiA/8DDnCW2sYeE5QAAAAASUVORK5CYII=" },
            	   
 	],
       },
-	_externalAppPopup: null,
-	_isready: false,
-      init: function() {
-        this.handleRelativePath(this.toolbar.apps);
-        const XULNS = 'http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul';
-        var navigator = document.getElementById("navigator-toolbox");
-		if (!navigator || navigator.palette.id !== "BrowserToolbarPalette") return;
-		var ExternalAppBtn = document.createElementNS (XULNS, 'toolbarbutton');
+	_externalAppPopup : null,
+	_isready : false,
+	init : function () {
+		this.handleRelativePath(this.toolbar.apps);
+		const XULNS = 'http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul';
+		var navigator = document.getElementById("navigator-toolbox");
+		if (!navigator || navigator.palette.id !== "BrowserToolbarPalette")
+			return;
+		var ExternalAppBtn = document.createElementNS(XULNS, 'toolbarbutton');
 		ExternalAppBtn.id = "ExternalAppbtnMEx";
-		ExternalAppBtn.setAttribute("label","扩展程序按钮");
-	        ExternalAppBtn.setAttribute("onclick", "event.preventDefault();event.stopPropagation();");
-		ExternalAppBtn.setAttribute("tooltiptext","扩展程序按钮,可以自定义扩展程序和功能");
+		ExternalAppBtn.setAttribute("label", "扩展程序按钮");
+		ExternalAppBtn.setAttribute("onclick", "event.preventDefault();event.stopPropagation();");
+		ExternalAppBtn.setAttribute("tooltiptext", "扩展程序按钮,可以自定义扩展程序和功能");
 		ExternalAppBtn.setAttribute("class", "toolbarbutton-1 chromeclass-toolbar-additional");
 		ExternalAppBtn.setAttribute("type", "menu");
 		ExternalAppBtn.setAttribute("removable", "true");
-	        ExternalAppBtn.style.listStyleImage = "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAE+UlEQVQ4jY2VW0yTBxiG/2RzZplXm3fLXJZtmRssiyOQiRAqh0k5n8oQUFCglALlaGuRYssoFgoFqwLlYJVhW36UwmBCwYIi1NZyKHLQIogoUo6CgjJk+u5uiZvGPfffc/c+H0G8A7qNzRYPZ+fPk5PTd3N4PCs+n//Bu27eiFQq3VVy+iS37pKirt9kMC8uza1MTIxbSktL234VCGL4fP62/yUSnRZZnTyZXXFFc/ah5VEXNtZNwMsxAHMANrG29hzduhsv2FxuW1wcK766uvqjt8oSGAxKEitq5I/GPKyvqLA+X4Hl6RI8GCvCyFA5evQt0PWNwTy1hqa2PoRGpiAgOKaRJMkP/yOLiYixCg8PMWUdOwhjjwCTvUcxrk/EvYFM3Ovjobf9CERiNiKSy8DgtYArMSCIXond7mkIOXhESKFQ3n9NyIyOPvFLsDuEAl+01O1HvzYCN65GwGRIxZ1BFmaN+aitkSCQJccPfo2w9mmCfQiJPQGn4OTHWbJzC99PEMQWgiAIwt3b3dbX1+dheJgLsrNsoL3oDcO1QOh60tHffwpDg4Uw6ypxuYPEGXU3TpNd4JdfRk6VAtzi8/hx3wm4+DCN9hR/a4IgCCLAL6jg532uOBCxB9KiXRi6FoSBPgr0A2Ew3GJheEQMbZsC5epOeB1dhWPsfXzlO4gDWa04lKXCN5R8OHnGrbp50nwIf3+XT7y8vPtcPZwQHP0tSmS2MHdHw3wrBnfMabg7dRzTFhK/a0iUXByBd/o6bA5a8LHzKBjCZtiFktjpJISTezSo3kEcIioqys51n+sTF397eDK/AP/cT7g6zMfoQgMmHrfDMC6F1liB5k4FzqmmEcl4Ct+IRdj6jSI5T42dbnJYOaTCwTkA7u4ehQSV6u3sE+T5nBrpCI9Ma+Rr2JCakqBcSUPTBg9Dfzaje6gVZ0qL0FKnR9PFIdRc0KOujUTuqbOwtpXAzvEwnF294OnpKSFSU1PtWRnMVd/UvQgodoCgIw3RGgok9+KgeJYEzWMRtHoZhm82ou/SdfSUdeFqmRYd8nZkRFbA2SYZTnsC4edHQwIrIZvg8Dk75PXl9+NKQhCvCAdLsx/equ/A6fCHaooJzV0R6uvDcb9eDMsFJZaar+FRTSvmNc0g0wsQ73IYIV7BEApzUS49E0ZQqdStihZ5s0yXh7xWAXhXWGBr6BB2xqHCEI2GDhYGLkdhriwF85xMzDKy8ZBxHI8qxdCmZKIsngN1tQKjt0fHcnJyPiMIgiCSshiB2kn1isxQAHpNEMJq9iJZRYW0IRbtbSlYbErE44xDWE1NxEJkLGYzEjCZlw49OwMmFYmXz9Y2ewd6Q/9ZCTWRulXZeVZsXG5HvpaN4OLdCBV+iSPHdqAuxwGzjWwsnIjHTOwhTCVEwVLFxYN8AWZrSbyamcHs9HQjSZKvZ01SKvlUb77ePvPXBNRGObh5/kinf49ir6/Rmx6CGWUWLHIu5i4JsKwUY6OWBMbHsTE//6K+vt7tjbWRyWTb27taixaeTm/OWYahb5LjSi4XkwUiLBVKsCYrwcZv54HGJmDwFiZ1PVMNygspNBrtvbcmjMlkbhMX5sbeHuozbSxaNjH9ABgzAyYTYOzFq5tGLOt0T3oUKmWVSOTwVtG/odPp2wUZbBdllTyjQ62u7KitPa+prilXFBYek/J4jjQa7Y2v4G+ozUJn/LKH5wAAAABJRU5ErkJggg==)";
+		ExternalAppBtn.style.listStyleImage = "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAE+UlEQVQ4jY2VW0yTBxiG/2RzZplXm3fLXJZtmRssiyOQiRAqh0k5n8oQUFCglALlaGuRYssoFgoFqwLlYJVhW36UwmBCwYIi1NZyKHLQIogoUo6CgjJk+u5uiZvGPfffc/c+H0G8A7qNzRYPZ+fPk5PTd3N4PCs+n//Bu27eiFQq3VVy+iS37pKirt9kMC8uza1MTIxbSktL234VCGL4fP62/yUSnRZZnTyZXXFFc/ah5VEXNtZNwMsxAHMANrG29hzduhsv2FxuW1wcK766uvqjt8oSGAxKEitq5I/GPKyvqLA+X4Hl6RI8GCvCyFA5evQt0PWNwTy1hqa2PoRGpiAgOKaRJMkP/yOLiYixCg8PMWUdOwhjjwCTvUcxrk/EvYFM3Ovjobf9CERiNiKSy8DgtYArMSCIXond7mkIOXhESKFQ3n9NyIyOPvFLsDuEAl+01O1HvzYCN65GwGRIxZ1BFmaN+aitkSCQJccPfo2w9mmCfQiJPQGn4OTHWbJzC99PEMQWgiAIwt3b3dbX1+dheJgLsrNsoL3oDcO1QOh60tHffwpDg4Uw6ypxuYPEGXU3TpNd4JdfRk6VAtzi8/hx3wm4+DCN9hR/a4IgCCLAL6jg532uOBCxB9KiXRi6FoSBPgr0A2Ew3GJheEQMbZsC5epOeB1dhWPsfXzlO4gDWa04lKXCN5R8OHnGrbp50nwIf3+XT7y8vPtcPZwQHP0tSmS2MHdHw3wrBnfMabg7dRzTFhK/a0iUXByBd/o6bA5a8LHzKBjCZtiFktjpJISTezSo3kEcIioqys51n+sTF397eDK/AP/cT7g6zMfoQgMmHrfDMC6F1liB5k4FzqmmEcl4Ct+IRdj6jSI5T42dbnJYOaTCwTkA7u4ehQSV6u3sE+T5nBrpCI9Ma+Rr2JCakqBcSUPTBg9Dfzaje6gVZ0qL0FKnR9PFIdRc0KOujUTuqbOwtpXAzvEwnF294OnpKSFSU1PtWRnMVd/UvQgodoCgIw3RGgok9+KgeJYEzWMRtHoZhm82ou/SdfSUdeFqmRYd8nZkRFbA2SYZTnsC4edHQwIrIZvg8Dk75PXl9+NKQhCvCAdLsx/equ/A6fCHaooJzV0R6uvDcb9eDMsFJZaar+FRTSvmNc0g0wsQ73IYIV7BEApzUS49E0ZQqdStihZ5s0yXh7xWAXhXWGBr6BB2xqHCEI2GDhYGLkdhriwF85xMzDKy8ZBxHI8qxdCmZKIsngN1tQKjt0fHcnJyPiMIgiCSshiB2kn1isxQAHpNEMJq9iJZRYW0IRbtbSlYbErE44xDWE1NxEJkLGYzEjCZlw49OwMmFYmXz9Y2ewd6Q/9ZCTWRulXZeVZsXG5HvpaN4OLdCBV+iSPHdqAuxwGzjWwsnIjHTOwhTCVEwVLFxYN8AWZrSbyamcHs9HQjSZKvZ01SKvlUb77ePvPXBNRGObh5/kinf49ir6/Rmx6CGWUWLHIu5i4JsKwUY6OWBMbHsTE//6K+vt7tjbWRyWTb27taixaeTm/OWYahb5LjSi4XkwUiLBVKsCYrwcZv54HGJmDwFiZ1PVMNygspNBrtvbcmjMlkbhMX5sbeHuozbSxaNjH9ABgzAyYTYOzFq5tGLOt0T3oUKmWVSOTwVtG/odPp2wUZbBdllTyjQ62u7KitPa+prilXFBYek/J4jjQa7Y2v4G+ozUJn/LKH5wAAAABJRU5ErkJggg==)";
 		navigator.palette.appendChild(ExternalAppBtn);
 
-		var ExternalAppPopup = document.createElementNS (XULNS, 'menupopup');
-	   ExternalAppPopup.setAttribute('onpopupshowing','event.stopPropagation();gExternalAppbuttonMEx.onpopupshowing();');
-	   this._externalAppPopup = ExternalAppPopup;
-   	ExternalAppBtn.appendChild(ExternalAppPopup); 
+		var ExternalAppPopup = document.createElementNS(XULNS, 'menupopup');
+		ExternalAppPopup.setAttribute('onpopupshowing', 'event.stopPropagation();gExternalAppbuttonMEx.onpopupshowing();');
+		this._externalAppPopup = ExternalAppPopup;
+		ExternalAppBtn.appendChild(ExternalAppPopup);
+		setTimeout(function () { //延时加载菜单，不对启动造成影响，也不影响第一次打开菜单时的响应速度
+			gExternalAppbuttonMEx.loadSubMenu();
+		}, 2500);
 
-      },
-
-	onpopupshowing: function() {	   
- 	   if (this._isready ) return;
- 	   if ( this._externalAppPopup == null ) return;
- 	   var ExternalAppPopup = this._externalAppPopup;
-         for (var i=0; i<this.toolbar.subdirs.length; i++) {
-          if (this.toolbar.subdirs[i].name == 'separator') {
-            ExternalAppPopup.appendChild(document.createElement('menuseparator'));
-          }
-          else {
-            var subDirItem = ExternalAppPopup.appendChild(document.createElement('menu'));
-            var subDirItemPopup = subDirItem.appendChild(document.createElement('menupopup'));
-            subDirItem.setAttribute('class', 'menu-iconic');
-            subDirItem.setAttribute('label', this.toolbar.subdirs[i].name);
-            subDirItem.setAttribute('image', this.toolbar.subdirs[i].image);
-            gExternalAppbuttonMEx.subdirPopupHash[this.toolbar.subdirs[i].name] = subDirItemPopup;
-            gExternalAppbuttonMEx.subdirMenuHash[this.toolbar.subdirs[i].name] = subDirItem;
-          }
-        }
- 
- 
-        for (var i=0; i<this.toolbar.apps.length; i++) {
-        	var appsItems;
-          if (this.toolbar.apps[i].name == 'separator') {
-          	  appsItems = document.createElement('menuseparator');
-          }
-          else {
-            appsItems = document.createElement('menuitem');
-            appsItems.setAttribute('class', 'menuitem-iconic');
-            appsItems.setAttribute('label', this.toolbar.apps[i].name);
-            appsItems.setAttribute('image', 'moz-icon:file://' + this.toolbar.apps[i].path + '?size=16;');
-            appsItems.setAttribute('oncommand', "gExternalAppbuttonMEx.exec(this.path, this.args);");
-            appsItems.setAttribute('tooltiptext', this.toolbar.apps[i].name);
-            appsItems.path = this.toolbar.apps[i].path;
-            appsItems.args = this.toolbar.apps[i].args;
-          }
-	  if (  this.toolbar.apps[i].subdir && gExternalAppbuttonMEx.subdirPopupHash[this.toolbar.apps[i].subdir]  )
-               gExternalAppbuttonMEx.subdirPopupHash[this.toolbar.apps[i].subdir].appendChild(appsItems);
-         else
-          	  ExternalAppPopup.appendChild(appsItems);
-        }
-
-        for (var i=0; i<this.toolbar.configs.length; i++) {
-        	var configItems;
-          if (this.toolbar.configs[i].name == 'separator') {
-            configItems = document.createElement('menuseparator');
-          }
-          else {
-            configItems= ExternalAppPopup.appendChild(document.createElement('menuitem'));
-            configItems.setAttribute('class', 'menuitem-iconic');
-            configItems.setAttribute('label', this.toolbar.configs[i].name);
-            configItems.setAttribute('image',this.toolbar.configs[i].image);
-            configItems.setAttribute('oncommand', this.toolbar.configs[i].command );
-            configItems.setAttribute('tooltiptext', this.toolbar.configs[i].name);
-          }
-	    if (  this.toolbar.configs[i].subdir && gExternalAppbuttonMEx.subdirPopupHash[this.toolbar.configs[i].subdir]  )
-               gExternalAppbuttonMEx.subdirPopupHash[this.toolbar.configs[i].subdir].appendChild(configItems);
-           else
-          	   ExternalAppPopup.appendChild(configItems);
-        }
-
-	if ( this.autohideEmptySubDirs )
-	{
-		for (let [name, popup] in Iterator(gExternalAppbuttonMEx.subdirPopupHash )) {
-			//Application.console.log("popup: " + popup);
-			if ( popup.hasChildNodes() ) {
-			   continue;
-			}
-			else {
-			    gExternalAppbuttonMEx.subdirMenuHash[name].setAttribute("hidden", "true");	
-			} 
-		}
-	}
-
-	if ( this.moveSubDirstoBottom )
-	{
-		let i = ExternalAppPopup.childNodes.length;
-		while ( ExternalAppPopup.firstChild.getAttribute('class') != 'menuitem-iconic' && i-- != 0 )
-		{
-			ExternalAppPopup.appendChild(ExternalAppPopup.firstChild);
-		}
-	}
-	this._isready = true;
 	},
 
-      handleRelativePath: function(apps) {
-        for (var i=0; i<apps.length; i++) {
-          if (apps[i].path) {
-            apps[i].path = apps[i].path.replace(/\//g, '\\').toLocaleLowerCase();	
-            var ffdir = Components.classes['@mozilla.org/file/directory_service;1'].getService(Components.interfaces.nsIProperties).get("ProfD", Components.interfaces.nsILocalFile).path;
- 		 if (/^(\\)/.test(apps[i].path)) {
-              apps[i].path = ffdir + apps[i].path;
-            }
-          }
-        }
-      },
+	loadSubMenu : function () {
+		if (this._isready)
+			return;
+		if (this._externalAppPopup == null)
+			return;
 
-      exec: function(path, args) {
-            args = args || [];
-            var args_t=args.slice(0);
-        for (var i=0; i<args_t.length; i++) {
-          args_t[i] = args_t[i].replace(/%u/g, gBrowser.currentURI.spec);
-        }
+		var ExternalAppPopup = this._externalAppPopup;
+		for (var i = 0; i < this.toolbar.subdirs.length; i++) {
+			if (this.toolbar.subdirs[i].name == 'separator') {
+				ExternalAppPopup.appendChild(document.createElement('menuseparator'));
+			} else {
+				var subDirItem = ExternalAppPopup.appendChild(document.createElement('menu'));
+				var subDirItemPopup = subDirItem.appendChild(document.createElement('menupopup'));
+				subDirItem.setAttribute('class', 'menu-iconic');
+				subDirItem.setAttribute('label', this.toolbar.subdirs[i].name);
+				subDirItem.setAttribute('image', this.toolbar.subdirs[i].image);
+				gExternalAppbuttonMEx.subdirPopupHash[this.toolbar.subdirs[i].name] = subDirItemPopup;
+				gExternalAppbuttonMEx.subdirMenuHash[this.toolbar.subdirs[i].name] = subDirItem;
+			}
+		}
 
-        var file = Cc['@mozilla.org/file/local;1'].createInstance(Ci.nsILocalFile);
-        file.initWithPath(path);
-        if (!file.exists()) {
-          Cu.reportError('File Not Found: ' + path);
-          return;
-        }
+		for (var i = 0; i < this.toolbar.apps.length; i++) {
+			var appsItems;
+			if (this.toolbar.apps[i].name == 'separator') {
+				appsItems = document.createElement('menuseparator');
+			} else {
+				appsItems = document.createElement('menuitem');
+				appsItems.setAttribute('class', 'menuitem-iconic');
+				appsItems.setAttribute('label', this.toolbar.apps[i].name);
+				appsItems.setAttribute('image', 'moz-icon:file://' + this.toolbar.apps[i].path + '?size=16;');
+				appsItems.setAttribute('oncommand', "gExternalAppbuttonMEx.exec(this.path, this.args);");
+				appsItems.setAttribute('tooltiptext', this.toolbar.apps[i].name);
+				appsItems.path = this.toolbar.apps[i].path;
+				appsItems.args = this.toolbar.apps[i].args;
+			}
+			if (this.toolbar.apps[i].subdir && gExternalAppbuttonMEx.subdirPopupHash[this.toolbar.apps[i].subdir])
+				gExternalAppbuttonMEx.subdirPopupHash[this.toolbar.apps[i].subdir].appendChild(appsItems);
+			else
+				ExternalAppPopup.appendChild(appsItems);
+		}
 
-        if (!file.isExecutable()) {
-          file.launch();
-        }
-        else {
-          var process = Cc['@mozilla.org/process/util;1'].createInstance(Ci.nsIProcess);
-          process.init(file);
-          process.run(false, args_t, args_t.length);
-        }
-      },
-    };
+		for (var i = 0; i < this.toolbar.configs.length; i++) {
+			var configItems;
+			if (this.toolbar.configs[i].name == 'separator') {
+				configItems = document.createElement('menuseparator');
+			} else {
+				configItems = ExternalAppPopup.appendChild(document.createElement('menuitem'));
+				configItems.setAttribute('class', 'menuitem-iconic');
+				configItems.setAttribute('label', this.toolbar.configs[i].name);
+				configItems.setAttribute('image', this.toolbar.configs[i].image);
+				configItems.setAttribute('oncommand', this.toolbar.configs[i].command);
+				configItems.setAttribute('tooltiptext', this.toolbar.configs[i].name);
+			}
+			if (this.toolbar.configs[i].subdir && gExternalAppbuttonMEx.subdirPopupHash[this.toolbar.configs[i].subdir])
+				gExternalAppbuttonMEx.subdirPopupHash[this.toolbar.configs[i].subdir].appendChild(configItems);
+			else
+				ExternalAppPopup.appendChild(configItems);
+		}
 
-    	function updateToolbar() {
-        var toolbars = document.querySelectorAll("toolbar");
-        Array.slice(toolbars).forEach(function (toolbar) {
-            var currentset = toolbar.getAttribute("currentset");
-            if (currentset.split(",").indexOf("ExternalAppbtnMEx") < 0) return;
-            toolbar.currentSet = currentset;
-            try {
-                BrowserToolboxCustomizeDone(true);
-            } catch (ex) {
-            }
-       });
-    }
-    gExternalAppbuttonMEx.init();
-    updateToolbar();
+		if (this.autohideEmptySubDirs) {
+			for (let[name, popup]in Iterator(gExternalAppbuttonMEx.subdirPopupHash)) {
+				if (popup.hasChildNodes()) {
+					continue;
+				} else {
+					gExternalAppbuttonMEx.subdirMenuHash[name].setAttribute("hidden", "true");
+				}
+			}
+		}
+
+		if (this.moveSubDirstoBottom) {
+			let i = ExternalAppPopup.childNodes.length;
+			while (ExternalAppPopup.firstChild.getAttribute('class') != 'menuitem-iconic' && i-- != 0) {
+				ExternalAppPopup.appendChild(ExternalAppPopup.firstChild);
+			}
+		}
+		this._isready = true;
+	},
+	onpopupshowing : function () {
+		if (!this._isready)
+			this.loadSubMenu();
+	},
+
+	handleRelativePath : function (apps) {
+		for (var i = 0; i < apps.length; i++) {
+			if (apps[i].path) {
+				apps[i].path = apps[i].path.replace(/\//g, '\\').toLocaleLowerCase();
+				var ffdir = Components.classes['@mozilla.org/file/directory_service;1'].getService(Components.interfaces.nsIProperties).get("ProfD", Components.interfaces.nsILocalFile).path;
+				if (/^(\\)/.test(apps[i].path)) {
+					apps[i].path = ffdir + apps[i].path;
+				}
+			}
+		}
+	},
+
+	exec : function (path, args) {
+		args = args || [];
+		var args_t = args.slice(0);
+		for (var i = 0; i < args_t.length; i++) {
+			args_t[i] = args_t[i].replace(/%u/g, gBrowser.currentURI.spec);
+		}
+
+		var file = Cc['@mozilla.org/file/local;1'].createInstance(Ci.nsILocalFile);
+		file.initWithPath(path);
+		if (!file.exists()) {
+			Cu.reportError('File Not Found: ' + path);
+			return;
+		}
+
+		if (!file.isExecutable()) {
+			file.launch();
+		} else {
+			var process = Cc['@mozilla.org/process/util;1'].createInstance(Ci.nsIProcess);
+			process.init(file);
+			process.run(false, args_t, args_t.length);
+		}
+	},
+};
+
+	function updateToolbar() {
+		var toolbars = document.querySelectorAll("toolbar");
+		Array.slice(toolbars).forEach(function (toolbar) {
+			var currentset = toolbar.getAttribute("currentset");
+			if (currentset.split(",").indexOf("ExternalAppbtnMEx") < 0)
+				return;
+			toolbar.currentSet = currentset;
+			try {
+				BrowserToolboxCustomizeDone(true);
+			} catch (ex) {}
+		});
+	}
+	gExternalAppbuttonMEx.init();
+	updateToolbar();
