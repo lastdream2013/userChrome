@@ -267,8 +267,7 @@ var gExternalAppbuttonEx = {
 	},
 	onpopupshowing : function () {
 		if (!this._isready)
-			if (!this._isready)
-				this.loadSubMenu();
+			this.loadSubMenu();
 	},
 
 	handleRelativePath : function (apps) {
