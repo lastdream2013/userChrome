@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name           externalASubMenu.uc.js
+// @name           externalSubMenu.uc.js
 // @description    多功能左键菜单，可以把小书签，鼠标手势等都放进去
 // @include        main
 // @author         lastdream2013
