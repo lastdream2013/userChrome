@@ -3,15 +3,15 @@
 
 // 排除列表
 var EXCLUDE = [
-  'https://mail.google.com/*',
-	'http://www.google.co.jp/reader/*',
-	'http://b.hatena.ne.jp/*',
-	'http://www.livedoor.com/*',
-	'http://reader.livedoor.com/*',
-	'http://fastladder.com/*',
-	'http://**mail.yahoo.co.jp/*',
-	'http://maps.google.co.jp/*', 
-	'*/archives/*'
+	'https://mail.google.com/*'
+	,'http://www.google.co.jp/reader/*'
+	,'http://b.hatena.ne.jp/*'
+	,'http://www.livedoor.com/*'
+	,'http://reader.livedoor.com/*'
+	,'http://fastladder.com/*'
+	,'http://**mail.yahoo.co.jp/*'
+	,'http://maps.google.co.jp/*'
+	,'*/archives/*'
 ];
 
 // 自定义站点，优先级最高
@@ -55,7 +55,6 @@ var MY_SITEINFO = [
 		url : '^http://f\\.ppxclub\\.com/.*',
 		nextLink : '//a[@class="nxt"]',
 		pageElement : '//div[@class="pl bm"] | id("threadlist")/div',
-		insertBefore : '',
 		exampleUrl : 'http://f.ppxclub.com/147006-1-2'
 	},
 	{
@@ -99,6 +98,12 @@ var MY_SITEINFO = [
 		nextLink : '//a[@class="next"]',
 		pageElement : '//div[@id="content"]',
 		exampleUrl : 'http://www.65052424.com/page/7',
+	},
+	{
+		siteName : 'OperaChina',
+		url : /http:\/\/(?:bbs\.operachina\.com|oc\.ls\.tl)/i,
+		nextLink : 'auto;',
+		pageElement : '//table | //article[@class="post blue"]'
 	},
 ];
 
