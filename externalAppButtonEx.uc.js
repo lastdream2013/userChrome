@@ -5,9 +5,9 @@
 // @include        main
 // @author         ithinc &  lastdream2013
 // @charset        UTF-8
-// @version        20130502.1.1.2 updated by  lastdream2013 : minor fix
-// @version        20130416.1.1.1 delay load exefile, may speedup firefox startup 
+// @version        20130504.1.1.3 delay load exefile, may speedup firefox startup  
 // @version        20130414.1.1.0 updated by  lastdream2013 : support submenu
+// @version        20130402.1.0.1 modified by lastdream2013
 // @version        20091216.1.0.0 Final release
 // @version        20091215.0.0.2 Handle toolbar apps and menu apps separately
 // @version        20091212.0.0.1 Initial release
@@ -16,6 +16,7 @@
 var gExternalAppbuttonEx = {
 	autohideEmptySubDirs: true,  //自动隐藏没有一个子项目的子目录菜单
 	moveSubDirstoBottom: false,  //把主菜单下的子目录移动到最下面
+	insertafter: 'urlbar-icons',  ////urlbar-icons  status-bar addon-bar searchbar TabsToolbar alltabs-button go-button
       subdirPopupHash: [],
       subdirMenuHash: [],
       toolbar: {
@@ -57,7 +58,7 @@ var gExternalAppbuttonEx = {
             {name: 'PDFXCview', path: 'E:\\software\\PDF Viewer\\PDFXCview.exe', subdir: '常用工具'},
 
             {name: 'Goagent', path: 'E:\\software\\ProxyTools\\goagent\\local\\goagent.exe', subdir: '网络工具'},
-             {name: 'opera', path: 'E:\\software\\Opera\\opera.exe', args: ['%u'],  subdir: '网络工具'},
+            {name: 'opera', path: 'E:\\software\\Opera\\opera.exe', args: ['%u'],  subdir: '网络工具'},
             {name: 'Becky!', path: 'E:\\software\\Becky!\\B2.exe', subdir: '网络工具'},
             {name: 'QQ', path: 'E:\\software\\QQ2013\\Bin\\QQ.exe', subdir: '网络工具'},
             {name: 'AliIM', path: 'E:\\software\\AliWangWang\\AliIM.exe', subdir: '网络工具'},
@@ -125,7 +126,7 @@ var gExternalAppbuttonEx = {
            {name: 'about:support', command: "getBrowser().selectedTab = getBrowser().addTab ('about:support')", subdir: 'about' },
             
 
-            {name: '选项', command: "openPreferences();", image: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADE0lEQVQ4jaXMTUhqaQDG8RfufmZ2bYpDSYkfCzlConCyz4XaIUQPBKVtMsjVDEjQIsl4tbA61GRGC4PatIo+IMvoSOmx9JxFQYtcFCG0nbu9cN/0mUXM4sJlYJgH/ruHHyGEEEmSviwuLv7yX5Ik6QshhJBIJGI5OjrSVVX9WqlU/lJV9eu/9c/n+PhYj0QiFiKK4lq9Xsfa2hoSiQQopaCUYnl5GclkEpRSpFIppFIpUEqRSCSwurqKer0OURTXSDAYlHVdb5pMpu+dnZ0tk8nU6u7ubrW1tbU4jmtxHNdqb29vdXR0tCwWS6urq6tlMpm+a5rWDAaDMgkEArKu63C73WxoaAgOhwOCIIBSitnZWWxubmJqagozMzOwWCwYGBhAf38/0zQNgUBAJn6/X9Y0DYODg8xut2N+fh5LS0t4enrCw8MDKpUKyuUy0uk0KKXweDzo6+tjuq7/CLjdbuZyuZBIJPDx8YGXlxdks1nEYjHs7+/j7e0Nl5eX4Hkevb29rFarwe/3y2RsbEzWdR08z7OFhQU8Pj7i+fkZk5OT4DgORqMRVqsVlFJkMhns7OwgHo+zUqn0CYiiKN/f38PlcrHp6WlomoatrS1wHIdcLgdN0zAyMgJZlvH6+or393ecnJywWq0GURQ/gUqlAqfTydbX13F7e4tYLIaenh5omoZGo4F4PI5yuYxms4m9vT2Mj4+zarUKn88nE5/PJ9/d3cHhcLCJiQmoqorDw0MYjUZIkoRoNIq5uTk0Gg3kcjkIgoBwOMxKpdIn4PV610ulEmw2GwuFQkgmk6hWq9jd3YXT6YTBYMDKygpubm4QDochSRJOT0+Zoijwer3rxOPx/KmqanN4ePibwWBgoVCIbWxssIODA3Z2dsZkWWbRaJTJsszS6TRzuVzMarV+U1W1OTo6ukkEQfg9n8+jUCigUCigWCzi/Pwc+XweiqLg+voaiqLg6uoKxWIRiqLg4uIC+XwegiD8QQghv5rN5pjdbs/yPJ+x2WzbPM9v8zy/bbPZflbGbrdnzWZzjBDyG/m/+xsCyiIj0Yng5AAAAABJRU5ErkJggg==", subdir: 'firefox常用功能' },
+           {name: '选项', command: "openPreferences();", image: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADE0lEQVQ4jaXMTUhqaQDG8RfufmZ2bYpDSYkfCzlConCyz4XaIUQPBKVtMsjVDEjQIsl4tbA61GRGC4PatIo+IMvoSOmx9JxFQYtcFCG0nbu9cN/0mUXM4sJlYJgH/ruHHyGEEEmSviwuLv7yX5Ik6QshhJBIJGI5OjrSVVX9WqlU/lJV9eu/9c/n+PhYj0QiFiKK4lq9Xsfa2hoSiQQopaCUYnl5GclkEpRSpFIppFIpUEqRSCSwurqKer0OURTXSDAYlHVdb5pMpu+dnZ0tk8nU6u7ubrW1tbU4jmtxHNdqb29vdXR0tCwWS6urq6tlMpm+a5rWDAaDMgkEArKu63C73WxoaAgOhwOCIIBSitnZWWxubmJqagozMzOwWCwYGBhAf38/0zQNgUBAJn6/X9Y0DYODg8xut2N+fh5LS0t4enrCw8MDKpUKyuUy0uk0KKXweDzo6+tjuq7/CLjdbuZyuZBIJPDx8YGXlxdks1nEYjHs7+/j7e0Nl5eX4Hkevb29rFarwe/3y2RsbEzWdR08z7OFhQU8Pj7i+fkZk5OT4DgORqMRVqsVlFJkMhns7OwgHo+zUqn0CYiiKN/f38PlcrHp6WlomoatrS1wHIdcLgdN0zAyMgJZlvH6+or393ecnJywWq0GURQ/gUqlAqfTydbX13F7e4tYLIaenh5omoZGo4F4PI5yuYxms4m9vT2Mj4+zarUKn88nE5/PJ9/d3cHhcLCJiQmoqorDw0MYjUZIkoRoNIq5uTk0Gg3kcjkIgoBwOMxKpdIn4PV610ulEmw2GwuFQkgmk6hWq9jd3YXT6YTBYMDKygpubm4QDochSRJOT0+Zoijwer3rxOPx/KmqanN4ePibwWBgoVCIbWxssIODA3Z2dsZkWWbRaJTJsszS6TRzuVzMarV+U1W1OTo6ukkEQfg9n8+jUCigUCigWCzi/Pwc+XweiqLg+voaiqLg6uoKxWIRiqLg4uIC+XwegiD8QQghv5rN5pjdbs/yPJ+x2WzbPM9v8zy/bbPZflbGbrdnzWZzjBDyG/m/+xsCyiIj0Yng5AAAAABJRU5ErkJggg==", subdir: 'firefox常用功能' },
            {name: '书签管理', command: "PlacesCommandHook.showPlacesOrganizer('AllBookmarks');", image: "chrome://browser/skin/places/allBookmarks.png", subdir: 'firefox常用功能' },
            {name: '历史', command: "PlacesCommandHook.showPlacesOrganizer('History');",  image: "chrome://browser/content/abouthome/history.png", subdir: 'firefox常用功能' },
            {name: 'separator', subdir: 'firefox常用功能' },
@@ -135,178 +136,174 @@ var gExternalAppbuttonEx = {
            {name: '下载管理', command: "BrowserDownloadsUI();", image: "chrome://browser/skin/places/downloads.png" },
            {name: '附加组件', command: "getBrowser().selectedTab = getBrowser().addTab ('about:addons')", image: "chrome://mozapps/skin/extensions/extensionGeneric-16.png"},
            {name: 'about:config', command: "getBrowser().selectedTab = getBrowser().addTab ('about:config')", image:  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABxElEQVQ4jZXQzYsScRzH8d/f16lTFCwRdOoSUYddtlrUaXTVEdR1xqfysLtUrC2EujNjbplPjIGtJIZB6YLMjqu105/w7tQhMB8+99f7C18hVpiiKGiaRjqdJplMsor5B6dSKWzbxnVdVFVdL6CqKuPxmMlkgmmaxOPx9QKapmHbNt1uF0VREEKISCRCOBxmd3d3eSyRSDAcDmk2m4RCIYLBIPl8nsFggCzLiwOyLBOLxej3+7TbbSqVCuVymVqtRqPRQJKk+QE5bSLnPhGNRrEsi06ng2VZtFot6vU61WoVn883Hz/TDLLmhOSJQ/j1N3q9HqVSiUAggCzLSJKE1+udjyXNIKs7VLq/KZ+5hI/HbGd6+P3+5c/yqQYp3eHdmcvL6pT900sK7V94Ds656/+4OOBN6CSLDuXPLocfpqjFC56bE45bP9nKjbjjNf8f2Eno7BUcjI7L4fspe4ULMrrDm8aMzRcjbnuMxde3ckP0zhX7p5fE3tqkTxzy9RmPsiM2dpZgIYS4r32n0L4iY0xIFh2O6jMeZkfceroCFkKIe4qF5+Cco9qMV9UZD1I/uPl4Rfx3G7LFdd9Xrj35wo3t9fAfyK1fDftrXK0AAAAASUVORK5CYII="},
-              {name: '错误控制台', command: "toJavaScriptConsole();", image: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAYAAABWzo5XAAADbklEQVQ4jZXUS09TCRTA8UPShMBi1i7mQ7hhNcQMPmaiqVFDDDHER4ghWmxa+6BXevuilIulra0tfV36flFoeYmYGF3wCQQLOt+AGb/EfxaC3erivzy/5CzOEREZmLHYjLZZ5dTmesEvNauczlhsRhEZEBExWByzp7tv3/HpqMfh52MOeyccHX+hd/KV3sk/Z33l6PgLh70TDj8f8+mox+7bd1gcs6ciYhARGTTbHXw8OKCx3qXV2aS9uc3G9i6dnTd0d/fo7u7R2XnDxvYu7c1tWp1NGutdPh4cYLY7EJFBEZEhk/U5++8/UG60qLba1Nc7NDe+o2vdLda6W7Q6mzQ3utTXO1RbbcqNFvvvP2CyPkdEhkREhqdnzGzt7ZMtVdCrdYr1JqVGi0qrTXVtneraOpVWm1KjRbHeRK/WyZYqbO3tMz1jRkSGRUSGp56YaG/tkMjqpPQimUKZXKlKvlxDr9TRK3Xy5Rq5UpVMoUxKL5LI6rS3dph6YupDDx9PU2tvEI6niKUyxNM5ElmdZG6VVL5AKl8gmVslkdWJp3PEUhnC8RS19gYPH0/3oclHU5TqTRbCMbRYgnA8SeT1CtFkmlgqQyyVIZpME3m9QjieRIslWAjHKNWbTD6a6kMT9x+wUqqgLmj4tWWC4SihyCsWo3G0WAItlmAxGicUeUUwHMWvLaMuaKyUKkzcf9CHxu9NEknrOD0B5gIh1KCGN/QSv7ZMYClCYCmCX1vGG3qJGtSYC4RwegJE0jrj9yb70O27EyzG01gVFYfqx+UL8iIQwh3UUBeWUBeWcAc1XgRCuHxBHKofq6KyGE9z++5EHzLeGWd+OcEzh4JVUbG7fTg9gR/gOeD0BLC7fVgVlWcOhfnlBMY7433o+s1b+JeiPLXYMTsUrC439jkvTtXHrMfPrMePU/Vhn/NidbkxOxSeWuz4l6Jcv3mrD129YWQ+Esdkc2J2KlgVN3a3B6fqw+UN4PIGvkNuD1bFjdmpYLI5mY/EuXrD+AMaunTtr//m/EGS+QLpfIHsaolcsYJerlGo1ClU6ujlGrlihexqiXS+QDJfYM4f5NK1v7+dn8jgxZGRydE/x76Njl1hdOzyT3aFP8Yu/3txZGTy/GgNIvKbiFwQkd9/sQtnswY5e0qGM3XobN+faehsxiAiA/8DDnCW2sYeE5QAAAAASUVORK5CYII=" },
-           	   
-	],
-        insertafter: 'urlbar-icons'  ////urlbar-icons  status-bar addon-bar searchbar TabsToolbar alltabs-button go-button
-      },
-	_externalAppPopup: null,
-	_isready: false,
-      init: function() {
-        this.handleRelativePath(this.toolbar.apps);
-	  var navBar = document.getElementById(this.toolbar.insertafter); 
-	  if (!navBar) return;
+		   {name: '错误控制台', command: "toJavaScriptConsole();", image: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAYAAABWzo5XAAADbklEQVQ4jZXUS09TCRTA8UPShMBi1i7mQ7hhNcQMPmaiqVFDDDHER4ghWmxa+6BXevuilIulra0tfV36flFoeYmYGF3wCQQLOt+AGb/EfxaC3erivzy/5CzOEREZmLHYjLZZ5dTmesEvNauczlhsRhEZEBExWByzp7tv3/HpqMfh52MOeyccHX+hd/KV3sk/Z33l6PgLh70TDj8f8+mox+7bd1gcs6ciYhARGTTbHXw8OKCx3qXV2aS9uc3G9i6dnTd0d/fo7u7R2XnDxvYu7c1tWp1NGutdPh4cYLY7EJFBEZEhk/U5++8/UG60qLba1Nc7NDe+o2vdLda6W7Q6mzQ3utTXO1RbbcqNFvvvP2CyPkdEhkREhqdnzGzt7ZMtVdCrdYr1JqVGi0qrTXVtneraOpVWm1KjRbHeRK/WyZYqbO3tMz1jRkSGRUSGp56YaG/tkMjqpPQimUKZXKlKvlxDr9TRK3Xy5Rq5UpVMoUxKL5LI6rS3dph6YupDDx9PU2tvEI6niKUyxNM5ElmdZG6VVL5AKl8gmVslkdWJp3PEUhnC8RS19gYPH0/3oclHU5TqTRbCMbRYgnA8SeT1CtFkmlgqQyyVIZpME3m9QjieRIslWAjHKNWbTD6a6kMT9x+wUqqgLmj4tWWC4SihyCsWo3G0WAItlmAxGicUeUUwHMWvLaMuaKyUKkzcf9CHxu9NEknrOD0B5gIh1KCGN/QSv7ZMYClCYCmCX1vGG3qJGtSYC4RwegJE0jrj9yb70O27EyzG01gVFYfqx+UL8iIQwh3UUBeWUBeWcAc1XgRCuHxBHKofq6KyGE9z++5EHzLeGWd+OcEzh4JVUbG7fTg9gR/gOeD0BLC7fVgVlWcOhfnlBMY7433o+s1b+JeiPLXYMTsUrC439jkvTtXHrMfPrMePU/Vhn/NidbkxOxSeWuz4l6Jcv3mrD129YWQ+Esdkc2J2KlgVN3a3B6fqw+UN4PIGvkNuD1bFjdmpYLI5mY/EuXrD+AMaunTtr//m/EGS+QLpfIHsaolcsYJerlGo1ClU6ujlGrlihexqiXS+QDJfYM4f5NK1v7+dn8jgxZGRydE/x76Njl1hdOzyT3aFP8Yu/3txZGTy/GgNIvKbiFwQkd9/sQtnswY5e0qGM3XobN+faehsxiAiA/8DDnCW2sYeE5QAAAAASUVORK5CYII=" },
+		   
+		],
+	},
+	_externalAppPopup : null,
+	_isready : false,
+	init : function () {
+		this.handleRelativePath(this.toolbar.apps);
+		var navBar = document.getElementById(this.insertafter);
+		if (!navBar)
+			return;
 
-	  ExternalAppBtn = document.createElement("toolbarbutton");
-	  ExternalAppBtn.setAttribute("id", "ExternalAppBtn-btn");
-	  ExternalAppBtn.setAttribute("class", "toolbarbutton-1 chromeclass-toolbar-additional");
-	  ExternalAppBtn.setAttribute("label", "扩展程序按钮");
-	  ExternalAppBtn.setAttribute("onclick", "event.preventDefault();event.stopPropagation();");
+		ExternalAppBtn = document.createElement("toolbarbutton");
+		ExternalAppBtn.setAttribute("id", "ExternalAppBtn-btn");
+		ExternalAppBtn.setAttribute("class", "toolbarbutton-1 chromeclass-toolbar-additional");
+		ExternalAppBtn.setAttribute("label", "扩展程序按钮");
+		ExternalAppBtn.setAttribute("onclick", "event.preventDefault();event.stopPropagation();");
 
-	  ExternalAppBtn.setAttribute("tooltiptext", "扩展程序按钮,可以自定义扩展程序和功能");
-	  ExternalAppBtn.setAttribute("type", "menu");
-	  ExternalAppBtn.style.listStyleImage = "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADVUlEQVQ4jXWTW0xTBwCGT3xYzPa2bA/bmw/L4mUuGiGZGVAXSuu4pI1DgUJpUaQUUwdUkHOwHIqVMV2LB+wWWGm1FRWstCilFOlaS1uhdiBiEKhAIjertOkWB5Kxf28mGvme/+/t/whiE8qPZ39SVHKMrdEwxY2NTRyapj/cbPsW7e1tSVf02uZAoH8sHA692th4hfn5Z6+vGAz3FLXVYlpNf7ypXEVVkp03fl6LhXvw36oDqzE7Vl74sRIJIxpbw/XO2xAKi9zWa9bP33W3HBUflZOV+esP7ysx/4jE7KgcsyMUhvpJ1NQ3QKbsA6UJIF3YBPahsj+LC05++cYWiY7EZWbyIjUUB25LLoYHchH0VWJyjMSMvwFa/SWkSruQKLQhVdIBVuYFJHAk1u3bEz4jCIIgUtIyWni8FJyticf9vu/h92VgKEhj/KEGI14DjL0DaLg6gppWJyitGQdyddjPLV9L5mTlELIi0Rcc7sGlg/x4MEwcQn4hpsbEmHxKYnauFU5PFxStc9gjiuJT9gTSZA58ndGKeHYZuKmH1YQgK6vgAIeFZMFOKHVJCE7+gqlwByYW2jE42gZr/02oLq6AXxDDN5lTEFEW7PjuAuJY+WBzUzsJPv8HeVp2CriyvVDekeHSxEncXKXge92GgZEOmEw6WPVBXNYGcdlkx+laHb6KO4VvWXykp6ebCUWtQlx2TgKeKhGyHgHybQlgZiTojlTD4f8J057reHzNhcCvbgzrnKjLb0LyvizwMo6Aoig9QZLkbuMfLdHyTjF+7BVC2nMIqns5sIyS8NmlWNZV4WWdBksVDJZ/a4ZNroCysBTWLgsMLToBwRKxtv7ezZhvhQyo6JKgxHwYKlshbthOYM4iQYwuREwqw3KRFPONFfCepjDt8SIajTjf3Js+T+72zNgetQzXI5vZD6FiG5hTO/FUdxzhcyVYKC3EYmM5FpuViHTfwb/RaMztdie+dUVTh2nH9PLE6JOlAIzGM1ALEuAtzsFCfRWea5X4W88A9j6sh0Lo7baUvrcFdZN6n3fI5fwnurjx19gDrLucgN0B9N0FBn144RlcsBuNJE3TH2waVF5e3kd1dHVar9nMjLtctnGH4+6w+ZbVqtVWq+TyXe/u/wc9vB58jJA72wAAAABJRU5ErkJggg==)";
-          navBar.insertBefore(ExternalAppBtn, navBar.firstChild);
+		ExternalAppBtn.setAttribute("tooltiptext", "扩展程序按钮,可以自定义扩展程序和功能");
+		ExternalAppBtn.setAttribute("type", "menu");
+		ExternalAppBtn.style.listStyleImage = "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADVUlEQVQ4jXWTW0xTBwCGT3xYzPa2bA/bmw/L4mUuGiGZGVAXSuu4pI1DgUJpUaQUUwdUkHOwHIqVMV2LB+wWWGm1FRWstCilFOlaS1uhdiBiEKhAIjertOkWB5Kxf28mGvme/+/t/whiE8qPZ39SVHKMrdEwxY2NTRyapj/cbPsW7e1tSVf02uZAoH8sHA692th4hfn5Z6+vGAz3FLXVYlpNf7ypXEVVkp03fl6LhXvw36oDqzE7Vl74sRIJIxpbw/XO2xAKi9zWa9bP33W3HBUflZOV+esP7ysx/4jE7KgcsyMUhvpJ1NQ3QKbsA6UJIF3YBPahsj+LC05++cYWiY7EZWbyIjUUB25LLoYHchH0VWJyjMSMvwFa/SWkSruQKLQhVdIBVuYFJHAk1u3bEz4jCIIgUtIyWni8FJyticf9vu/h92VgKEhj/KEGI14DjL0DaLg6gppWJyitGQdyddjPLV9L5mTlELIi0Rcc7sGlg/x4MEwcQn4hpsbEmHxKYnauFU5PFxStc9gjiuJT9gTSZA58ndGKeHYZuKmH1YQgK6vgAIeFZMFOKHVJCE7+gqlwByYW2jE42gZr/02oLq6AXxDDN5lTEFEW7PjuAuJY+WBzUzsJPv8HeVp2CriyvVDekeHSxEncXKXge92GgZEOmEw6WPVBXNYGcdlkx+laHb6KO4VvWXykp6ebCUWtQlx2TgKeKhGyHgHybQlgZiTojlTD4f8J057reHzNhcCvbgzrnKjLb0LyvizwMo6Aoig9QZLkbuMfLdHyTjF+7BVC2nMIqns5sIyS8NmlWNZV4WWdBksVDJZ/a4ZNroCysBTWLgsMLToBwRKxtv7ezZhvhQyo6JKgxHwYKlshbthOYM4iQYwuREwqw3KRFPONFfCepjDt8SIajTjf3Js+T+72zNgetQzXI5vZD6FiG5hTO/FUdxzhcyVYKC3EYmM5FpuViHTfwb/RaMztdie+dUVTh2nH9PLE6JOlAIzGM1ALEuAtzsFCfRWea5X4W88A9j6sh0Lo7baUvrcFdZN6n3fI5fwnurjx19gDrLucgN0B9N0FBn144RlcsBuNJE3TH2waVF5e3kd1dHVar9nMjLtctnGH4+6w+ZbVqtVWq+TyXe/u/wc9vB58jJA72wAAAABJRU5ErkJggg==)";
+		navBar.insertBefore(ExternalAppBtn, navBar.firstChild);
 
-
-	   var ExternalAppPopup = document.createElement('menupopup');
-	   ExternalAppPopup.setAttribute('onpopupshowing','event.stopPropagation();gExternalAppbuttonEx.onpopupshowing();');
-	   this._externalAppPopup = ExternalAppPopup;
-   	ExternalAppBtn.appendChild(ExternalAppPopup); 
-
-	  
-	  document.insertBefore(document.createProcessingInstruction('xml-stylesheet','type="text/css" href="data:text/css;utf-8,'  + encodeURIComponent(
-		    '\
-#ExternalAppBtn-btn {\
--moz-appearance: none !important;\
-border-style: none !important;\
-border-radius: 0 !important;\
-padding: 0 2px !important;\
-margin: 0 !important;\
-background: transparent !important;\
-box-shadow: none !important;\
--moz-box-align: center !important;\
--moz-box-pack: center !important;\
-min-width: 18px !important;\
-min-height: 18px !important;\
-}\
-#ExternalAppBtn-btn > .toolbarbutton-icon {\
-	max-width: 18px !important;\
-    padding: 0 !important;\
-    margin: 0 !important;\
-}\
-#ExternalAppBtn-btn dropmarker{display: none !important;}\
-		    ')+ '"'), document.documentElement);
-      },
-
-	onpopupshowing: function() {	   
- 	   if (this._isready ) return;
- 	   if ( this._externalAppPopup == null ) return;
- 	   var ExternalAppPopup = this._externalAppPopup;
-         for (var i=0; i<this.toolbar.subdirs.length; i++) {
-          if (this.toolbar.subdirs[i].name == 'separator') {
-            ExternalAppPopup.appendChild(document.createElement('menuseparator'));
-          }
-          else {
-            var subDirItem = ExternalAppPopup.appendChild(document.createElement('menu'));
-            var subDirItemPopup = subDirItem.appendChild(document.createElement('menupopup'));
-            subDirItem.setAttribute('class', 'menu-iconic');
-            subDirItem.setAttribute('label', this.toolbar.subdirs[i].name);
-            subDirItem.setAttribute('image', this.toolbar.subdirs[i].image);
-            gExternalAppbuttonEx.subdirPopupHash[this.toolbar.subdirs[i].name] = subDirItemPopup;
-            gExternalAppbuttonEx.subdirMenuHash[this.toolbar.subdirs[i].name] = subDirItem;
-          }
-        }
- 
- 
-        for (var i=0; i<this.toolbar.apps.length; i++) {
-        	var appsItems;
-          if (this.toolbar.apps[i].name == 'separator') {
-          	  appsItems = document.createElement('menuseparator');
-          }
-          else {
-            appsItems = document.createElement('menuitem');
-            appsItems.setAttribute('class', 'menuitem-iconic');
-            appsItems.setAttribute('label', this.toolbar.apps[i].name);
-            appsItems.setAttribute('image', 'moz-icon:file://' + this.toolbar.apps[i].path + '?size=16;');
-            appsItems.setAttribute('oncommand', "gExternalAppbuttonEx.exec(this.path, this.args);");
-            appsItems.setAttribute('tooltiptext', this.toolbar.apps[i].name);
-            appsItems.path = this.toolbar.apps[i].path;
-            appsItems.args = this.toolbar.apps[i].args;
-          }
-	  if (  this.toolbar.apps[i].subdir && gExternalAppbuttonEx.subdirPopupHash[this.toolbar.apps[i].subdir]  )
-               gExternalAppbuttonEx.subdirPopupHash[this.toolbar.apps[i].subdir].appendChild(appsItems);
-         else
-          	  ExternalAppPopup.appendChild(appsItems);
-        }
-
-        for (var i=0; i<this.toolbar.configs.length; i++) {
-        	var configItems;
-          if (this.toolbar.configs[i].name == 'separator') {
-            configItems = document.createElement('menuseparator');
-          }
-          else {
-            configItems= ExternalAppPopup.appendChild(document.createElement('menuitem'));
-            configItems.setAttribute('class', 'menuitem-iconic');
-            configItems.setAttribute('label', this.toolbar.configs[i].name);
-            configItems.setAttribute('image',this.toolbar.configs[i].image);
-            configItems.setAttribute('oncommand', this.toolbar.configs[i].command );
-            configItems.setAttribute('tooltiptext', this.toolbar.configs[i].name);
-          }
-	    if (  this.toolbar.configs[i].subdir && gExternalAppbuttonEx.subdirPopupHash[this.toolbar.configs[i].subdir]  )
-               gExternalAppbuttonEx.subdirPopupHash[this.toolbar.configs[i].subdir].appendChild(configItems);
-           else
-          	   ExternalAppPopup.appendChild(configItems);
-        }
-
-	if ( this.autohideEmptySubDirs )
-	{
-		for (let [name, popup] in Iterator(gExternalAppbuttonEx.subdirPopupHash )) {
-			//Application.console.log("popup: " + popup);
-			if ( popup.hasChildNodes() ) {
-			   continue;
+		var ExternalAppPopup = document.createElement('menupopup');
+		ExternalAppPopup.setAttribute('onpopupshowing', 'event.stopPropagation();gExternalAppbuttonEx.onpopupshowing();');
+		this._externalAppPopup = ExternalAppPopup;
+		ExternalAppBtn.appendChild(ExternalAppPopup);
+		setTimeout(function () { //延时加载菜单，不对启动造成影响，也不影响第一次打开菜单时的响应速度
+			gExternalAppbuttonEx.loadSubMenu();
+		}, 2500);
+		document.insertBefore(document.createProcessingInstruction('xml-stylesheet', 'type="text/css" href="data:text/css;utf-8,' + encodeURIComponent(
+					'\
+					#ExternalAppBtn-btn {\
+					-moz-appearance: none !important;\
+					border-style: none !important;\
+					border-radius: 0 !important;\
+					padding: 0 2px !important;\
+					margin: 0 !important;\
+					background: transparent !important;\
+					box-shadow: none !important;\
+					-moz-box-align: center !important;\
+					-moz-box-pack: center !important;\
+					min-width: 18px !important;\
+					min-height: 18px !important;\
+					}\
+					#ExternalAppBtn-btn > .toolbarbutton-icon {\
+						max-width: 18px !important;\
+					    padding: 0 !important;\
+					    margin: 0 !important;\
+					}\
+					#ExternalAppBtn-btn dropmarker{display: none !important;}\
+							    ') + '"'), document.documentElement);
+	},
+	loadSubMenu : function () {
+		if (this._isready)
+			return;
+		if (this._externalAppPopup == null)
+			return;
+		var ExternalAppPopup = this._externalAppPopup;
+		for (var i = 0; i < this.toolbar.subdirs.length; i++) {
+			if (this.toolbar.subdirs[i].name == 'separator') {
+				ExternalAppPopup.appendChild(document.createElement('menuseparator'));
+			} else {
+				var subDirItem = ExternalAppPopup.appendChild(document.createElement('menu'));
+				var subDirItemPopup = subDirItem.appendChild(document.createElement('menupopup'));
+				subDirItem.setAttribute('class', 'menu-iconic');
+				subDirItem.setAttribute('label', this.toolbar.subdirs[i].name);
+				subDirItem.setAttribute('image', this.toolbar.subdirs[i].image);
+				gExternalAppbuttonEx.subdirPopupHash[this.toolbar.subdirs[i].name] = subDirItemPopup;
+				gExternalAppbuttonEx.subdirMenuHash[this.toolbar.subdirs[i].name] = subDirItem;
 			}
-			else {
-			    gExternalAppbuttonEx.subdirMenuHash[name].setAttribute("hidden", "true");	
-			} 
 		}
-	}
 
-	if ( this.moveSubDirstoBottom )
-	{
-		let i = ExternalAppPopup.childNodes.length;
-		while ( ExternalAppPopup.firstChild.getAttribute('class') != 'menuitem-iconic' && i-- != 0 )
-		{
-			ExternalAppPopup.appendChild(ExternalAppPopup.firstChild);
+		for (var i = 0; i < this.toolbar.apps.length; i++) {
+			var appsItems;
+			if (this.toolbar.apps[i].name == 'separator') {
+				appsItems = document.createElement('menuseparator');
+			} else {
+				appsItems = document.createElement('menuitem');
+				appsItems.setAttribute('class', 'menuitem-iconic');
+				appsItems.setAttribute('label', this.toolbar.apps[i].name);
+				appsItems.setAttribute('image', 'moz-icon:file://' + this.toolbar.apps[i].path + '?size=16;');
+				appsItems.setAttribute('oncommand', "gExternalAppbuttonEx.exec(this.path, this.args);");
+				appsItems.setAttribute('tooltiptext', this.toolbar.apps[i].name);
+				appsItems.path = this.toolbar.apps[i].path;
+				appsItems.args = this.toolbar.apps[i].args;
+			}
+			if (this.toolbar.apps[i].subdir && gExternalAppbuttonEx.subdirPopupHash[this.toolbar.apps[i].subdir])
+				gExternalAppbuttonEx.subdirPopupHash[this.toolbar.apps[i].subdir].appendChild(appsItems);
+			else
+				ExternalAppPopup.appendChild(appsItems);
 		}
-	}
-	this._isready = true;
+
+		for (var i = 0; i < this.toolbar.configs.length; i++) {
+			var configItems;
+			if (this.toolbar.configs[i].name == 'separator') {
+				configItems = document.createElement('menuseparator');
+			} else {
+				configItems = ExternalAppPopup.appendChild(document.createElement('menuitem'));
+				configItems.setAttribute('class', 'menuitem-iconic');
+				configItems.setAttribute('label', this.toolbar.configs[i].name);
+				configItems.setAttribute('image', this.toolbar.configs[i].image);
+				configItems.setAttribute('oncommand', this.toolbar.configs[i].command);
+				configItems.setAttribute('tooltiptext', this.toolbar.configs[i].name);
+			}
+			if (this.toolbar.configs[i].subdir && gExternalAppbuttonEx.subdirPopupHash[this.toolbar.configs[i].subdir])
+				gExternalAppbuttonEx.subdirPopupHash[this.toolbar.configs[i].subdir].appendChild(configItems);
+			else
+				ExternalAppPopup.appendChild(configItems);
+		}
+
+		if (this.autohideEmptySubDirs) {
+			for (let[name, popup]in Iterator(gExternalAppbuttonEx.subdirPopupHash)) {
+				if (popup.hasChildNodes()) {
+					continue;
+				} else {
+					gExternalAppbuttonEx.subdirMenuHash[name].setAttribute("hidden", "true");
+				}
+			}
+		}
+
+		if (this.moveSubDirstoBottom) {
+			let i = ExternalAppPopup.childNodes.length;
+			while (ExternalAppPopup.firstChild.getAttribute('class') != 'menuitem-iconic' && i-- != 0) {
+				ExternalAppPopup.appendChild(ExternalAppPopup.firstChild);
+			}
+		}
+		this._isready = true;
+	},
+	onpopupshowing : function () {
+		if (!this._isready)
+			if (!this._isready)
+				this.loadSubMenu();
 	},
 
-      handleRelativePath: function(apps) {
-        for (var i=0; i<apps.length; i++) {
-          if (apps[i].path) {
-            apps[i].path = apps[i].path.replace(/\//g, '\\').toLocaleLowerCase();	
-            var ffdir = Components.classes['@mozilla.org/file/directory_service;1'].getService(Components.interfaces.nsIProperties).get("ProfD", Components.interfaces.nsILocalFile).path;
- 		 if (/^(\\)/.test(apps[i].path)) {
-              apps[i].path = ffdir + apps[i].path;
-            }
-          }
-        }
-      },
+	handleRelativePath : function (apps) {
+		for (var i = 0; i < apps.length; i++) {
+			if (apps[i].path) {
+				apps[i].path = apps[i].path.replace(/\//g, '\\').toLocaleLowerCase();
+				var ffdir = Components.classes['@mozilla.org/file/directory_service;1'].getService(Components.interfaces.nsIProperties).get("ProfD", Components.interfaces.nsILocalFile).path;
+				if (/^(\\)/.test(apps[i].path)) {
+					apps[i].path = ffdir + apps[i].path;
+				}
+			}
+		}
+	},
 
-      exec: function(path, args) {
-            args = args || [];
-            var args_t=args.slice(0);
-        for (var i=0; i<args_t.length; i++) {
-          args_t[i] = args_t[i].replace(/%u/g, gBrowser.currentURI.spec);
-        }
+	exec : function (path, args) {
+		args = args || [];
+		var args_t = args.slice(0);
+		for (var i = 0; i < args_t.length; i++) {
+			args_t[i] = args_t[i].replace(/%u/g, gBrowser.currentURI.spec);
+		}
 
-        var file = Cc['@mozilla.org/file/local;1'].createInstance(Ci.nsILocalFile);
-        file.initWithPath(path);
-        if (!file.exists()) {
-          Cu.reportError('File Not Found: ' + path);
-          return;
-        }
+		var file = Cc['@mozilla.org/file/local;1'].createInstance(Ci.nsILocalFile);
+		file.initWithPath(path);
+		if (!file.exists()) {
+			Cu.reportError('File Not Found: ' + path);
+			return;
+		}
 
-        if (!file.isExecutable()) {
-          file.launch();
-        }
-        else {
-          var process = Cc['@mozilla.org/process/util;1'].createInstance(Ci.nsIProcess);
-          process.init(file);
-          process.run(false, args_t, args_t.length);
-        }
-      },
-    };
+		if (!file.isExecutable()) {
+			file.launch();
+		} else {
+			var process = Cc['@mozilla.org/process/util;1'].createInstance(Ci.nsIProcess);
+			process.init(file);
+			process.run(false, args_t, args_t.length);
+		}
+	},
+};
     gExternalAppbuttonEx.init();
