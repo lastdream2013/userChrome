@@ -6,7 +6,8 @@
 // @compatibility  Firefox 5.0
 // @charset        UTF-8
 // @license        MIT License
-// @version        testversion: 20130423 fix compatibility for firefox23a1 by lastdream2013
+// @note           add GM_notification API supoort by lastdream2013 2013.05.05 
+// @note           fix compatibility for firefox23a1 by lastdream2013 2013.04.23 
 // @note           by dannylee edited 2013.4.9
 // @note           0.1.8.1 Save Script が機能していないのを修正
 // @note           0.1.8.0 Remove E4X
@@ -42,7 +43,7 @@
 (function (css) {
 
 const GLOBAL_EXCLUDES = [
-  "chrome:*"
+	"chrome:*"
 	,"jar:*"
 	,"resource:*"
 ];
@@ -123,7 +124,6 @@ USL.ScriptEntry.prototype = {
 		} else if (this.run_at === "document-idle") {
 			this.delay = 0;
 		}
-
 		if (this.metadata.match) {
 			this.includeRegExp = this.createRegExp(this.metadata.match, true);
 			this.includeTLD = this.isTLD(this.metadata.match);
@@ -297,6 +297,26 @@ USL.API = function(script, sandbox, win, doc) {
 		Services.console.logStringMessage("["+ script.name +"] " + Array.slice(arguments).join(", "));
 	};
 
+	this.GM_notification = function (aMsg, aTitle, aIconURL, aCallback) {
+	if  (!USL.POPUP_SHOW)  return;
+		var win = Components
+			.classes['@mozilla.org/appshell/window-mediator;1']
+			.getService(Components.interfaces.nsIWindowMediator)
+			.getMostRecentWindow("navigator:browser");
+		win.PopupNotifications.show(
+			win.gBrowser.selectedBrowser,
+			aTitle || 'UserScriptLoader-notification',
+			aMsg + "",
+			null, {
+			label : aTitle,
+			accessKey : "D",
+			callback : aCallback,
+		},
+			null, {
+			popupIconURL : aIconURL || "chrome://global/skin/icons/information-32.png"
+		});
+	};
+	
 	this.GM_xmlhttpRequest = function(obj) {
 		if(typeof(obj) != 'object' || (typeof(obj.url) != 'string' && !(obj.url instanceof String))) return;
 
@@ -533,6 +553,15 @@ USL.__defineSetter__("HIDE_EXCLUDE", function(bool){
 	return bool;
 });
 
+var POPUP_SHOW = USL.pref.getValue('POPUP_SHOW', true);
+USL.__defineGetter__("POPUP_SHOW", function() POPUP_SHOW);
+USL.__defineSetter__("POPUP_SHOW", function(bool){
+	POPUP_SHOW = !!bool;
+	let elem = $("UserScriptLoader-popup-show");
+	if (elem) elem.setAttribute("checked", POPUP_SHOW);
+	return bool;
+});
+
 var CACHE_SCRIPT = USL.pref.getValue('CACHE_SCRIPT', true);
 USL.__defineGetter__("CACHE_SCRIPT", function() CACHE_SCRIPT);
 USL.__defineSetter__("CACHE_SCRIPT", function(bool){
@@ -591,6 +620,11 @@ USL.init = function(){
 					          type="checkbox"\
 					          checked="' + USL.DEBUG + '"\
 					          oncommand="USL.DEBUG = !USL.DEBUG;" />\
+					<menuitem label="允许脚本弹窗通知"\
+					          id="UserScriptLoader-popup-show"\
+					          type="checkbox"\
+					          checked="' + USL.POPUP_SHOW + '"\
+					          oncommand="USL.POPUP_SHOW = !USL.POPUP_SHOW;" />\
 				</menupopup>\
 			</menu>\
 		      <menuseparator/>\
@@ -642,6 +676,7 @@ USL.destroy = function () {
 	USL.pref.setValue('script.disabled', disabledScripts.join('|'));
 	USL.pref.setValue('disabled', USL.disabled);
 	USL.pref.setValue('HIDE_EXCLUDE', USL.HIDE_EXCLUDE);
+	USL.pref.setValue('POPUP_SHOW', USL.POPUP_SHOW);
 
 	var e = document.getElementById("UserScriptLoader-icon");
 	if (e) e.parentNode.removeChild(e);
@@ -679,7 +714,6 @@ USL.observe = function (subject, topic, data) {
 		if (!USL.isready) {
 		  USL.isready = true;
 		  USL.loadconfig();
-		  //Application.console.log("UserScriptLoader界面加载完毕！");
 		}
 	}
 };
@@ -1080,6 +1114,7 @@ USL.saveSetting = function() {
 	USL.pref.setValue('script.disabled', disabledScripts.join('|'));
 	USL.pref.setValue('disabled', USL.disabled);
 	USL.pref.setValue('HIDE_EXCLUDE', USL.HIDE_EXCLUDE);
+	USL.pref.setValue('POPUP_SHOW', USL.POPUP_SHOW);
 	USL.pref.setValue('CACHE_SCRIPT', USL.CACHE_SCRIPT);
 	USL.pref.setValue('DEBUG', USL.DEBUG);
 
