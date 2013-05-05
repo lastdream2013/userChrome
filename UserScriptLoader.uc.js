@@ -6,7 +6,7 @@
 // @compatibility  Firefox 5.0
 // @charset        UTF-8
 // @license        MIT License
-// @note           add GM_notification API supoort by lastdream2013 2013.05.05 
+// @note           add GM_notification API support by lastdream2013 2013.05.05 
 // @note           fix compatibility for firefox23a1 by lastdream2013 2013.04.23 
 // @note           by dannylee edited 2013.4.9
 // @note           0.1.8.1 Save Script が機能していないのを修正
