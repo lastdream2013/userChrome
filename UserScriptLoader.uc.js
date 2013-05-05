@@ -299,22 +299,20 @@ USL.API = function(script, sandbox, win, doc) {
 
 	this.GM_notification = function (aMsg, aTitle, aIconURL, aCallback) {
 	if  (!USL.POPUP_SHOW)  return;
-		var win = Components
-			.classes['@mozilla.org/appshell/window-mediator;1']
-			.getService(Components.interfaces.nsIWindowMediator)
-			.getMostRecentWindow("navigator:browser");
-		win.PopupNotifications.show(
-			win.gBrowser.selectedBrowser,
-			aTitle || 'UserScriptLoader-notification',
-			aMsg + "",
-			null, {
-			label : aTitle,
-			accessKey : "D",
-			callback : aCallback,
-		},
-			null, {
-			popupIconURL : aIconURL || "chrome://global/skin/icons/information-32.png"
-		});
+		if (aCallback)
+			var callback = {
+				observe : function (subject, topic, data) {
+					if ("alertclickcallback" != topic)
+						return;
+					aCallback.call(null);
+				}
+			}
+		else
+			callback = null;
+		var alertsService = Components.classes["@mozilla.org/alerts-service;1"]
+			.getService(Components.interfaces.nsIAlertsService);
+		alertsService.showAlertNotification(
+			aIconURL || "chrome://global/skin/icons/information-32.png", aTitle || "UserScriptLoader-notification", aMsg + "", !!callback, "", callback);
 	};
 	
 	this.GM_xmlhttpRequest = function(obj) {
