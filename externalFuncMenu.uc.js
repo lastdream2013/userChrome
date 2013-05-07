@@ -1,31 +1,18 @@
 // ==UserScript==
-// @name           externalSubMenu.uc.js
+// @name           externalFuncMenu.uc.js
 // @description    多功能左键菜单，可以把小书签，鼠标手势等都放进去
 // @include        main
 // @author         lastdream2013
 // @charset        UTF-8
+// @version        20130507  0.11 minor fix
 // @version        20130503  0.1 first release 
 // ==/UserScript==
 
 
-(function(){
-function unescapeHTML( input ) {
-  	return input.replace(/&amp;/g, '&')
-	  .replace(/&quot;/g, '\"')
-	  .replace(/&lt;/g, '<')
-	  .replace(/&gt;/g, '>')
-	  .replace(/&apos;/g, '\'');
-};
-if (window.gExternalSubMenu) {
-	delete window.gExternalSubMenu;
-}
-
-window.gExternalSubMenu = {
+var gExternalSubMenu = {
 	autohideEmptySubDirs : true, //自动隐藏没有一个子项目的子目录菜单
 	moveSubDirstoBottom : false, //把主菜单下的子目录移动到最下面
 	insertafter : 'context-paste', //  context-paste   context-copylink context-openlinkintab
-	subdirPopupHash : [],
-	subdirMenuHash : [],
 	toolbar :
 	{
 		//在这里定义好主菜单下子目录的名字,以及图标； 可在中间加{name: 'separator'}建立一个目录与目录之间的分隔线
@@ -101,16 +88,6 @@ window.gExternalSubMenu = {
 				},
 			},
 			{
-				name : '破解右键限制',
-				subdir : '',
-				image :
-				"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADXUlEQVQ4jW2Te0xTdxTHz723195721pKi7xu4bbcdtBWi3Wtijqr8TVwzOhQGYK6mVjnlk2WkaFEjQIZEvER4+YjbmSyxS0Dx8MxgYiDitIoYl1ggApxsqTs8ed0Lb+zPwybEL7J97/v93NOcnIApuikDEr/1oRVwY8d5Q/LXj7z4LDzs+4PzMUNWxJcAEBPzU9Sxxu6tYPF5r5QpUzGPonHUGn0c5fH4W+H4iM978X+ePH1ONu05a7sqMLHRTHhJ0VaHC2OwtEDCePDJUnPRvYm/jNaYiBPirT4uFCLg+9q/6zJSlgxqdy2WJ3zyKeJDPs0OLJbg8OFMeFja8y5voViom+BJH2aadp48y1DYGS3mjzcocZgvmasyivKAABQYQBN7wZhZDBPwKECFT7YrsZHOzWkOdtw1gugmBiyTQKuJVtXPZQvkF828qRxTXQtAADUO1X5fes50r+Bx4E8gQxsFnAgV8ChAoE0ro6eBNkjAt+Vpb7381oO777KPfsoXbRAy3yh+t4KJfa+xoWr3PHv316vDvWt47FvHY/9OTxpWKabBLnsnvlOcJUSe5expNJt3A5XPZz/TgaL7V7V7zl2mFHljPPcylSFgquVGFypxPtZSlKb8T/klCy4el5hx2/PZ/G0K6YMmuZy/kA6g20L+DE7wAwAgAq73tO5XAj1LGaxJ4PFu0tZcsmtPesFUJySWVfArRjvnsPgifTYcrhk4768kcZg5zxFeI8tyT6xaoVd77m+iAsFXArsdjIYmMeQGqfmwtc2obzLwaDfRpOSOclvw/EUVcFPaRTpsNF4xqE99+J5S616T4tLGbqRxmBnKo1+G0067DRpt9DY/BLz9M10swXyomHmd1bFr60yja02OnxU1u0CAGoCctCq91xxsKFrFhrbZBpbU2hsMVPkRKqu4b9cqaTd1GSmIs0mCpstdOS8zNccMWqW+GJh1sFEXvzcxH1xNYXCH0wUXpEo/MbE/rFttjX1xW2pMrOu+PtkKtyQTGGjRGGjCcYvS9Tf9SbqaZMEpD6JwnojkK8kxV87HaaV0/5DoRybfU5S9tcZgdQZKawVn7tOBPKtCJGjKVHtW+xW57TlCXkl4HZYxcx9FkPlYVl/8ZCsr/7QGrc/d7a8EACYqfl/ASscSowNpGaHAAAAAElFTkSuQmCC",
-				command :
-				function () {
-					gBrowser.loadURI("javascript:(function(){var%20doc=document;var%20bd=doc.body;bd.onselectstart=bd.oncopy=bd.onpaste=bd.onkeydown=bd.oncontextmenu=bd.onmousemove=bd.onselectstart=bd.ondragstart=doc.onselectstart=doc.oncopy=doc.onpaste=doc.onkeydown=doc.oncontextmenu=null;doc.onselectstart=doc.oncontextmenu=doc.onmousedown=doc.onkeydown=function%20(){return%20true;};with(document.wrappedJSObject||document){onmouseup=null;onmousedown=null;oncontextmenu=null;}var%20arAllElements=document.getElementsByTagName('*');for(var%20i=arAllElements.length-1;i&gt;=0;i--){var%20elmOne=arAllElements[i];with(elmOne.wrappedJSObject||elmOne){onmouseup=null;onmousedown=null;}}var%20head=document.getElementsByTagName('head')[0];if(head){var%20style=document.createElement('style');style.type='text/css';style.innerHTML=%22html,*{-moz-user-select:auto!important;}%22;head.appendChild(style);}void(0);})();")
-				},
-			},
-			{
 				name : '当前页面google快照',
 				subdir : '',
 				image :
@@ -130,7 +107,6 @@ window.gExternalSubMenu = {
 				function () {
 					gBrowser.loadURI("javascript:getobjstyle=function(node,prop){return node.ownerDocument.defaultView.getComputedStyle(node,'').getPropertyValue(prop);};RemoveHide=function(objname){var minValue=15;var objs=document.getElementsByTagName(objname);if(objs.length==0){}else{for(var i=objs.length-1;i>=0;i--){var node=objs.item(i);if(getobjstyle(node,'display')=='none' || getobjstyle(node,'visibility')=='hidden' || parseInt(getobjstyle(node,'font-size'))==0){node.parentNode.removeChild(node);}else{if(node.parentNode){var orgNode=node;var orgColor=getobjstyle(orgNode,'color');var orgRGB=CleanHidegetRGB(orgColor);var parentNode=node.parentNode;var parentBgColor=getobjstyle(parentNode,'background-color');var isLast=false;while(parentBgColor=='transparent'){if(parentNode.parentNode==null){isLast=true;break;}parentNode=parentNode.parentNode;parentBgColor=getobjstyle(parentNode,'background-color');if(parentBgColor != 'transparent'){break;}}if(isLast){if((Math.abs(orgRGB[0]-255)<=minValue)&&(Math.abs(orgRGB[1]-255)<=minValue)&&(Math.abs(orgRGB[2]-255)<=minValue)){orgNode.parentNode.removeChild(orgNode);}}else{parentBgRGB=CleanHidegetRGB(parentBgColor);if((Math.abs(orgRGB[0]-parentBgRGB[0])<=minValue)&&(Math.abs(orgRGB[1]-parentBgRGB[1])<=minValue)&&(Math.abs(orgRGB[2]-parentBgRGB[2])<=minValue)){orgNode.parentNode.removeChild(orgNode);}}}}}}var itemFrames=document.getElementsByTagName('frame');var itemiFrames=document.getElementsByTagName('iframe');var frame,iframe;if (itemFrames.length>0){for (var i=0;i<itemFrames.length;i++){frame=itemFrames[i].contentDocument;this.RemoveHide(frame,objname);}}if(itemiFrames.length>0){for(var i=0;i<itemiFrames.length;i++){iframe=itemiFrames[i].contentDocument;this.RemoveHide(iframe,objname);}}};function CleanHidegetRGB(colorString){var RGB=new Array;var tempSting=colorString.substring(4,colorString.length-1);var tempArray=tempSting.split(",");RGB[0]=parseInt(tempArray[0]);RGB[1]=parseInt(tempArray[1]);RGB[2]=parseInt(tempArray[2]);return RGB;};RemoveHide('span');RemoveHide('font');RemoveHide('div');RemoveHide('p');")
 				},
-
 			},
 			{
 				name : 'Mouseover DOM Inspector',
@@ -141,7 +117,26 @@ window.gExternalSubMenu = {
 				function () {
 					gBrowser.loadURI("javascript:void(z=document.body.appendChild(document.createElement('script')));void(z.language='javascript');void(z.type='text/javascript');void(z.src='http://slayeroffice.com/tools/modi/modi.js');void(z.id='modi');")
 				},
-
+			},
+			{
+				name : '短网址',
+				subdir : '',
+				image :
+				"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAB5ElEQVQ4jcWSTUiUURSGn3O++WmMtMKSKEGoRX+QLdqEOUiOkBsjml0Q0SqCCFooBC0SXQZtgqByFZQQuHNjIJkhVARBREQWBBUi5Yw62nzfd06LYcTR3NaBC/fe977P5b73wP8uWb1429Y6DpoFcHe+fPha33PjmGzetr2ACiKCmz1bPPcwW/VodTLU0rIpCBLZIFBUFdB3PbOz81wZLUYWv3dz3Aycdm7lM+sAB5obF1Qr5iBQjky+PlzVfp9/dBAzLDbcjPTWYKEG0NH/7cznuuagaE4QJBD1q2vfGppddnfMHVE0de9sfgWQ1PSTBx1DiAplgf1PX95eB7jw+A6AC+COiAwDaOfNn+OIogIjR/v4UYgaN0p8OVFocBEcx81J3D09oaLeBIKI8mZPjuHWi8WNAK8WZ5aOp0LMHMyQiJ0C0DVYdBREldg9HOvdkvobYH6yq1wqWXLXdD2BGeGlEdFKQFxzUywWME229y92rzVHU7nuTEqSscXcb5gjjKJeWNVInQMld6lsiTtj1+tqmiycOumV487MrzK7T03Iyi8AROHcDkERBETpHCiNV7WlF9lR85jKMAKNm6pazS0dg8sfBd0nDiLG9/KndJ5D1pc7EVaCBjObzrQ937tR0P++/gAfa8dxFS7RuQAAAABJRU5ErkJggg==",
+				command :
+				function () {
+					gBrowser.loadURI("javascript:function%20iprl5(){var%20d=document,z=d.createElement('scr'+'ipt'),b=d.body,l=d.location;try{if(!b)throw(0);if%20(!l)%20{alert('%E8%AF%B7%E8%BE%93%E5%85%A5%E7%BD%91%E5%9D%80%EF%BC%81');return;}d.title='(Shortening...)%20'+d.title;z.setAttribute('src','http://www.ruanyifeng.com/webapp/url_shortener_plugin.php?longUrl='+encodeURIComponent(l));b.appendChild(z);}catch(e){alert('%E8%AF%B7%E7%AD%89%E5%BE%85%E7%BD%91%E9%A1%B5%E5%8A%A0%E8%BD%BD%E5%AE%8C%E6%AF%95%EF%BC%81');}}iprl5();void(0)")
+				},
+			},
+			{
+				name : '图片适应窗口',
+				subdir : '',
+				image :
+				"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABz0lEQVQ4jb2RzWsTURTFf+/NTMfGNDVGsVAQ8YPsghVcCS4EXQmC6F/QTXDXf0Aoxf4XLrtIFy6LBEI/CBjEVfGji9ZWA0K0rakjmXlvOnNdmIZI0iIIHji8x73nHe55F/4RamntrUTG0okMYWQJI4sxMcZajD0EBb7nMOJ6+L7H6cwpHEfhOA6FfBbXT/aZODeO1lm0Viile+ej5h38jSyL95bQWv/R01qxvdPEBZi6Xho63v31x+hLI1y9cnlo/+NOE31Svtg1uNdO/gN3WHH59Qf2vgcUDx/COixuN5icyHNrqjgori2viYjI3Is5+VscaVfrDdEoRa7sYUsBlYMF5uuzx447X5+lcrCALQXkyh5aKajWVmSrtSkz8bSY2EqappIkSY/9SNNUbGxlJp6WrdamrNYbQrW2IkmSyLf2194jY22PaSpdpj2j3R+73QivRAOICPnsWUQEEcHRGkdrau+rPHv3FKVAKdWLUhgrdG/q9xZSkaGZgzDgRvHmQL1f7gJIOmhgYkNl8jljGwU+BZ8p333SZ3CkF1Tzy77stdsEHcPPTkQntHRCS2gsHRPxpvWS2xcf4HseZ3I+rlZkRjNkR30unM8fu7H/h1+ePDbJO/G73gAAAABJRU5ErkJggg==",
+				command :
+				function () {
+					gBrowser.loadURI("javascript:(function(){function%20t(f){a=d.createNodeIterator(d,1,f,false);while(a.nextNode()){}}var%20d=document;t(function(e){x=e.offsetLeft;l=e.offsetParent;while(l!=null){x+=l.offsetLeft;l=l.offsetParent}var%20w=d.documentElement.clientWidth-x;var%20s=e.style;if(s.marginLeft)w-=s.marginLeft;if(s.marginRight)w-=s.marginRight;if(s.paddingLeft)w-=s.paddingLeft;if(s.paddingRight)w-=s.paddingRight;if(s.borderSize)w-=s.borderSize;w-=d.defaultView.innerWidth-d.documentElement.offsetWidth;if(e.tagName=='IMG'){h=e.clientHeight*w/e.clientWidth;s.maxHeight=h}s.maxWidth=w+'px'})})();")
+				},
 			},
 			{
 				name : '下载页面内所有图片以ZIP形式保存',
@@ -202,91 +197,46 @@ window.gExternalSubMenu = {
 						}
 					},
 			},
-			{
-				name : '下载页面媒体联接以ZIP形式保存',
-				subdir : '下载',
-				command :
-				function () {
-					// 保存ディレクトリのパスがない場合は毎回ダイアログで決める
-					//var path = "C:\\Users\\azu\\Downloads"; // エスケープしたディレクトリのパス
-					var path = "";
-					if (!path) {
-						// ファイル保存ダイアログ
-						var nsIFilePicker = Ci.nsIFilePicker;
-						var FP = Cc['@mozilla.org/filepicker;1'].createInstance(nsIFilePicker);
-						FP.init(window, 'Choose save folder.', nsIFilePicker.modeGetFolder);
-
-						// ダイアログ表示
-						if (FP.show() == nsIFilePicker.returnOK) {
-							path = FP.file.path;
-						} else {
-							return false;
-						}
-					}
-					// ダウンロードしたページを表示するために URI オブジェクト生成
-					var hostURL = Components.classes['@mozilla.org/network/io-service;1'].getService(Components.interfaces.nsIIOService).newURI(location.href, null, null);
-					var links = content.document.links;
-					var pack = [];
-					for (var i = 0, length = links.length; i < length; i++) {
-						if (links[i].href.match(/mpe?g|wmv|flv|mov|avi|mp4|bmp|gif|jpe?g|png|mp2|mp3|ogg$/i)) {
-							pack.push([links[i].href.split("/").pop(), links[i].href]);
-						}
-					}
-					zipDeKure(pack, path);
-
-					function zipDeKure(urls, savePath) {
-						const ioService = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService);
-						const zipWriter = Components.Constructor("@mozilla.org/zipwriter;1", "nsIZipWriter");
-						var uri = content.window.location.href;
-						var fileName = uri.substring(uri.lastIndexOf('://') + 3, uri.length);
-						fileName = fileName.split(".").join("_");
-						fileName = fileName.split("/").join("_");
-						fileName = fileName.split("?").join("_");
-						var path = savePath + "\\" + fileName + ".zip";
-						var file = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsILocalFile);
-						file.initWithPath(path);
-						var zipW = new zipWriter();
-						var ioFlag = 0x04 | 0x08 | 0x20;
-						zipW.open(file, ioFlag);
-						for (var i = 0, len = urls.length; i < len; i++) {
-							var[name, url] = urls[i];
-							var ch = ioService.newChannel(url, "UTF-8", null);
-							var stream = ch.open();
-							zipW.addEntryStream(name, Date.now() * 1000, Ci.nsIZipWriter.COMPRESS_DEFAULT, stream, false);
-						}
-						zipW.close();
-					}
-				},
-			},
-			
 		],
 
 	},
-	_ExternalSubMenuPopup: null,
-	_isready: false,
-      init: function() {
+	subdirPopupHash : [],
+	subdirMenuHash : [],
+	_ExternalSubMenuPopup : null,
+	_isready : false,
+	unescapeHTML : function(input) {
+			return input.replace(/&amp;/g, '&')
+		  .replace(/&quot;/g, '\"')
+		  .replace(/&lt;/g, '<')
+		  .replace(/&gt;/g, '>')
+		  .replace(/&apos;/g, '\'');
+	},
+	init : function () {
+		var insertPos = document.getElementById(this.insertafter);
+		if (!insertPos)
+			return;
 
-	  extSubMenu = document.createElement("menu");
-	  extSubMenu.setAttribute("id", "ExternalSubMenuID");
-	  extSubMenu.setAttribute("label", "多功能菜单");
-	  extSubMenu.setAttribute("class", "menu-iconic");
-	  extSubMenu.setAttribute("image", "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACiklEQVQ4jZ2SW0iTYRjH//ve79tR80RpokVojBIvwlogFrJiFybmacQaVh4uRLuyA0lYoy6kNKSlGRQGERUSTZGQQDQhA9GWKbIybdE0p2PYdKudny7yItmE6H/7vL8fPO/zB6KEDJDS4C6lZ0i5n0bSM8gAPtq7SNAIiftpynnf8N7pwNi+EE2pKGTO8YffZY/7h9OrCBBtCtsroFhpizFRXwqFXqaSx5Q85u3Z9sL3KmWKxncSvd9BwddJHdQNFl1QL77ub5GQ+474l7tDrCeAAwDSQhzoVVwID8SG6U0c+ftjqyPgz1psna9kS57LAi038W3fiuSphvw/e6+1ymudDbL0gEn2nAZjKNSjmCQjJBsEn4r5I/MnGS3VsrC9hlfb66SPXdVIBAD33cQGjzHe5H8kVJBJTsFnMh91S5QbBB+PMa2tlJFVz3yzOl69UCezORoTCtdubN/jfpj2wNMeF3DfkjQE7sso2CWnn13CwQ2CaQ2vni3gyFrChWfKUfi1QrC4rsbTj840X6ArmVZvSmZXDbJLoRYp+W5LvHRPsnuDwKJC0pRatGgrYjRTzBknC5Btr2K9znNicl8R08pFfsB1lvVSE0/ea8L4tAHiiI80H0LTFw1Hc6Wcb+EUqyIt2PfTXKerTqDlet7rLEHYWw5y10AX9YxD+ZCa87gns0c5mi9jZNOLJmzFGF3U8+SoFchxWORfyETzZmViAIScBMT1HUDj21yRxZyL4GgGaDKPCzmqBbKfYfMGJVIBCEBktbn1gRQAnwUktmciq1VATr+K6RZ0LOioEWjiBK9Zh6O3MVqIILKW8SM2PbM59djyz+DfmTvOKq0lfPN/wQDwQQOFRYWkaLPfDBcdeek0cmkAAAAASUVORK5CYII=");
-            var contextMenu = document.getElementById("contentAreaContextMenu");
-            //contextMenu.insertBefore(extSubMenu, document.getElementById(gExternalSubMenu.insertafter));
-			contextMenu.appendChild(extSubMenu);
+		extSubMenu = document.createElement("menu");
+		extSubMenu.setAttribute("id", "ExternalSubMenuID");
+		extSubMenu.setAttribute("label", "多功能菜单");
+		extSubMenu.setAttribute("class", "menu-iconic");
+		extSubMenu.setAttribute("image", "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACiklEQVQ4jZ2SW0iTYRjH//ve79tR80RpokVojBIvwlogFrJiFybmacQaVh4uRLuyA0lYoy6kNKSlGRQGERUSTZGQQDQhA9GWKbIybdE0p2PYdKudny7yItmE6H/7vL8fPO/zB6KEDJDS4C6lZ0i5n0bSM8gAPtq7SNAIiftpynnf8N7pwNi+EE2pKGTO8YffZY/7h9OrCBBtCtsroFhpizFRXwqFXqaSx5Q85u3Z9sL3KmWKxncSvd9BwddJHdQNFl1QL77ub5GQ+474l7tDrCeAAwDSQhzoVVwID8SG6U0c+ftjqyPgz1psna9kS57LAi038W3fiuSphvw/e6+1ymudDbL0gEn2nAZjKNSjmCQjJBsEn4r5I/MnGS3VsrC9hlfb66SPXdVIBAD33cQGjzHe5H8kVJBJTsFnMh91S5QbBB+PMa2tlJFVz3yzOl69UCezORoTCtdubN/jfpj2wNMeF3DfkjQE7sso2CWnn13CwQ2CaQ2vni3gyFrChWfKUfi1QrC4rsbTj840X6ArmVZvSmZXDbJLoRYp+W5LvHRPsnuDwKJC0pRatGgrYjRTzBknC5Btr2K9znNicl8R08pFfsB1lvVSE0/ea8L4tAHiiI80H0LTFw1Hc6Wcb+EUqyIt2PfTXKerTqDlet7rLEHYWw5y10AX9YxD+ZCa87gns0c5mi9jZNOLJmzFGF3U8+SoFchxWORfyETzZmViAIScBMT1HUDj21yRxZyL4GgGaDKPCzmqBbKfYfMGJVIBCEBktbn1gRQAnwUktmciq1VATr+K6RZ0LOioEWjiBK9Zh6O3MVqIILKW8SM2PbM59djyz+DfmTvOKq0lfPN/wQDwQQOFRYWkaLPfDBcdeek0cmkAAAAASUVORK5CYII=");
+		var contextMenu = document.getElementById("contentAreaContextMenu");
+		//contextMenu.appendChild(extSubMenu);
+		contextMenu.insertBefore(extSubMenu, insertPos);
 
-	   var ExternalSubMenuPopup = document.createElement('menupopup');
-	   ExternalSubMenuPopup.setAttribute('onpopupshowing','event.stopPropagation();gExternalSubMenu.onpopupshowing();');
-	   this._ExternalSubMenuPopup = ExternalSubMenuPopup;
-   	extSubMenu.appendChild(ExternalSubMenuPopup); 
-		setTimeout(function () {  //延时加载菜单，不对启动造成影响，也不影响第一次打开菜单时的响应速度
+		var ExternalSubMenuPopup = document.createElement('menupopup');
+		ExternalSubMenuPopup.setAttribute('onpopupshowing', 'event.stopPropagation();gExternalSubMenu.onpopupshowing();');
+		this._ExternalSubMenuPopup = ExternalSubMenuPopup;
+		extSubMenu.appendChild(ExternalSubMenuPopup);
+		setTimeout(function () { //延时加载菜单，不对启动造成影响，也不影响第一次打开菜单时的响应速度
 			window.gExternalSubMenu.loadSubMenu();
 		}, 2000);
 	},
 	loadSubMenu: function() {	   
  	   if (this._isready ) return;
  	   if ( this._ExternalSubMenuPopup == null ) return;
-	   //Application.console.log("loadSubMenu do!: ");
+
  	   var ExternalSubMenuPopup = this._ExternalSubMenuPopup;
          for (var i=0; i<this.toolbar.subdirs.length; i++) {
           if (this.toolbar.subdirs[i].name == 'separator') {
@@ -313,7 +263,11 @@ window.gExternalSubMenu = {
             configItems.setAttribute('class', 'menuitem-iconic');
             configItems.setAttribute('label', this.toolbar.configs[i].name);
             configItems.setAttribute('image',this.toolbar.configs[i].image);
-            configItems.setAttribute('oncommand', unescapeHTML(this.toolbar.configs[i].command.toSource()) + '.call(this, event);'  );
+				if (typeof this.toolbar.configs[i].command == 'function') {
+					configItems.setAttribute('oncommand', this.unescapeHTML(this.toolbar.configs[i].command.toSource()) + '.call(this, event);');
+				} else {
+					configItems.setAttribute('oncommand', this.toolbar.configs[i].command);
+				}
             configItems.setAttribute('tooltiptext', this.toolbar.configs[i].name);
           }
 	    if (  this.toolbar.configs[i].subdir && gExternalSubMenu.subdirPopupHash[this.toolbar.configs[i].subdir]  )
@@ -348,5 +302,4 @@ window.gExternalSubMenu = {
  	   if (!this._isready ) this.loadSubMenu();
 	},
 }
-    window.gExternalSubMenu.init();
-})();
+	gExternalSubMenu.init();
