@@ -4,7 +4,7 @@
 // @include        main
 // @author         lastdream2013
 // @charset        UTF-8
-// @version        20130506 0.1 first release 
+// @version        20130507 0.1 first release 
 // ==/UserScript==
 
 var gExternalFuncButton = {
