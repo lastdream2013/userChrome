@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name           externalAppButtonM.uc.js
 // @namespace      ithinc#mozine.cn
-// @description    External Applications button 
+// @description    External Applications button moveable
 // @include        main
 // @author         ithinc &  lastdream2013
 // @charset        UTF-8
-// @version        20130504.1.1.5 remove smart functions support, move to another userChromeJS  
+// @version        20130507.1.1.5 remove smart functions support, move to another userChromeJS  
 // @version        20130504.1.1.3 delay load exefile, may speedup firefox startup  
 // @version        20130414.1.1.0 updated by  lastdream2013 : support submenu
 // @version        20130402.1.0.1 modified by lastdream2013
