@@ -4,7 +4,7 @@
 // @description    简易会话管理器
 // @include        chrome://browser/content/browser.xul
 // @note           testversion, mod by lastdream2013 
-// @note		   20130510: add restore session list at startup, confirm | auto save session on quit. 
+// @note           20130510: add restore session list at startup, confirm | auto save session on quit. 
 // @note           20130424: add restore session at startup and remove all Session menu.
 // @version        0.4.1
 // @charset        UTF-8
