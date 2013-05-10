@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name UserAgentChangeModLite.uc.js
 // @namespace http://www.sephiroth-j.de/mozilla/
-// @note  modify by lastdream2013 at 20130429 mino fix
+// @note  modify by lastdream2013 at 20130510 mino fix
 // @note  modify by lastdream2013 at 20130409 sitelist : change SITELIST idx to Name
 // @note  modify by lastdream2013 for navigator.userAgent https://g.mozest.com/thread-43428-1-2
 // @include chrome://browser/content/browser.xul
 // ==/UserScript==
 var ucjs_UAChanger = {
-  //----讲解开始----
+	//----讲解开始----
 	//（1）在url后面添加网站，注意用正则表达式
 
 	//正则表达式简单教程：先把网址里的/换成\/
@@ -350,7 +350,7 @@ var ucjs_UAChanger = {
 			var contentArea = document.getElementById("appcontent");
 			contentArea.removeEventListener("load", this, true);
 			contentArea.removeEventListener("select", this, false);
-			contentBrowser.tabContainer.removeEventListener("TabClose", this, false);
+			if (contentBrowser) contentBrowser.tabContainer.removeEventListener("TabClose", this, false);
 			uacMenu.removeEventListener("popupshowing", this, false);
 			window.removeEventListener("unload", this, false);
 			break;
