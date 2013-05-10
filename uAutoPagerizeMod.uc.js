@@ -741,11 +741,11 @@ var ns = window.uAutoPagerize = {
 
 			content.console.log(i + ": " + previous + " <= " +  scrollY + " <= " +  pos);
 			if(scrollY >= previous && scrollY <= pos){
-				if(scrollY == pos){
+				//if(scrollY == pos){
 					pos = links[i+1] ? (scrollY + links[i+1].getBoundingClientRect().top) : bottom;
 					return [previous + fix, pos + fix]
-				}
-				return [previous + fix, pos + fix]
+				//}
+				//return [previous + fix, pos + fix]
 			}
 
 			previous = pos;
