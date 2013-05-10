@@ -8,7 +8,7 @@
 // @include        chrome://browser/content/places/places.xul
 // @include        chrome://browser/content/bookmarks/bookmarksPanel.xul
 // @note           fixed & modified by lastdream2013
-// @note           test version 20130508 fix compatibility for firefox23a1
+// @note           test version 20130510 fix compatibility for firefox23a1
 // @note           v0.35 add sidebar-popup-menu, hide for separator|livemarkChild|livemark/feedURI
 // @note           v0.33 add export icon_url
 // @note           v0.32 add export icon base64
@@ -29,7 +29,7 @@ ImageConverter.prototype = {
 	bytes : [],
 	stream : null,
 	Database64 : null,
-
+	iscompleted : false,
 	// nsISupports
 	QueryInterface : function (iid) {
 		if (!iid.equals(Components.interfaces.nsISupports) &&
@@ -43,10 +43,12 @@ ImageConverter.prototype = {
 	// nsIRequestObserver
 	onStartRequest : function (aRequest, aContext) {
 		this.stream = Components.classes["@mozilla.org/binaryinputstream;1"].createInstance(Components.interfaces.nsIBinaryInputStream);
+		this.iscompleted = false;
 	},
 
 	onStopRequest : function (aRequest, aContext, aStatusCode) {
 		this.Database64 = 'data:' + this.channel.contentType + ';base64,' + btoa(String.fromCharCode.apply(null, this.bytes));
+		this.iscompleted = true;
 	},
 
 	// nsIStreamListener
@@ -140,16 +142,18 @@ var ExportHTMLFolder = {
 				if ( elem.icon.indexOf('http://www.mozilla.org/2005/made-up-favicon/') < 0 ){
 					chaine = chaine + '" ICON_URI="' + elem.icon.slice(elem.icon.indexOf('moz-anno:favicon:http') + 'moz-anno:favicon:'.length);
 				}
-				else {
-					var Image = new ImageConverter( elem.icon.slice(elem.icon.indexOf('moz-anno:favicon:http')) );
-					var thread = Cc['@mozilla.org/thread-manager;1'].getService().mainThread;
-					while ( Image.Database64 == null ) {
-							thread.processNextEvent(true);
-					}
-					if ( Image.Database64 ){
-						chaine = chaine + '" ICON="' + Image.Database64;
-					}
+				var Image = new ImageConverter( elem.icon.slice(elem.icon.indexOf('moz-anno:favicon:http')) );
+				var thread = Cc['@mozilla.org/thread-manager;1'].getService().mainThread;
+				while ( !Image.iscompleted ) {
+						thread.processNextEvent(true);
 				}
+				/*var iscontinue;
+				do{
+					iscontinue = Image.iscompleted;
+					if ( iscontinue )
+					   break;
+				}while(!Image.iscompleted)*/
+				chaine = chaine + '" ICON="' + Image.Database64;
 			}
 			else if ( elem.icon.indexOf('moz-anno:favicon:data:image') >= 0 )
 			{
