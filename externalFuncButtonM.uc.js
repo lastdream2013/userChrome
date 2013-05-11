@@ -11,8 +11,8 @@
 var gExternalFuncButtonM = {
 	autohideEmptySubDirs: true,  //自动隐藏没有一个子项目的子目录菜单
 	moveSubDirstoBottom: false,  //把主菜单下的子目录移动到最下面
-	moveablePositonOrInsertafter: true, //true : ToolbarPalette moveable button  false: insert appbutton in "insertafter" 
-	insertafter: 'urlbar-icons',  // useless if moveablePositonOrInsertafter is true;  urlbar-icons addon-bar TabsToolbar alltabs-button
+	moveablePositonOrInsertafter: false, //true : ToolbarPalette moveable button  false: insert appbutton in "insertafter" 
+	insertafter: 'alltabs-button',  // useless if moveablePositonOrInsertafter is true;  urlbar-icons addon-bar TabsToolbar alltabs-button
 	toolbar :
 	{
 		//在这里定义好主菜单下子目录的名字,以及图标  可在中间加{name: 'separator'}建立一个目录与目录之间的分隔线
@@ -246,7 +246,7 @@ var gExternalFuncButtonM = {
     		var navigator = document.getElementById(this.insertafter);
     		if (!navigator)
     			return;
-    		navigator.parentNode.insertBefore(ExternalFuncBtn, navBar.previousSibling);
+    		navigator.parentNode.insertBefore(ExternalFuncBtn, navigator.previousSibling);
     	}
 	},
 	loadSubMenu : function () {
