@@ -3,8 +3,9 @@
 // @author         NightsoN
 // @description    简易会话管理器
 // @include        chrome://browser/content/browser.xul
-// @note           testversion, mod by lastdream2013 
-// @note           20130510: add restore session list at startup, confirm | auto save session on quit. 
+// @note           testversion, mod by lastdream2013
+// @note           20130511  don't auto save session on quit if all tabs is about:blank or about:newtab
+// @note		   20130510: add restore session list at startup, confirm | auto save session on quit.
 // @note           20130424: add restore session at startup and remove all Session menu.
 // @version        0.4.1
 // @charset        UTF-8
@@ -64,7 +65,7 @@ var gSimpleSessionManager = {
 					-moz-appearance: none !important;\
 					border-style: none !important;\
 					border-radius: 0 !important;\
-					padding: 0 2px !important;\
+					padding: 0 3px !important;\
 					margin: 0 !important;\
 					background: transparent !important;\
 					box-shadow: none !important;\
@@ -314,6 +315,31 @@ var gSimpleSessionManager = {
 	//退出时自动保存会话
 	saveCurrentSessionAuto : function () {
 		var ssdata = SS.getBrowserState();
+
+		let currentState = JSON.parse(ssdata);
+		let RtabCount = 0;
+		for (let window of currentState.windows) {
+			if ( RtabCount > 0 ) 
+				break;
+			if (window.isPrivate) {
+				continue;
+			}
+			for (let tab of window.tabs) {
+				if ( RtabCount > 0 ) 
+					break;
+				if (!tab.entries.length)
+					continue;
+				for (let entry of tab.entries) {
+					if (entry.url != "about:blank" && entry.url != "about:newtab") {
+						RtabCount++;
+						break;
+					}
+				}
+			}
+		}
+		if (RtabCount == 0) // 全是about:blank, about:newtab类窗口直接退出不保存
+			return;
+		
 		var name = "自动保存：" + new Date().toLocaleFormat("%Y-%m-%d %H:%M:%S");
 		var data = gSimpleSessionManager.loadFile();
 		if (data === false) {
