@@ -1,16 +1,18 @@
 // ==UserScript==
-// @name           externalFuncButtonM.uc.js
-// @description    External functions button moveable  
+// @name           externalFuncButton.uc.js
+// @description    External functions button 
 // @include        main
 // @author         lastdream2013
 // @charset        UTF-8
+// @version        20130511.0.11 tidy and merge moveable code 
 // @version        20130507 0.1 first release 
 // ==/UserScript==
 
 var gExternalFuncButtonM = {
-  autohideEmptySubDirs : true, //自动隐藏没有一个子项目的子目录菜单
-	moveSubDirstoBottom : false, //把主菜单下的子目录移动到最下面
-	insertafter : 'tabs-closebutton', ////urlbar-icons  status-bar addon-bar searchbar TabsToolbar  go-button nav-bar search-container
+	autohideEmptySubDirs: true,  //自动隐藏没有一个子项目的子目录菜单
+	moveSubDirstoBottom: false,  //把主菜单下的子目录移动到最下面
+	moveablePositonOrInsertafter: true, //true : ToolbarPalette moveable button  false: insert appbutton in "insertafter" 
+	insertafter: 'urlbar-icons',  // useless if moveablePositonOrInsertafter is true;  urlbar-icons addon-bar TabsToolbar alltabs-button
 	toolbar :
 	{
 		//在这里定义好主菜单下子目录的名字,以及图标  可在中间加{name: 'separator'}建立一个目录与目录之间的分隔线
@@ -192,20 +194,17 @@ var gExternalFuncButtonM = {
 		  .replace(/&apos;/g, '\'');
 	},
 	init : function () {
-		const XULNS = 'http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul';
-		var navigator = document.getElementById("navigator-toolbox");
-		if (!navigator || navigator.palette.id !== "BrowserToolbarPalette")
-			return;
-		var ExternalFuncBtn = document.createElementNS(XULNS, 'toolbarbutton');
-		ExternalFuncBtn.id = "ExternalFuncButtonM-btn";
-		ExternalFuncBtn.setAttribute("label", "扩展程序按钮");
+
+		var ExternalFuncBtn = document.createElement('toolbarbutton');
+		ExternalFuncBtn.id = "ExternalFuncButtonM-ID";
+		ExternalFuncBtn.setAttribute("label", "扩展小功能按钮");
 		ExternalFuncBtn.setAttribute("onclick", "event.preventDefault();event.stopPropagation();");
-		ExternalFuncBtn.setAttribute("tooltiptext", "扩展程序按钮,可以自定义外挂扩展程序或目录");
+		ExternalFuncBtn.setAttribute("tooltiptext", "扩展小功能按钮,可以自定义小函数功能");
 		ExternalFuncBtn.setAttribute("class", "toolbarbutton-1 chromeclass-toolbar-additional");
 		ExternalFuncBtn.setAttribute("type", "menu");
 		ExternalFuncBtn.setAttribute("removable", "true");
 		ExternalFuncBtn.style.listStyleImage = "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAYUlEQVQ4jWNgYPj/n5GRPMzA8P8/AyPjfyj4hx3/w4H/Qw2BGPDv/7SzRVjxU1FVrPj/v3//GRj+UWYAxS4YTgb8+///f8ruD1jx369pWPH//6MGUNcAPFkJrwwkR1KYnQHdFt9E917n4QAAAABJRU5ErkJggg==)";
-		navigator.palette.appendChild(ExternalFuncBtn);
+
 
 		var ExternalFuncPopup = document.createElement('menupopup');
 		ExternalFuncPopup.setAttribute('onpopupshowing', 'event.stopPropagation();gExternalFuncButtonM.onpopupshowing();');
@@ -214,6 +213,41 @@ var gExternalFuncButtonM = {
 		setTimeout(function () { //延时加载菜单，不对启动造成影响，也不影响第一次打开菜单时的响应速度
 			gExternalFuncButtonM.loadSubMenu();
 		}, 3000);
+    	document.insertBefore(document.createProcessingInstruction('xml-stylesheet', 'type="text/css" href="data:text/css;utf-8,' + encodeURIComponent(
+    	'\
+			#ExternalFuncButtonM-ID {\
+			-moz-appearance: none !important;\
+			border-style: none !important;\
+			border-radius: 0 !important;\
+			padding: 0 3px !important;\
+			margin: 0 !important;\
+			background: transparent !important;\
+			box-shadow: none !important;\
+			-moz-box-align: center !important;\
+			-moz-box-pack: center !important;\
+			min-width: 18px !important;\
+			min-height: 18px !important;\
+			}\
+			#ExternalFuncButtonM-ID > .toolbarbutton-icon {\
+				max-width: 18px !important;\
+				padding: 0 !important;\
+				margin: 0 !important;\
+			}\
+			#ExternalFuncButtonM-ID dropmarker{display: none !important;}\
+    	') + '"'), document.documentElement);
+
+    	if (this.moveablePositonOrInsertafter) {
+    		var navigator = document.getElementById("navigator-toolbox");
+    		if (!navigator || navigator.palette.id !== "BrowserToolbarPalette")
+    			return;
+    		navigator.palette.appendChild(ExternalFuncBtn);
+    		this.updateToolbar();
+    	} else {
+    		var navigator = document.getElementById(this.insertafter);
+    		if (!navigator)
+    			return;
+    		navigator.parentNode.insertBefore(ExternalFuncBtn, navBar.previousSibling);
+    	}
 	},
 	loadSubMenu : function () {
 		if (this._isready)
@@ -279,12 +313,11 @@ var gExternalFuncButtonM = {
 		if (!this._isready)
 			this.loadSubMenu();
 	},
-};
-	function updateToolbar() {
-		var toolbars = document.querySelectorAll("toolbar");
-		Array.slice(toolbars).forEach(function (toolbar) {
+	updateToolbar: function () {
+		let toolbars = Array.slice(document.querySelectorAll('#navigator-toolbox > toolbar'));
+		toolbars.forEach(function (toolbar) {
 			var currentset = toolbar.getAttribute("currentset");
-			if (currentset.split(",").indexOf("ExternalFuncButtonM-btn") < 0)
+			if (currentset.split(",").indexOf("ExternalFuncButtonM-ID") < 0)
 				return;
 			toolbar.currentSet = currentset;
 			try {
@@ -292,5 +325,6 @@ var gExternalFuncButtonM = {
 			} catch (ex) {}
 		});
 	}
+};
+
     gExternalFuncButtonM.init();
-	updateToolbar();
