@@ -106,9 +106,9 @@ var gExternalFuncButtonM = {
 				subdir : 'firefox常用功能',
 			},
 			{
-				name : '重启',
+				name : '重启(清除启动缓存)',
 				subdir : 'firefox常用功能',
-				command : "Application.restart();",
+				command : "Services.appinfo.invalidateCachesOnRestart() || Application.restart();",
 			},
 
 			// 建议把要放在子目录下的功能按钮,定义在上面, 下面的定义放在主菜单下的最常用的功能按钮,
