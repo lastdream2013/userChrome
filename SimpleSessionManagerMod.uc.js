@@ -297,7 +297,8 @@ var gSimpleSessionManager = {
 
 	//保存会话
 	saveSession : function (ssdata) {
-		var name = prompt("保存会话：", new Date().toLocaleFormat("%Y-%m-%d %H:%M:%S"));
+		var defaultName = new Date().toLocaleFormat("%Y-%m-%d %H:%M:%S") + " [ " + content.document.title.replace(/\s-\s.*/i,"").replace(/_[^\[\]【】]+$/,"") + " ]";
+		var name = prompt("保存会话：", defaultName);
 		if (name != null) {
 			var data = gSimpleSessionManager.loadFile();
 			if (data === false) {
@@ -340,7 +341,7 @@ var gSimpleSessionManager = {
 		if (RtabCount == 0) // 全是about:blank, about:newtab类窗口直接退出不保存
 			return;
 		
-		var name = "自动保存：" + new Date().toLocaleFormat("%Y-%m-%d %H:%M:%S");
+		var name = "自动保存：" + new Date().toLocaleFormat("%Y-%m-%d %H:%M:%S") + " [ " + content.document.title.replace(/\s-\s.*/i,"").replace(/_[^\[\]【】]+$/,"") + " ]";
 		var data = gSimpleSessionManager.loadFile();
 		if (data === false) {
 			data = {};
