@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name           externalFuncButton.uc.js
+// @name           externalFuncButtonM.uc.js
 // @description    External functions button 
 // @include        main
 // @author         lastdream2013
