@@ -5,9 +5,10 @@
 // @include        main
 // @compatibility  Firefox 5.0
 // @charset        UTF-8
-// @license        MIT License
-// @note           add GM_notification API support by lastdream2013 2013.05.05 
-// @note           fix compatibility for firefox23a1 by lastdream2013 2013.04.23 
+// @license        MIT License  
+// @note           modified by lastdream2013: add switch: reload page on disable/enable script 2013.05.11
+// @note           modified by lastdream2013: add GM_notification API 2013.05.05 
+// @note           modified by lastdream2013: fix compatibility for firefox23a1 2013.04.23  
 // @note           by dannylee edited 2013.4.9
 // @note           0.1.8.1 Save Script が機能していないのを修正
 // @note           0.1.8.0 Remove E4X
@@ -298,7 +299,7 @@ USL.API = function(script, sandbox, win, doc) {
 	};
 
 	this.GM_notification = function (aMsg, aTitle, aIconURL, aCallback) {
-	if  (!USL.POPUP_SHOW)  return;
+	if  (!USL.ALLOW_NOTIFY)  return;
 		if (aCallback)
 			var callback = {
 				observe : function (subject, topic, data) {
@@ -551,12 +552,21 @@ USL.__defineSetter__("HIDE_EXCLUDE", function(bool){
 	return bool;
 });
 
-var POPUP_SHOW = USL.pref.getValue('POPUP_SHOW', true);
-USL.__defineGetter__("POPUP_SHOW", function() POPUP_SHOW);
-USL.__defineSetter__("POPUP_SHOW", function(bool){
-	POPUP_SHOW = !!bool;
-	let elem = $("UserScriptLoader-popup-show");
-	if (elem) elem.setAttribute("checked", POPUP_SHOW);
+var ALLOW_NOTIFY = USL.pref.getValue('ALLOW_NOTIFY', true);
+USL.__defineGetter__("ALLOW_NOTIFY", function() ALLOW_NOTIFY);
+USL.__defineSetter__("ALLOW_NOTIFY", function(bool){
+	ALLOW_NOTIFY = !!bool;
+	let elem = $("UserScriptLoader-allow-notify");
+	if (elem) elem.setAttribute("checked", ALLOW_NOTIFY);
+	return bool;
+});
+
+var AUTO_RELOAD_PAGE = USL.pref.getValue('AUTO_RELOAD_PAGE', true);
+USL.__defineGetter__("AUTO_RELOAD_PAGE", function() AUTO_RELOAD_PAGE);
+USL.__defineSetter__("AUTO_RELOAD_PAGE", function(bool){
+	AUTO_RELOAD_PAGE = !!bool;
+	let elem = $("UserScriptLoader-auto-reload-page");
+	if (elem) elem.setAttribute("checked", AUTO_RELOAD_PAGE);
 	return bool;
 });
 
@@ -619,10 +629,15 @@ USL.init = function(){
 					          checked="' + USL.DEBUG + '"\
 					          oncommand="USL.DEBUG = !USL.DEBUG;" />\
 					<menuitem label="允许脚本弹窗通知"\
-					          id="UserScriptLoader-popup-show"\
+					          id="UserScriptLoader-allow-notify"\
 					          type="checkbox"\
-					          checked="' + USL.POPUP_SHOW + '"\
-					          oncommand="USL.POPUP_SHOW = !USL.POPUP_SHOW;" />\
+					          checked="' + USL.ALLOW_NOTIFY + '"\
+					          oncommand="USL.ALLOW_NOTIFY = !USL.ALLOW_NOTIFY;" />\
+					<menuitem label="启动/禁用脚本时自动刷新页面"\
+					          id="UserScriptLoader-auto-reload-page"\
+					          type="checkbox"\
+					          checked="' + USL.AUTO_RELOAD_PAGE + '"\
+					          oncommand="USL.AUTO_RELOAD_PAGE = !USL.AUTO_RELOAD_PAGE;" />\
 				</menupopup>\
 			</menu>\
 		      <menuseparator/>\
@@ -651,7 +666,6 @@ USL.loadconfig = function () {
 
 	USL.rebuild();
 	USL.disabled = USL.pref.getValue('disabled', false);
-	//USL.icon.setAttribute("state", USL.disabled);
 	window.addEventListener('unload', USL, false);
 	Services.obs.addObserver(USL, "content-document-global-created", false);
 	USL.debug('observer start');
@@ -674,8 +688,9 @@ USL.destroy = function () {
 	USL.pref.setValue('script.disabled', disabledScripts.join('|'));
 	USL.pref.setValue('disabled', USL.disabled);
 	USL.pref.setValue('HIDE_EXCLUDE', USL.HIDE_EXCLUDE);
-	USL.pref.setValue('POPUP_SHOW', USL.POPUP_SHOW);
-
+	USL.pref.setValue('ALLOW_NOTIFY', USL.ALLOW_NOTIFY);
+	USL.pref.setValue('AUTO_RELOAD_PAGE', USL.AUTO_RELOAD_PAGE);
+	
 	var e = document.getElementById("UserScriptLoader-icon");
 	if (e) e.parentNode.removeChild(e);
 	var e = document.getElementById("UserScriptLoader-popup");
@@ -730,7 +745,7 @@ USL.createMenuitem = function () {
 		m.setAttribute("class", "UserScriptLoader-item");
 		m.setAttribute('checked', !script.disabled);
 		m.setAttribute('type', 'checkbox');
-		m.setAttribute('oncommand', 'this.script.disabled = !this.script.disabled;');
+		m.setAttribute('oncommand', 'this.script.disabled = !this.script.disabled;if(USL.AUTO_RELOAD_PAGE)BrowserReload();');
 		m.script = script;
 		USL.popup.insertBefore(m, USL.menuseparator);
 	});
@@ -936,7 +951,6 @@ USL.iconClick = function(event){
 		event.preventDefault();
 		USL.disabled = !USL.disabled;
 		USL.pref.setValue('disabled', USL.disabled);
-		//USL.icon.setAttribute("state", USL.disabled);
 	} else if (event.button == 1) {
 		USL.rebuild();
 	}
@@ -991,7 +1005,7 @@ USL.injectScripts = function(safeWindow, rsflag) {
 		}
 	});
 	if (documentEnds.length) {
-		aDocument.addEventListener("DOMContentLoaded", function(event){
+		safeWindow.addEventListener("DOMContentLoaded", function(event){
 			event.currentTarget.removeEventListener(event.type, arguments.callee, false);
 			documentEnds.forEach(function(s) "delay" in s ? 
 				safeWindow.setTimeout(run, s.delay, s) : run(s));
@@ -1017,7 +1031,7 @@ USL.injectScripts = function(safeWindow, rsflag) {
 			return;
 		}
 
-		let sandbox = new Cu.Sandbox(safeWindow, {'sandboxPrototype': safeWindow});
+		let sandbox = new Cu.Sandbox(safeWindow, {sandboxPrototype: safeWindow});
 		let GM_API = new USL.API(script, sandbox, safeWindow, aDocument);
 		for (let n in GM_API)
 			sandbox[n] = GM_API[n];
@@ -1112,7 +1126,8 @@ USL.saveSetting = function() {
 	USL.pref.setValue('script.disabled', disabledScripts.join('|'));
 	USL.pref.setValue('disabled', USL.disabled);
 	USL.pref.setValue('HIDE_EXCLUDE', USL.HIDE_EXCLUDE);
-	USL.pref.setValue('POPUP_SHOW', USL.POPUP_SHOW);
+	USL.pref.setValue('ALLOW_NOTIFY', USL.ALLOW_NOTIFY);
+	USL.pref.setValue('AUTO_RELOAD_PAGE', USL.AUTO_RELOAD_PAGE);
 	USL.pref.setValue('CACHE_SCRIPT', USL.CACHE_SCRIPT);
 	USL.pref.setValue('DEBUG', USL.DEBUG);
 
