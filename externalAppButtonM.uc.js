@@ -44,7 +44,7 @@ var gExternalAppbuttonM = {
             {name: '记事本', path: 'C:\\Windows\\notepad.exe', subdir: 'windows工具'},
             {name: '计算器', path: 'C:\\Windows\\System32\\calc.exe', subdir: 'windows工具'},
             {name: '命令行', path: 'C:\\WINDOWS\\system32\\cmd.exe',  subdir: 'windows工具'},
-        
+/*         
             {name: 'HyperSnap 7', path: 'E:\\software\\HyperSnap 7\\HprSnap7.exe',  subdir: '常用工具'},
             {name: 'Photoshop', path: 'E:\\software\\Photoshop7.0\\Photoshop.exe', subdir: '常用工具'},
             {name: 'separator', subdir: '常用工具'},
@@ -79,7 +79,7 @@ var gExternalAppbuttonM = {
             {name: 'Software', path: 'E:\\software', subdir:'常用目录'}, 
             {name: 'Downloads', path: 'I:\\Downloads', subdir:'常用目录'}, 
             {name: 'TDDownloads', path: 'I:\\TDDownload', subdir:'常用目录'}, 
-
+*/
             {name: 'profile', path: '\\', subdir:'firefox目录'}, 
             {name: 'chrome', path: '\\chrome', subdir:'firefox目录'}, 
             {name: 'CSS', path: '\\chrome\\CSS',  subdir:'firefox目录'}, 
@@ -92,7 +92,7 @@ var gExternalAppbuttonM = {
             {name: 'user.js', path: '\\user.js',  subdir:'firefox配置文件'},
          
            // 建议把要放在子目录下的程序定义在上面, 下面的定义放在主菜单下的最常用的程序
-            {name: 'separator'},
+/*            {name: 'separator'},
             {name: 'HyperSnap 7', path: 'E:\\software\\HyperSnap 7\\HprSnap7.exe'},
             {name: 'Photoshop', path: 'E:\\software\\Photoshop7.0\\Photoshop.exe'},
             {name: 'Everything', path: 'E:\\software\\Everything\\Everything.exe'},
@@ -104,7 +104,7 @@ var gExternalAppbuttonM = {
             {name: 'SourceInsight', path: 'E:\\software\\SourceInsight\\Insight3.exe'},
             {name: 'separator'},
             {name: 'Software', path: 'E:\\software'}, 
-
+*/ 
             {name: 'chrome', path: '\\chrome'}, 
         ],
 	},
