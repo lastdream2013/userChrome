@@ -52,7 +52,7 @@ var gExternalSubMenu = {
 				image :"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACWklEQVQ4jZ2TzUuUURTGf2dmnFHLpCh1kSa0yV2k1iZokRURRNAiSrDAlZFhSUQgRBYGRX+BEFQEISJBENW2hRUlgaLpjBPqaI7mt+i877z3nhbjfKi7Dlw4zzn3Hp77nHOEh4MKgFVQCxYwJoWNBWtT2Ev7Odh4BAC0rYr/Man/iA+r2xLhEUc72md1oD+hAJGwo9GIu/2i8fBh7aaY6yrPO5fk1ctlnj6eJxpxaWyYprkpTjTibilgNzNYXDAEg4I1sLvIL/lBkfk5Q2LdijEq83NmcwHPEMCkGIyPJXnQNqv5BT7qzhTK4rzhcHWImmMFXGsszryZGE9SXpGXYQB3+1RVtev1oh4oGbHHa39bVdXRsKOJdatpGw07evliTC9dmLB/ppKqqsrZLs1oUHkwSHlFnpSUBuT9u1UAbt2Y5nbzNNGIS0/3CtFRlx/fEhIbT2603hLApv51pKaAljt7dCbucagqKC3X4/pryCGU75OZuNH2jn3ypXeNsrKA7i3x52jgpRj4/XDu/E6Zinm0NscZHnIwHrK2aun9vC73Wmf0ybNSiU0kqawMSrYLXlbZ0XCSm01xBgdcPA/JFXx4yJVH9/+yvyJPMhlj8KW7oAo9b5a1/6ejyeT2mVlYsPr9a4KJsZyktQQwWQZ5IcFxFL8f1KLWKj6/iN+HKrC2Zpma9HIGSbMaiMCVq8UyGfMYGXbZVeSTE3WFALztXpGlRUt1bYiTp3dILgOh4ZPqi1PpkAJ9wJaZzVgQqE4DOdqJUP9B8bzsmhq7saobvjXgaWqVM0cz6/8PC5Bp7zdzt94AAAAASUVORK5CYII=",
 				command :
 				function () {
-					gBrowser.loadURI("javascript:var%20ax=prompt('%E7%99%BE%E5%BA%A6%E7%AB%99%E5%86%85%E6%90%9C%E7%B4%A2\n%E8%AF%B7%E8%BE%93%E5%85%A5%E6%90%9C%E7%B4%A2%E5%85%B3%E9%94%AE%E5%AD%97','');if(ax.length&gt;0){window.open('http://www.baidu.com/s?wd=site:'+encodeURIComponent(location.hostname)+'%20'+encodeURIComponent(ax))};void(0)")
+					gBrowser.loadURI("javascript:(function(){ p=prompt('%E5%9C%A8 '+document.location.href.split('/')[2]+' %E4%B8%AD%E6%90%9C%E7%B4%A2',''); if(p){ document.open('http://www.baidu.com/s?wd=site:'+document.location.href.split('/')[2]+' '+p,'','')} })();")
 				},
 			},
 			{
@@ -135,6 +135,15 @@ var gExternalSubMenu = {
 				command :
 				function () {
 					gBrowser.loadURI("javascript:(function(){function%20t(f){a=d.createNodeIterator(d,1,f,false);while(a.nextNode()){}}var%20d=document;t(function(e){x=e.offsetLeft;l=e.offsetParent;while(l!=null){x+=l.offsetLeft;l=l.offsetParent}var%20w=d.documentElement.clientWidth-x;var%20s=e.style;if(s.marginLeft)w-=s.marginLeft;if(s.marginRight)w-=s.marginRight;if(s.paddingLeft)w-=s.paddingLeft;if(s.paddingRight)w-=s.paddingRight;if(s.borderSize)w-=s.borderSize;w-=d.defaultView.innerWidth-d.documentElement.offsetWidth;if(e.tagName=='IMG'){h=e.clientHeight*w/e.clientWidth;s.maxHeight=h}s.maxWidth=w+'px'})})();")
+				},
+			},
+			{
+				name : '明文显示密码',
+				subdir : '',
+				image :"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADRElEQVQ4jW3Tf0zUdRzH8Y9QkUHLOW9KYEmtGkziPMexDicMuB/Q0TFg2MQK2gkRP+JEQjhyJr8Kji/I7zhghLBkghvS6cFUfhxwcXLFFvpPK4iTWLM/+0NW7dkftwJX7+315+vxx2t7C3X9ZEy8ZWYxt64PveUWGsnxv1E3TJF8yUFK2wKJzXPEW2YW1fWTMSLBMr3Z3VTN2vkIhk1xaKXZf0sZHfPIM84gC1PxbGAI+4JfQhb4ArFqLeUDtzk77N4UGsnBNXMKK4VBTBSEo5EcaCUHxYMuDsmjEUI8lmOh+8mtbya5ppuMum6ERnJgaLCTYniLTGmcU1YXlpvLpGVloZUJSo4KqmOexvKmjK7UA/S2f8JHc79gmlzhw+t3vYBGchD5fhX5fQ4sN5dI77FT+2Uf9p6PGb3aSf9wHy2D/Vzs7KLA0kG+ZKWwyUpRc+828LZkI+ezTnJGnZTZlzFarOiyC4nUGHg5XIHsQBDyqGiSUtKRyWQE+D3JHv/d20DxoIuTHSMUX53myBvH0CTq0adlIHb5IITgOdl+XMvf8+iPP+m/MoKv327vLv8A58fuYbK5OXQkisOvy/n90RYAn7d2Inx8USXo2HkZWUYvoG6cJb5hhrKBWd7ttSF8nyI7J4/fHj5kdXWVv4CjquOEK1UsLC6SlpoKwNDomBeIqryB0mzjvdoh0lqG2RvyGrFqLaXnKjiVmQnA6fwi/J4JwDowRE11NQA9l7/yAkqzDaXZhrZmkqrriyR92o4QgtN5BWx41tna2iI6Ng4hBK+EHmbi1h1u35kiLELBnsCD24DSbMN0+S5VC6skVDQSoT9BZYuV7DPl7A15lefD5BxUqIgwZBKbV05yVQe5Y0uPA0qzjbNDS7S5PFTM/4xxzE32iJOiiXuUzPxE6fw6JY41yhY8SN/9SvP0j/8FlGYbxy/Yye9zUnfjPm1ODy0uD63frNPuXOPS1A9UXnGS1ziCIceMUFaMP9hZTmya4YP+OYq7xiltGsBYWEbSCSP6k7no0rOJM7zDi6EKdvk8gRDigVCUXtNFnvt6M/qCnSLbfWrdHmq/3eCie4PKqRVMrV8QH7qPAH9/goKDdz7Wpr8Qur8B/c1d/jmhRwsAAAAASUVORK5CYII=",
+				command :
+				function () {
+					gBrowser.loadURI("javascript:(function()%7Bvar%20IN,F;IN=document.getElementsByTagName('input');for(var%20i=0;i<IN.length;i++)%7BF=IN%5Bi%5D;if(F.type.toLowerCase()=='password')%7Btry%7BF.type='text'%7Dcatch(r)%7Bvar%20n,Fa;n=document.createElement('input');Fa=F.attributes;for(var%20ii=0;ii<Fa.length;ii++)%7Bvar%20k,knn,knv;k=Fa%5Bii%5D;knn=k.nodeName;knv=k.nodeValue;if(knn.toLowerCase()!='type')%7Bif(knn!='height'&&knn!='width'&!!knv)n%5Bknn%5D=knv%7D%7D;F.parentNode.replaceChild(n,F)%7D%7D%7D%7D)()")
 				},
 			},
 			{
