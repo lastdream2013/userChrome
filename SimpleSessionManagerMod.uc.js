@@ -4,6 +4,7 @@
 // @description    简易会话管理器
 // @include        chrome://browser/content/browser.xul
 // @note           testversion, mod by lastdream2013
+// @note           20130512  add restore selected session on startup. 
 // @note           20130511  don't auto save session on quit if all tabs is about:blank or about:newtab
 // @note		   20130510: add restore session list at startup, confirm | auto save session on quit.
 // @note           20130424: add restore session at startup and remove all Session menu.
@@ -30,10 +31,16 @@ var gSimpleSessionManager = {
 			.getBranch("SimpleSessionManager.");
 		_prefs.QueryInterface(Components.interfaces.nsIPrefBranch2);
 
-		if (!_prefs.prefHasUserValue("restoreLastSessionOnstart")) {
-			_prefs.setIntPref("restoreLastSessionOnstart", false);
+		if (!_prefs.prefHasUserValue("restoreSessionOnstart")) {
+			_prefs.setIntPref("restoreSessionOnstart", 0);
 		}
-
+		// 启动恢复上一次会话时，所指定的会话名称
+		if (!_prefs.prefHasUserValue("restoreSessionOnstart.SessionName")) {
+			var str = Cc["@mozilla.org/supports-string;1"].createInstance(Ci.nsISupportsString);
+			str.data = '';
+			_prefs.setComplexValue("restoreSessionOnstart.SessionName", Ci.nsISupportsString, str);
+		}
+		
 		if (!_prefs.prefHasUserValue("SaveSessionOnQuit")) {
 			_prefs.setIntPref("SaveSessionOnQuit", 0);
 		}
@@ -42,6 +49,8 @@ var gSimpleSessionManager = {
 			_prefs.setBoolPref("deleteAutoSaveSessionOnRecovery", true);
 
 		}
+
+		
 		gSimpleSessionManager.loadMenu();
 	},
 	loadMenu : function () {
@@ -118,23 +127,32 @@ var gSimpleSessionManager = {
 		var subitem = document.createElement("menuitem");
 		subitem.setAttribute("label", "直接启动");
 		subitem.setAttribute("type", "radio");
-		subitem.setAttribute("checked", 0 == gPrefService.getIntPref("SimpleSessionManager.restoreLastSessionOnstart"));
-		subitem.setAttribute("oncommand", 'gPrefService.setIntPref("SimpleSessionManager.restoreLastSessionOnstart", 0);');
+		subitem.setAttribute("checked", 0 == gPrefService.getIntPref("SimpleSessionManager.restoreSessionOnstart"));
+		subitem.setAttribute("oncommand", 'gPrefService.setIntPref("SimpleSessionManager.restoreSessionOnstart", 0);');
 		mids_menupopup.appendChild(subitem);
 		subitem = document.createElement("menuitem");
 		subitem.setAttribute("label", "自动恢复上一次会话");
 		subitem.setAttribute("type", "radio");
-		subitem.setAttribute("checked", 1 == gPrefService.getIntPref("SimpleSessionManager.restoreLastSessionOnstart"));
-		subitem.setAttribute("oncommand", 'gPrefService.setIntPref("SimpleSessionManager.restoreLastSessionOnstart", 1);');
+		subitem.setAttribute("checked", 1 == gPrefService.getIntPref("SimpleSessionManager.restoreSessionOnstart"));
+		subitem.setAttribute("oncommand", 'gPrefService.setIntPref("SimpleSessionManager.restoreSessionOnstart", 1);');
 		mids_menupopup.appendChild(subitem);
 		subitem = document.createElement("menuitem");
 		subitem.setAttribute("label", "从会话列表选择恢复");
 		subitem.setAttribute("type", "radio");
-		subitem.setAttribute("checked", 2 == gPrefService.getIntPref("SimpleSessionManager.restoreLastSessionOnstart"));
-		subitem.setAttribute("oncommand", 'gPrefService.setIntPref("SimpleSessionManager.restoreLastSessionOnstart", 2);');
+		subitem.setAttribute("checked", 2 == gPrefService.getIntPref("SimpleSessionManager.restoreSessionOnstart"));
+		subitem.setAttribute("oncommand", 'gPrefService.setIntPref("SimpleSessionManager.restoreSessionOnstart", 2);');
 		mids_menupopup.appendChild(subitem);
+		
+		subitemI = document.createElement("menu");
+		subitemI.setAttribute("label", "恢复指定的会话");
+		subitemI.setAttribute('class', 'menu-iconic');
+    	var ssmlist_popup = subitemI.appendChild(document.createElement('menupopup'));
+		ssmlist_popup.setAttribute("id", "SSMgr_POPUP_ID");
+		ssmlist_popup.setAttribute("onpopupshowing", "gSimpleSessionManager.buildSessionList();");
+		mids_menupopup.appendChild(subitemI);
+		
 		subitem = document.createElement("menuitem");
-		subitem.setAttribute("label", "恢复的是自动保存会话则删除本次恢复的会话");
+		subitem.setAttribute("label", "恢复自动保存会话则删除本次恢复的会话");
 		subitem.setAttribute("type", "checkbox");
 		subitem.setAttribute("checked", true == gPrefService.getBoolPref("SimpleSessionManager.deleteAutoSaveSessionOnRecovery"));
 		subitem.setAttribute("oncommand", 'gPrefService.setBoolPref("SimpleSessionManager.deleteAutoSaveSessionOnRecovery", !gPrefService.getBoolPref("SimpleSessionManager.deleteAutoSaveSessionOnRecovery"));');
@@ -167,7 +185,7 @@ var gSimpleSessionManager = {
 		menupopup.appendChild(miqs);
 
 		var menusep = document.createElement("menuseparator"); //菜单分隔符
-		menusep.id = "Simple-Session-Manager-ID";
+		menusep.id = "ssmgr-separator-id";
 		menupopup.appendChild(menusep);
 
 		var savedSessions = gSimpleSessionManager.loadFile(); //已保存列表
@@ -175,12 +193,15 @@ var gSimpleSessionManager = {
 			gSimpleSessionManager.makeitems(name);
 		}
 
-		if (gPrefService.getIntPref("SimpleSessionManager.restoreLastSessionOnstart") == 1) {
+		if (gPrefService.getIntPref("SimpleSessionManager.restoreSessionOnstart") == 1) {
 			window.addEventListener("load", gSimpleSessionManager.restoreSessionStartup(), false);
-		} else if (gPrefService.getIntPref("SimpleSessionManager.restoreLastSessionOnstart") == 2) {
+		} else if (gPrefService.getIntPref("SimpleSessionManager.restoreSessionOnstart") == 2) {
 			window.addEventListener("load", gSimpleSessionManager.restoreSessionPopup(), false);
+		} else if (gPrefService.getIntPref("SimpleSessionManager.restoreSessionOnstart") == 3) {
+			var ssname = gPrefService.getComplexValue("SimpleSessionManager.restoreSessionOnstart.SessionName", Ci.nsISupportsString).data;
+			if (ssname != "" )
+				window.addEventListener("load", gSimpleSessionManager.restoreSessionStartup(ssname), false);
 		}
-
 		if (gPrefService.getIntPref("SimpleSessionManager.SaveSessionOnQuit") > 0) {
 			Services.obs.addObserver(gSimpleSessionManager.SSObserve, "quit-application-requested", false);
 		}
@@ -196,6 +217,33 @@ var gSimpleSessionManager = {
 		}
 	},
 
+	
+	//生成已保存会话的弹出菜单
+	buildSessionList : function () {
+		var rs_popup = document.getElementById("SSMgr_POPUP_ID");
+		if ( !rs_popup ) return;
+ 
+		while(rs_popup.hasChildNodes()){
+		  rs_popup.removeChild(rs_popup.firstChild);
+		}
+		
+		var data = gSimpleSessionManager.loadFile();
+		var i = 0,
+		SessionList = [];
+		for (name in data) {
+			SessionList[i] = name;
+			var rs = document.createElement("menuitem");
+			rs.setAttribute("label", SessionList[i]);
+			rs.setAttribute('class', 'menuitem-iconic');
+			rs.setAttribute("type", "radio");
+			rs.setAttribute("checked", SessionList[i] == gPrefService.getComplexValue("SimpleSessionManager.restoreSessionOnstart.SessionName", Ci.nsISupportsString).data);
+			rs.setAttribute("oncommand",
+				'var str = Cc["@mozilla.org/supports-string;1"].createInstance(Ci.nsISupportsString);str.data = "' + String(SessionList[i]) + '";gPrefService.setComplexValue("SimpleSessionManager.restoreSessionOnstart.SessionName", Ci.nsISupportsString, str);gPrefService.setIntPref("SimpleSessionManager.restoreSessionOnstart", 3)', false);
+			rs_popup.appendChild(rs);
+			i++;
+		}
+	},
+	
 	//生成已保存会话的弹出菜单
 	restoreSessionPopup : function () {
 		var rs_popup = document.createElement("menupopup");
@@ -213,6 +261,7 @@ var gSimpleSessionManager = {
 			var rs = document.createElement("menuitem");
 			rs.setAttribute("label", SessionList[i]);
 			rs.setAttribute('class', 'menuitem-iconic');
+			rs.setAttribute("type", "radio");
 			rs.setAttribute("oncommand",
 				'gSimpleSessionManager.restoreSession("' + String(SessionList[i]) + '");gSimpleSessionManager.deleteRestoredSessionOnStartup("' + String(SessionList[i]) + '");', false);
 			rs_popup.appendChild(rs);
@@ -225,6 +274,7 @@ var gSimpleSessionManager = {
 		rs_popup.openPopupAtScreen(200, 200);
 	},
 
+	
 	//生成已保存会话的右键菜单
 	makeitems : function (name) {
 		var menupopup = document.getElementById("ssm_menupopup");
@@ -372,6 +422,12 @@ var gSimpleSessionManager = {
 			var data = gSimpleSessionManager.loadFile();
 			delete data[name];
 			gSimpleSessionManager.saveFile(JSON.stringify(data));
+			var ssname = gPrefService.getComplexValue("SimpleSessionManager.restoreSessionOnstart.SessionName", Ci.nsISupportsString).data;
+			if ( name == ssname ) {
+				var str = Cc["@mozilla.org/supports-string;1"].createInstance(Ci.nsISupportsString);
+				str.data = '';
+				_prefs.setComplexValue("restoreSessionOnstart.SessionName", Ci.nsISupportsString, str);
+			}
 		}
 	},
 
@@ -385,9 +441,12 @@ var gSimpleSessionManager = {
 			}
 			gSimpleSessionManager.saveFile(JSON.stringify(savedSessions));
 			var menupopup = document.getElementById("ssm_menupopup");
-			while (menupopup.lastChild.id != "Simple-Session-Manager-ID") {
+			while (menupopup.lastChild.id != "ssmgr-separator-id") {
 				menupopup.removeChild(menupopup.lastChild);
 			}
+			var str = Cc["@mozilla.org/supports-string;1"].createInstance(Ci.nsISupportsString);
+			str.data = '';
+			_prefs.setComplexValue("restoreSessionOnstart.SessionName", Ci.nsISupportsString, str);
 		}
 	},
 
@@ -415,6 +474,7 @@ var gSimpleSessionManager = {
 		}
 		var data = gSimpleSessionManager.loadFile();
 		var state = JSON.stringify(data[name]);
+		if ( !state ) return;
 		switch (gSimpleSessionManager.overwrite) {
 		case 0:
 			SS.setWindowState(window, state, false);
@@ -434,17 +494,25 @@ var gSimpleSessionManager = {
 	},
 
 	//恢复最后一次会话
-	restoreSessionStartup : function () {
+	restoreSessionStartup : function (stateString) {
 		var data = gSimpleSessionManager.loadFile();
 		var i = 0,
 		SessionList = [];
-		for (name in data) {
-			SessionList[i] = name;
+		for (ssname in data) {
+			SessionList[i] = ssname;
 			i++;
 		}
 		if (i == 0)
 			return;
-		var state = JSON.stringify(data[SessionList[i - 1]]);
+			
+		if (typeof stateString === "string") {
+			var name = stateString;
+		} else {
+			var name = SessionList[i - 1];
+		}
+	
+		var state = JSON.stringify(data[name]);
+		if ( !state ) return;
 		switch (gSimpleSessionManager.overwrite) {
 		case 0:
 			SS.setWindowState(window, state, false);
@@ -461,19 +529,19 @@ var gSimpleSessionManager = {
 			}, true);
 			break;
 		}
-		gSimpleSessionManager.deleteRestoredSessionOnStartup(SessionList[i - 1]);
+		gSimpleSessionManager.deleteRestoredSessionOnStartup(name);
 	},
-	//删除已恢复的会话
+	//删除已恢复的自动保存会话
 	deleteRestoredSessionOnStartup : function (ssname) {
 		if (typeof ssname === "string" && gPrefService.getBoolPref("SimpleSessionManager.deleteAutoSaveSessionOnRecovery")) {
 			var data = gSimpleSessionManager.loadFile();
-			if (ssname.indexOf('自动保存：') !== -1) {
+			if ( ssname.slice(0,5) == ('自动保存：') ) {
 				delete data[ssname];
 				gSimpleSessionManager.saveFile(JSON.stringify(data));
 
 				var menupopup = document.getElementById("ssm_menupopup");
 				if ( !menupopup ) return; 
-				while (menupopup.lastChild.id != "Simple-Session-Manager-ID") {
+				while (menupopup.lastChild.id != "ssmgr-separator-id") {
 					menupopup.removeChild(menupopup.lastChild);
 				}
 				for (name in data) {
