@@ -6,7 +6,7 @@
 // @compatibility  Firefox 5.0
 // @charset        UTF-8
 // @license        MIT License  
-// @note           modified by lastdream2013: add switch: reload page on disable/enable script 2013.05.11
+// @note           modified by lastdream2013: add switch: reload page on disable/enable script 2013.05.12
 // @note           modified by lastdream2013: add GM_notification API 2013.05.05 
 // @note           modified by lastdream2013: fix compatibility for firefox23a1 2013.04.23  
 // @note           by dannylee edited 2013.4.9
@@ -1005,7 +1005,7 @@ USL.injectScripts = function(safeWindow, rsflag) {
 		}
 	});
 	if (documentEnds.length) {
-		safeWindow.addEventListener("DOMContentLoaded", function(event){
+		aDocument.addEventListener("DOMContentLoaded", function(event){
 			event.currentTarget.removeEventListener(event.type, arguments.callee, false);
 			documentEnds.forEach(function(s) "delay" in s ? 
 				safeWindow.setTimeout(run, s.delay, s) : run(s));
@@ -1031,7 +1031,7 @@ USL.injectScripts = function(safeWindow, rsflag) {
 			return;
 		}
 
-		let sandbox = new Cu.Sandbox(safeWindow, {sandboxPrototype: safeWindow});
+		let sandbox = new Cu.Sandbox(safeWindow, {'sandboxPrototype': safeWindow});
 		let GM_API = new USL.API(script, sandbox, safeWindow, aDocument);
 		for (let n in GM_API)
 			sandbox[n] = GM_API[n];
