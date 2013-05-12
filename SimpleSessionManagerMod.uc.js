@@ -6,7 +6,7 @@
 // @note           testversion, mod by lastdream2013
 // @note           20130512  add restore selected session on startup. 
 // @note           20130511  don't auto save session on quit if all tabs is about:blank or about:newtab
-// @note		   20130510: add restore session list at startup, confirm | auto save session on quit.
+// @note           20130510: add restore session list at startup, confirm | auto save session on quit.
 // @note           20130424: add restore session at startup and remove all Session menu.
 // @version        0.4.1
 // @charset        UTF-8
