@@ -8,7 +8,7 @@
 // ==/UserScript==
 
 var gCustomAppMenu = {
-  autohideEmptySubDirs: true,  //自动隐藏没有一个子项目的子目录菜单
+	autohideEmptySubDirs: true,  //自动隐藏没有一个子项目的子目录菜单
 	moveSubDirstoBottom: false,  //把主菜单下的子目录移动到最下面
     toolbar :
     {
@@ -252,8 +252,20 @@ var gCustomAppMenu = {
 		this.handleRelativePath(this.toolbar.apps);
 		document.insertBefore(document.createProcessingInstruction('xml-stylesheet', 'type="text/css" href="data:text/css;utf-8,' + encodeURIComponent(
 			'\
-			#appmenuPrimaryPane,\
-			#appmenuSecondaryPane\{display: none !important;}\
+#appmenu_newTab, /*新建标签页*/\
+#appmenu_newPrivateWindow,\
+#appmenuPrimaryPane > hbox,/* 编辑菜单上级版面 */\
+#appmenu-editmenu,/* 编辑菜单 */\
+#appmenu_find, /* 查找 */\
+#appmenu_savePage, /* 页面另存为*/\
+#appmenu_sendLink, /* 发送页面 */\
+#appmenu_print, /* 打印 */\
+#appmenu_fullScreen, /* 全屏 */\
+#sync-setup-appmenu,/* 设置同步 */\
+#sync-syncnowitem-appmenu, /* 同步 */\
+#appmenu-quit, /* 退出 */\
+menuseparator[class="appmenu-menuseparator"],\
+#appmenuSecondaryPane\{display: none !important;}\
 			') + '"'), document.documentElement);
 		var ExternalAppPopup = document.getElementById('appmenu-popup');
 		for (var i = 0; i < this.toolbar.subdirs.length; i++) {
