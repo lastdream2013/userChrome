@@ -1,12 +1,15 @@
 // ==UserScript==
 // @name UserAgentChangeModLite.uc.js
 // @namespace http://www.sephiroth-j.de/mozilla/
-// @note  modify by lastdream2013 at 20130510 mino fix
+// @note  modify by lastdream2013 at 20130515 mino fix
 // @note  modify by lastdream2013 at 20130409 sitelist : change SITELIST idx to Name
 // @note  modify by lastdream2013 for navigator.userAgent https://g.mozest.com/thread-43428-1-2
 // @include chrome://browser/content/browser.xul
 // ==/UserScript==
 var ucjs_UAChanger = {
+
+	DISPLAY_TYPE : 1, // 0显示列表为radiobox, 1显示为ua图标列表
+
 	//----讲解开始----
 	//（1）在url后面添加网站，注意用正则表达式
 
@@ -60,8 +63,7 @@ var ucjs_UAChanger = {
 	//自己在底下添加ua
 	UA_LIST : [{
 			name : "分隔线",
-		},
-		{
+		}, {
 			name : "Firefox10.0",
 			ua : "Mozilla/5.0 (Windows NT 6.1; rv:10.0.6) Gecko/20120716 Firefox/10.0.6",
 			label : "Firefox10.0",
@@ -143,6 +145,7 @@ var ucjs_UAChanger = {
 	],
 
 	UANameIdxHash : [],
+
 	// ----- 下面设置开始 -----
 	// defautl: ステータスバーの右端に表示する
 	TARGET : null, // 定义一个target，用来调整状态栏顺序,null为空
@@ -190,7 +193,6 @@ var ucjs_UAChanger = {
 		window.addEventListener("unload", this, false);
 	},
 	onDocumentCreated : function (aSubject, aTopic, aData) {
-		//Services.console.logStringMessage('[ aSubject ]: ' +aSubject );
 		var aChannel = aSubject.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation).QueryInterface(Ci.nsIDocShell).currentDocumentChannel;
 		if (aChannel instanceof Ci.nsIHttpChannel) {
 			var navigator = aSubject.navigator;
@@ -242,27 +244,27 @@ var ucjs_UAChanger = {
 			uacPanel.setAttribute("type", "menu");
 			// css 解决按钮定义在urlbar-icons撑大地址栏，变宽……
 			document.insertBefore(document.createProcessingInstruction('xml-stylesheet', 'type="text/css" href="data:text/css;utf-8,' + encodeURIComponent(
-						'\
-						#uac_statusbar_panel {\
-						  -moz-appearance: none !important;\
-						  border-style: none !important;\
-						  border-radius: 0 !important;\
-						  padding: 0 2px !important;\
-						  margin: 0 !important;\
-						  background: transparent !important;\
-						  box-shadow: none !important;\
-						  -moz-box-align: center !important;\
-						  -moz-box-pack: center !important;\
-						  min-width: 18px !important;\
-						  min-height: 18px !important;\
-						          }\
-						#uac_statusbar_panel > .toolbarbutton-icon {\
-							max-width: 18px !important;\
-						    padding: 0 !important;\
-						    margin: 0 !important;\
-						}\
-						#uac_statusbar_panel dropmarker{display: none !important;}\
-						    ') + '"'), document.documentElement);
+			'\
+			#uac_statusbar_panel {\
+			  -moz-appearance: none !important;\
+			  border-style: none !important;\
+			  border-radius: 0 !important;\
+			  padding: 0 3px !important;\
+			  margin: 0 !important;\
+			  background: transparent !important;\
+			  box-shadow: none !important;\
+			  -moz-box-align: center !important;\
+			  -moz-box-pack: center !important;\
+			  min-width: 18px !important;\
+			  min-height: 18px !important;\
+			          }\
+			#uac_statusbar_panel > .toolbarbutton-icon {\
+				max-width: 18px !important;\
+			    padding: 0 !important;\
+			    margin: 0 !important;\
+			}\
+			#uac_statusbar_panel dropmarker{display: none !important;}\
+			    ') + '"'), document.documentElement);
 		} else
 			uacPanel.setAttribute("style", "min-width: " + (this.ADD_OTHER_FX ? this.WIDE_WIDTH : this.NARROW_WIDTH) + "px; text-align: center; padding: 0px;");
 		var toolbar = document.getElementById("urlbar-icons");
@@ -279,15 +281,24 @@ var ucjs_UAChanger = {
 				PopupMenu.appendChild(mi);
 			} else {
 				var mi = document.createElement("menuitem");
-				mi.setAttribute("label", this.UA_LIST[i].name);
-				mi.setAttribute("oncommand", "ucjs_UAChanger.setUA(" + i + ");");
-				mi.setAttribute("type", "radio");
 
-				mi.setAttribute("checked", i == this.def_idx);
+				mi.setAttribute('label', this.UA_LIST[i].name);
+				mi.setAttribute('tooltiptext', this.UA_LIST[i].ua);
+				mi.setAttribute('oncommand', "ucjs_UAChanger.setUA(" + i + ");");
+
+				if (this.DISPLAY_TYPE) {
+					mi.setAttribute('class', 'menuitem-iconic');
+					mi.setAttribute('image', this.UA_LIST[i].img);
+				} else {
+					mi.setAttribute("type", "radio");
+					mi.setAttribute("checked", i == this.def_idx);
+				}
 				if (i == this.def_idx) {
 					mi.setAttribute("style", 'font-weight: bold;');
+					mi.style.color = 'red';
 				} else {
 					mi.setAttribute("style", 'font-weight: normal;');
+					mi.style.color = 'black';
 				}
 				mi.setAttribute("uac-generated", true);
 				PopupMenu.appendChild(mi);
@@ -308,7 +319,7 @@ var ucjs_UAChanger = {
 		var http = subject.QueryInterface(Ci.nsIHttpChannel);
 		for (var i = 0; i < this.SITE_LIST.length; i++) {
 			if (http.URI && (new RegExp(this.SITE_LIST[i].url)).test(http.URI.spec)) {
-				var idx = (this.SITE_LIST[i].idx == 0) ? this.UA_LIST.length - 1 : this.SITE_LIST[i].idx;
+				var idx = this.SITE_LIST[i].idx;
 				http.setRequestHeader("User-Agent", this.UA_LIST[idx].ua, false);
 			}
 		}
@@ -322,11 +333,14 @@ var ucjs_UAChanger = {
 		case "popupshowing": // コンテクスト・メニュー・ポップアップ時にチェック・マークを更新する
 			var menu = aEvent.target;
 			for (var i = 0; i < menu.childNodes.length; i++) {
-				menu.childNodes[i].setAttribute("checked", i == ucjs_UAChanger.Current_idx);
 				if (i == ucjs_UAChanger.Current_idx) {
 					menu.childNodes[i].setAttribute("style", 'font-weight: bold;');
+					menu.childNodes[i].style.color = 'red';
+					if (!this.DISPLAY_TYPE)
+						menu.childNodes[i].setAttribute("checked", true);
 				} else {
 					menu.childNodes[i].setAttribute("style", 'font-weight: normal;');
+					menu.childNodes[i].style.color = 'black';
 				}
 			}
 			break;
@@ -335,7 +349,7 @@ var ucjs_UAChanger = {
 		case "TabClose":
 			for (var i = 0; i < ucjs_UAChanger.SITE_LIST.length; i++) {
 				if ((new RegExp(this.SITE_LIST[i].url)).test(contentBrowser.currentURI.spec)) {
-					var idx = (this.SITE_LIST[i].idx == 0) ? this.UA_LIST.length - 1 : this.SITE_LIST[i].idx;
+					var idx = this.SITE_LIST[i].idx;
 					this.setImage(idx);
 					return;
 				}
@@ -350,7 +364,8 @@ var ucjs_UAChanger = {
 			var contentArea = document.getElementById("appcontent");
 			contentArea.removeEventListener("load", this, true);
 			contentArea.removeEventListener("select", this, false);
-			if (contentBrowser) contentBrowser.tabContainer.removeEventListener("TabClose", this, false);
+			if (contentBrowser)
+				contentBrowser.tabContainer.removeEventListener("TabClose", this, false);
 			uacMenu.removeEventListener("popupshowing", this, false);
 			window.removeEventListener("unload", this, false);
 			break;
@@ -395,9 +410,10 @@ var ucjs_UAChanger = {
 			var uaName = this.SITE_LIST[j].Name;
 			if (this.UANameIdxHash[uaName]) {
 				this.SITE_LIST[j].idx = this.UANameIdxHash[uaName];
-				//Application.console.log(".idx:  " + this.SITE_LIST[j].idx);
+
 			} else {
 				this.SITE_LIST[j].idx = this.def_idx;
+
 			}
 		}
 	},
