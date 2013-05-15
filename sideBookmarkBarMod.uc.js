@@ -2,7 +2,8 @@
 // @name           sideBookmarkBarMod.uc.js
 // @namespace      http://www.slimeden.com
 // @author         Xiao Shan
-// @note           test version 20130427: modify by lastdream2013, fix combility for firefox23a1
+// @note           test version 20130515: modify by lastdream2013
+// @note           fix combility for firefox24a1 and windows xp system
 // @description    Customize bookmarkbar to left side, arrange bookmarks vertically
 // @version        0.4.1 - 20110218
 // ==/UserScript==
@@ -41,7 +42,7 @@
      if (BMB){
      bookmarks.insertBefore(BMB, bookmarks.childNodes[0]);
 
-   var BMBobserver = new MutationObserver(function(mutations) {
+ 	var BMBobserver = new MutationObserver(function(mutations) {
  	for (let m of mutations) {
  	// stop BMB button removed from bookmarks
 	for (let e of m.removedNodes) {
@@ -55,8 +56,6 @@
 	});
 	BMBobserver.observe(bookmarks, { childList: true } );  
 	}
-	
-	BookmarksMenuButton.updatePosition = function() {return;};
 	
  	var menupopupobserver = new MutationObserver(function(mutations) {
 		for (let m of mutations) {
@@ -72,11 +71,10 @@
 	});
 	menupopupobserver.observe(bookmarks, { childList: true, subtree: true } ); 
 	
-
     // make the bookmark items arranged vertically
     var bookmarkItems = document.getElementById("PlacesToolbarItems");
     bookmarkItems.setAttribute("orient", "vertical");
-    bookmarkItems.parentNode.setAttribute("orient", "vertical");
+	bookmarkItems.parentNode.setAttribute("orient", "vertical");
     bookmarkItems.setAttribute("style", "padding: 0px 0px 0px 0px !important;"); 
 
    var placesToolbar = document.getElementById("PlacesToolbar");
@@ -84,6 +82,7 @@
 
    bookmarks.appendChild(placesToolbar);
    PlacesToolbarHelper.init();
+   if ( typeof(BookmarksMenuButton) != 'undefined' )  BookmarksMenuButton.customizeDone();
     
     // make the drop indicator horizontal
     try {
