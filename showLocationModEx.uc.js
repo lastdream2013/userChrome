@@ -1,17 +1,17 @@
 // ==UserScript==
 // @name            showLocationModEx.uc.js
 // @charset         UTF-8
-// @description   显示国旗与IP
+// @description     显示国旗与IP
 // @include         chrome://browser/content/browser.xul
 // @author          紫云飞
-// @note             version20130408: mod by lastdream2013 
+// @note            version20130516: mod by lastdream2013 
 // ==/UserScript==
 
 (function(){
 //改这里选择是否加载本地国旗图标库，不存在或路径错误自动切换从网络中读国旗图标
 var localFlagPath = "lib\\countryflags.js";  // 注意是相对路径： profile\chrome\lib\countryflags.js
 //改这里选择显示国旗图标/IP位置，如果是identity-box为地址栏前端显示，会自动加载隐藏page-proxy-favicon css配合显示效果
-var showLocationPos = "identity-box";      // urlbar-icons   identity-box addon-bar status-bar 等等  
+var showLocationPos = "identity-box";    	// urlbar-icons   identity-box addon-bar status-bar 等等  
 
 //下面的不知道不要动
 var IsUserLocalFlag = false;
@@ -88,9 +88,13 @@ try {
         req.send(null);
         req.onload = function () {
             if (req.status == 200) {
-                var location = req.responseText.match(/"InputIPAddrMessage">([^<]+)/)[1].replace(/\s*CZ88.NET.*/, "");
+				var lmsg = req.responseText.match(/"InputIPAddrMessage">([^<]+)/);
+				if ( lmsg )
+					var location = lmsg[1].replace(/\s*CZ88.NET.*/, "") + " \n";
+				else 
+					var location = "";
                 //设置文字提示内容
-                self.showFlagTooltipHash[host] = location + " \n" + server + " \n" + ip;
+                self.showFlagTooltipHash[host] = location + server + " \n" + ip;
                 host == content.location.hostname && (self.showFlag.tooltipText = self.showFlagTooltipHash[host]);
             }
             self.isReqLocationHash[host] = false;
