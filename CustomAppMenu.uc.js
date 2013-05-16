@@ -12,7 +12,7 @@ var gCustomAppMenu = {
 	moveSubDirstoBottom: false,  //把主菜单下的子目录移动到最下面
     toolbar :
     {
-    	//在这里定义好主菜单下子目录的名字,以及图标(可定义或留空,好图标不好找....)； 可在中间加{name: 'separator'}建立一个目录与目录之间的分隔线
+    	//在这里定义好主菜单下子目录的名字,以及图标 ； 可在中间加{name: 'separator'}建立一个目录与目录之间的分隔线
     	subdirs : [
     		{
     			name : '常用功能',
@@ -252,6 +252,11 @@ var gCustomAppMenu = {
 		this.handleRelativePath(this.toolbar.apps);
 		document.insertBefore(document.createProcessingInstruction('xml-stylesheet', 'type="text/css" href="data:text/css;utf-8,' + encodeURIComponent(
 			'\
+/*双列菜单变单列*/\
+#appmenu-popup > hbox {-moz-box-orient: vertical !important;} \
+#appmenuPrimaryPane {border-right-style: none !important;} \
+\
+#appmenu_webDeveloper,\
 #appmenu_newTab, /*新建标签页*/\
 #appmenu_newPrivateWindow,\
 #appmenuPrimaryPane > hbox,/* 编辑菜单上级版面 */\
@@ -265,7 +270,15 @@ var gCustomAppMenu = {
 #sync-syncnowitem-appmenu, /* 同步 */\
 #appmenu-quit, /* 退出 */\
 menuseparator[class="appmenu-menuseparator"],\
-#appmenuSecondaryPane\{display: none !important;}\
+/* 右侧栏 */\
+#appmenu_addons,\
+#appmenu_bookmarks, /*书签 */\
+#appmenu_customize,\
+#appmenu_history, /* 历史 */\
+#appmenu_downloads, /* 下载 */\
+#appmenu_help,\
+#appmenuSecondaryPane-spacer /* 右侧栏空白 */\
+{display: none !important;}\
 			') + '"'), document.documentElement);
 		var ExternalAppPopup = document.getElementById('appmenu-popup');
 		for (var i = 0; i < this.toolbar.subdirs.length; i++) {
