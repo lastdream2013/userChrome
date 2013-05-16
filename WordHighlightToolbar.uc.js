@@ -7,7 +7,7 @@
 // @compatibility  Firefox 17
 // @charset        UTF-8
 // @include        main
-// @version        0.0.6 20130509 test: bugfix by lastdream2013 : inject css comflicts at some site, delay 1000ms
+// @version        0.0.6 20130509 test: bugfix by lastdream2013 : inject css comflicts at some site, delay 2000ms
 // @note           0.0.6 アイコンを作って検索時の強調を ON/OFF できるようにした
 // @note           0.0.6 背面のタブを複数開いた際の引き継ぎを修正
 // @note           0.0.5 大幅に変更（変更し過ぎてどこを変更したのかすら忘れた）
@@ -224,7 +224,7 @@ window.gWHT = {
 
 				 win.setTimeout(function () {  
 					window.gWHT.launch(doc, keywords);
-				}, 1000);
+				}, 2000);
 				//this.launch(doc, keywords);
 				break;
 			case "pageshow":
