@@ -25,7 +25,7 @@ Opera の urlfilter.ini っぽい何か
 Adblock とは互換性がないので注意
 */
 const URIFILTER_SAVE_LOG_TO_PREFSJS = false; //是否记录filter日志到 prefs.js，这个太大了，影响性能，最好弄个开关
-      
+  	  
 (function(CSS, WRITE_DESCRIPTION){
 
 const { classes: Cc, interfaces: Ci, utils: Cu, results: Cr } = Components;
@@ -337,15 +337,15 @@ window.gURLFilter = {
   overlay = "data:application/vnd.mozilla.xul+xml;charset=utf-8," + encodeURI(overlay);
   window.userChrome_js.loadOverlay(overlay, window.gURLFilter);
 
-	var ins = $("spell-separator");
-		ins.parentNode.insertBefore($C("menuitem", {
+	var ins = $("contentAreaContextMenu");
+		ins.appendChild($C("menuitem", {
 			id: "context-urlfilter-add-image",
 			label: "\u6DFB\u52A0\u8BE5\u56FE\u7247(image)url\u5230\u89C4\u5219",
 			class: "menuitem-iconic",
 			accesskey: "U",
 			oncommand: "gURLFilter.addFilter(gContextMenu.mediaURL);",
 		}), ins);
-		ins.parentNode.insertBefore($C("menuitem", {
+		ins.appendChild($C("menuitem", {
 			id: "context-urlfilter-add-frame",
 			label: "\u6DFB\u52A0\u8BE5\u6846\u67B6(frame)url\u5230\u89C4\u5219",
 			class: "menuitem-iconic",
