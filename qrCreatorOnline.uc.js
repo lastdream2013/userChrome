@@ -98,7 +98,7 @@
         }
     },
 
-    onLoad: function() {
+    init: function() {
 		this.ContextMenu();
 		var menu=document.getElementById("contentAreaContextMenu");
 			menu.addEventListener("popupshowing", this.optionsChangeLabel, false);
@@ -164,6 +164,6 @@
 	},
 };
 
-if (window.location == "chrome://browser/content/browser.xul") {
-	window.addEventListener("load", qrCreatorOnline.onLoad(), false);
-}
+	qrCreatorOnline.init();
+ 
+
