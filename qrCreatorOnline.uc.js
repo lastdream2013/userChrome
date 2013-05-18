@@ -13,7 +13,7 @@
 
     checkLength: function(arg) {
         if (arg ) {
-          if ( arg.length == 0  ) {
+        	if ( arg.length == 0  ) {
         		alert("\u6CA1\u6709\u8981\u8F6C\u5316\u4E3A\u4E8C\u7EF4\u7801\u7684\u5185\u5BB9\uFF01" );
         	       return false;
         	}
