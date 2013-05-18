@@ -19,6 +19,7 @@
  -->
   <script type="application/x-javascript" xmlns="http://www.w3.org/1999/xhtml"><![CDATA[
 function ImageConverter(imageURL) {
+	this._iscompleted = false;
 	this.imageURL = imageURL;
 	this.channel = Services.io.newChannel(imageURL, null, null);
 	this.channel.asyncOpen(this, null);
@@ -29,7 +30,18 @@ ImageConverter.prototype = {
 	bytes : [],
 	stream : null,
 	Database64 : null,
-	iscompleted : false,
+
+	_iscompleted : false,
+	get iscompleted() this._iscompleted,
+	set iscompleted(value) {
+		if (value != this._iscompleted)
+		{
+		  let oldValue = this._iscompleted;
+		  this._iscompleted = value;
+		}
+		return this._iscompleted;
+	},
+	
 	// nsISupports
 	QueryInterface : function (iid) {
 		if (!iid.equals(Components.interfaces.nsISupports) &&
@@ -43,7 +55,6 @@ ImageConverter.prototype = {
 	// nsIRequestObserver
 	onStartRequest : function (aRequest, aContext) {
 		this.stream = Components.classes["@mozilla.org/binaryinputstream;1"].createInstance(Components.interfaces.nsIBinaryInputStream);
-		this.iscompleted = false;
 	},
 
 	onStopRequest : function (aRequest, aContext, aStatusCode) {
@@ -138,7 +149,6 @@ var ExportHTMLFolder = {
 			var chaine = new Array(nbTab).join(' ') + '<DT><A HREF="' + this.escapeHTML(elem.uri);
 			if ( elem.icon.indexOf('moz-anno:favicon:http') >= 0 )
 			{
-				//Services.console.logStringMessage('[ moz-anno:favicon ]: ' + elem.icon );
 				if ( elem.icon.indexOf('http://www.mozilla.org/2005/made-up-favicon/') < 0 ){
 					chaine = chaine + '" ICON_URI="' + elem.icon.slice(elem.icon.indexOf('moz-anno:favicon:http') + 'moz-anno:favicon:'.length);
 				}
@@ -155,8 +165,7 @@ var ExportHTMLFolder = {
 				}while(!Image.iscompleted)*/
 				chaine = chaine + '" ICON="' + Image.Database64;
 			}
-			else if ( elem.icon.indexOf('moz-anno:favicon:data:image') >= 0 )
-			{
+			else if ( elem.icon.indexOf('moz-anno:favicon:data:image') >= 0 ) {
 				chaine = chaine + '" ICON="' +elem.icon.slice(elem.icon.indexOf('data:image'));
 			}
 			var chaine = chaine + '">' + this.escapeHTML(elem.title) + '</A>\n' + new Array(nbTab).join(' ') + '<DD>' + this.escapeHTML(Description) + '\n';
@@ -192,6 +201,7 @@ var ExportHTMLFolder = {
 
 	init: function()  
     {  
+	alert("lastdream2013 is right");
 		var contextMenu = document.getElementById("placesContext");
 		if (contextMenu) contextMenu.addEventListener("popupshowing", this.ExportHTMLFolderShowHideItem, false);  
     },  
