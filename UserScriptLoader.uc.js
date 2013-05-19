@@ -10,7 +10,7 @@
 // @note           modified by lastdream2013: add GM_notification API 2013.05.05 
 // @note           modified by lastdream2013: fix compatibility for firefox23a1 2013.04.23  
 // @note           by dannylee edited 2013.4.9
-// @note           0.1.8.1 Save Script が機能していないのを修正
+// @note           0.1.8.2 
 // @note           0.1.8.0 Remove E4X
 // @note           0.1.8.0 @match, @unmatch に超テキトーに対応
 // @note           0.1.8.0 .tld を Scriptish を参考にテキトーに改善
@@ -1026,12 +1026,12 @@ USL.injectScripts = function(safeWindow, rsflag) {
 		}
 		if ("bookmarklet" in script.metadata) {
 			let func = new Function(script.code);
-			safeWindow.location.href = "javascript:" + func.toSource() + "();";
+			safeWindow.location.href = "javascript:" + encodeURIComponent(func.toSource()) + "();";
 			safeWindow.USL_run.push(script);
 			return;
 		}
 
-		let sandbox = new Cu.Sandbox(safeWindow, {'sandboxPrototype': safeWindow});
+		let sandbox = new Cu.Sandbox(safeWindow, {sandboxPrototype: safeWindow});
 		let GM_API = new USL.API(script, sandbox, safeWindow, aDocument);
 		for (let n in GM_API)
 			sandbox[n] = GM_API[n];
