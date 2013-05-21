@@ -231,13 +231,11 @@ window.gWHT = {
 
                 var delay = 0;
 				for (let [index, info] in Iterator(this.DELAY_SITEINFO)) { 
-					log(info.url);
 					if( new RegExp(info.url).test(win.location.href) ) {
 						delay = info.delayTime;
 						break;
 					}
 				}
-				log(delay);
                 var self = this;
                 setTimeout(function(){
                     self.launch(doc, keywords);
