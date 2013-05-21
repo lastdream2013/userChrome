@@ -7,7 +7,7 @@
 // @compatibility  Firefox 17
 // @charset        UTF-8
 // @include        main
-// @version        0.0.6 20130509 test: bugfix by lastdream2013 : inject css comflicts at some site, delay 2000ms
+// @version        0.0.6 完善解决一些站点css高亮冲突bug, add DELAY_SITEINFO 参考ywzhaiqi
 // @note           0.0.6 アイコンを作って検索時の強調を ON/OFF できるようにした
 // @note           0.0.6 背面のタブを複数開いた際の引き継ぎを修正
 // @note           0.0.5 大幅に変更（変更し過ぎてどこを変更したのかすら忘れた）
@@ -22,7 +22,7 @@
 "use strict";
 
 if (window.gWHT) {
-    window.gWHT.destroy();
+	window.gWHT.destroy();
 	delete window.gWHT;
 }
 
@@ -40,6 +40,13 @@ var wmap = new WeakMap();
 
 window.gWHT = {
 	DEBUG: false,
+	DELAY_SITEINFO: [
+		{
+			url: '^https?://developer\\.mozilla\\.org/.*/docs/',
+			delayTime: 1500,  // 单位毫秒
+		},
+	],
+	
 	SITEINFO: [
 		/**
 			url     URL。正規表現。keyword, input が無い場合は $1 がキーワードになる。
@@ -222,10 +229,20 @@ window.gWHT = {
 
 				var keywords = this.GET_KEYWORD ? this.getKeyword(this.SITEINFO, doc) : [];
 
-				 win.setTimeout(function () {  
-					window.gWHT.launch(doc, keywords);
-				}, 2000);
-				//this.launch(doc, keywords);
+                var delay = 0;
+				for (let [index, info] in Iterator(this.DELAY_SITEINFO)) { 
+					log(info.url);
+					if( new RegExp(info.url).test(win.location.href) ) {
+						delay = info.delayTime;
+						break;
+					}
+				}
+				log(delay);
+                var self = this;
+                setTimeout(function(){
+                    self.launch(doc, keywords);
+                }, delay);
+
 				break;
 			case "pageshow":
 				var doc = event.target;
