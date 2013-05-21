@@ -98,7 +98,7 @@ var qrReaderOnline={
 		gBrowser.loadOneTab(url, null, null, null, true, false);
 	},
 };
-if (window.location == "chrome://browser/content/browser.xul") {
-	window.addEventListener("load", qrReaderOnline.initialize(), false);
-}
+
+	qrReaderOnline.initialize();
+
 
