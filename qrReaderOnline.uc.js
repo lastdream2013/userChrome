@@ -2,7 +2,7 @@
 // @include        chrome://browser/content/browser.xul
 // @name           qrReaderOnline.uc.js
 // @version         0.14
-// @note            20130501 minor fix
+// @note            20130530 修正二维码内容为空时解析出错
 // @note            20130425 zxing.org返回数据又插了东西……再改 
 // @note            20130331 修正escapeHTML字符未转化的问题
 // @note            20130331 修正url判定正则表达式不准确
@@ -34,7 +34,7 @@ var qrReaderOnline={
                    var title = req.responseText.match(/<title>(.+)<\/title>/i)[1];
                  	if (title =="Decode Succeeded") {
                 		var resultstr = req.responseText.match(/Parsed Result<\/td><td>(.+)<\/td><\/tr><\/table><hr\/>/i)[1];
-                 		resultstr = resultstr.match(/<pre[^>]+>(.+)<\/pre>/i)[1];
+                 		resultstr = resultstr.match(/<pre[^>]+>(.*)<\/pre>/i)[1];
                 		//Services.console.logStringMessage('[ resultstr ]: ' + resultstr );
                    		resultstr = resultstr.replace(/<br\/>/ig, '\n');
 						qrReaderOnline.read(qrReaderOnline.unescapeHTML(resultstr));
