@@ -4,7 +4,7 @@
 // @include        main
 // @author         lastdream2013
 // @charset        UTF-8
-// @version        20130507  0.11 minor fix
+// @version        20130531  0.12 hide menu on image and link
 // @version        20130503  0.1 first release 
 // ==/UserScript==
 
@@ -212,6 +212,7 @@ var gExternalSubMenu = {
 		var contextMenu = document.getElementById("contentAreaContextMenu");
 		//contextMenu.appendChild(extSubMenu);
 		contextMenu.insertBefore(extSubMenu, insertPos);
+		contextMenu.addEventListener("popupshowing", gExternalSubMenu.optionsShowHide, false);
 
 		var ExternalSubMenuPopup = document.createElement('menupopup');
 		ExternalSubMenuPopup.setAttribute('onpopupshowing', 'event.stopPropagation();gExternalSubMenu.onpopupshowing();');
@@ -221,73 +222,81 @@ var gExternalSubMenu = {
 			window.gExternalSubMenu.loadSubMenu();
 		}, 2000);
 	},
-	loadSubMenu: function() {	   
- 	   if (this._isready ) return;
- 	   if ( this._ExternalSubMenuPopup == null ) return;
+	loadSubMenu : function () {
+		if (this._isready)
+			return;
+		if (this._ExternalSubMenuPopup == null)
+			return;
 
- 	   var ExternalSubMenuPopup = this._ExternalSubMenuPopup;
-         for (var i=0; i<this.toolbar.subdirs.length; i++) {
-          if (this.toolbar.subdirs[i].name == 'separator') {
-            ExternalSubMenuPopup.appendChild(document.createElement('menuseparator'));
-          }
-          else {
-            var subDirItem = ExternalSubMenuPopup.appendChild(document.createElement('menu'));
-            var subDirItemPopup = subDirItem.appendChild(document.createElement('menupopup'));
-            subDirItem.setAttribute('class', 'menu-iconic');
-            subDirItem.setAttribute('label', this.toolbar.subdirs[i].name);
-            subDirItem.setAttribute('image', this.toolbar.subdirs[i].image);
-            gExternalSubMenu.subdirPopupHash[this.toolbar.subdirs[i].name] = subDirItemPopup;
-            gExternalSubMenu.subdirMenuHash[this.toolbar.subdirs[i].name] = subDirItem;
-          }
-        }
+		var ExternalSubMenuPopup = this._ExternalSubMenuPopup;
+		for (var i = 0; i < this.toolbar.subdirs.length; i++) {
+			if (this.toolbar.subdirs[i].name == 'separator') {
+				ExternalSubMenuPopup.appendChild(document.createElement('menuseparator'));
+			} else {
+				var subDirItem = ExternalSubMenuPopup.appendChild(document.createElement('menu'));
+				var subDirItemPopup = subDirItem.appendChild(document.createElement('menupopup'));
+				subDirItem.setAttribute('class', 'menu-iconic');
+				subDirItem.setAttribute('label', this.toolbar.subdirs[i].name);
+				subDirItem.setAttribute('image', this.toolbar.subdirs[i].image);
+				gExternalSubMenu.subdirPopupHash[this.toolbar.subdirs[i].name] = subDirItemPopup;
+				gExternalSubMenu.subdirMenuHash[this.toolbar.subdirs[i].name] = subDirItem;
+			}
+		}
 
-        for (var i=0; i<this.toolbar.configs.length; i++) {
-        	var configItems;
-          if (this.toolbar.configs[i].name == 'separator') {
-            configItems = document.createElement('menuseparator');
-          }
-          else {
-            configItems= ExternalSubMenuPopup.appendChild(document.createElement('menuitem'));
-            configItems.setAttribute('class', 'menuitem-iconic');
-            configItems.setAttribute('label', this.toolbar.configs[i].name);
-            configItems.setAttribute('image',this.toolbar.configs[i].image);
+		for (var i = 0; i < this.toolbar.configs.length; i++) {
+			var configItems;
+			if (this.toolbar.configs[i].name == 'separator') {
+				configItems = document.createElement('menuseparator');
+			} else {
+				configItems = ExternalSubMenuPopup.appendChild(document.createElement('menuitem'));
+				configItems.setAttribute('class', 'menuitem-iconic');
+				configItems.setAttribute('label', this.toolbar.configs[i].name);
+				configItems.setAttribute('image', this.toolbar.configs[i].image);
 				if (typeof this.toolbar.configs[i].command == 'function') {
 					configItems.setAttribute('oncommand', this.unescapeHTML(this.toolbar.configs[i].command.toSource()) + '.call(this, event);');
 				} else {
 					configItems.setAttribute('oncommand', this.toolbar.configs[i].command);
 				}
-            configItems.setAttribute('tooltiptext', this.toolbar.configs[i].name);
-          }
-	    if (  this.toolbar.configs[i].subdir && gExternalSubMenu.subdirPopupHash[this.toolbar.configs[i].subdir]  )
-               gExternalSubMenu.subdirPopupHash[this.toolbar.configs[i].subdir].appendChild(configItems);
-           else
-          	   ExternalSubMenuPopup.appendChild(configItems);
-        }
-
-	if ( this.autohideEmptySubDirs )
-	{
-		for (let [name, popup] in Iterator(gExternalSubMenu.subdirPopupHash )) {
-			if ( popup.hasChildNodes() ) {
-			   continue;
+				configItems.setAttribute('tooltiptext', this.toolbar.configs[i].name);
 			}
-			else {
-			    gExternalSubMenu.subdirMenuHash[name].setAttribute("hidden", "true");	
-			} 
+			if (this.toolbar.configs[i].subdir && gExternalSubMenu.subdirPopupHash[this.toolbar.configs[i].subdir])
+				gExternalSubMenu.subdirPopupHash[this.toolbar.configs[i].subdir].appendChild(configItems);
+			else
+				ExternalSubMenuPopup.appendChild(configItems);
 		}
-	}
 
-	if ( this.moveSubDirstoBottom )
-	{
-		let i = ExternalSubMenuPopup.childNodes.length;
-		while ( ExternalSubMenuPopup.firstChild.getAttribute('class') != 'menuitem-iconic' && i-- != 0 )
-		{
-			ExternalSubMenuPopup.appendChild(ExternalSubMenuPopup.firstChild);
+		if (this.autohideEmptySubDirs) {
+			for (let[name, popup]in Iterator(gExternalSubMenu.subdirPopupHash)) {
+				if (popup.hasChildNodes()) {
+					continue;
+				} else {
+					gExternalSubMenu.subdirMenuHash[name].setAttribute("hidden", "true");
+				}
+			}
 		}
+
+		if (this.moveSubDirstoBottom) {
+			let i = ExternalSubMenuPopup.childNodes.length;
+			while (ExternalSubMenuPopup.firstChild.getAttribute('class') != 'menuitem-iconic' && i-- != 0) {
+				ExternalSubMenuPopup.appendChild(ExternalSubMenuPopup.firstChild);
+			}
+		}
+		this._isready = true;
+	},
+	onpopupshowing : function () {
+		if (!this._isready)
+			this.loadSubMenu();
+	},
+	optionsShowHide : function () {
+		if (gContextMenu) {
+			var isViewable = true;
+			var SubMenu = document.getElementById("ExternalSubMenuID");
+			if (gContextMenu.onLink || gContextMenu.onImage) {
+				isViewable = false;
+			}
+			if (SubMenu)
+				SubMenu.hidden = !isViewable;
+		}
+	},
 	}
-	this._isready = true;
-	},
-	onpopupshowing: function() {	   
- 	   if (!this._isready ) this.loadSubMenu();
-	},
-}
 	gExternalSubMenu.init();
