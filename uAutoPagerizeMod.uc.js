@@ -7,7 +7,7 @@
 // @charset        UTF-8
 // @version        0.3.0
 // @note           添加 Super_preloader 的数据库支持及更新 By ywzhaiqi。
-// @note           20130518 testversion: modify by lastdream2013 for show real page num, add max pager limit
+// @note           20130502 testversion: modify by lastdream2013 for show real page num, add max pager limit
 // @note           0.3.0 本家に倣って Cookie の処理を変更した
 // @note           0.2.9 remove E4X
 // @note           0.2.8 履歴に入れる機能を廃止
@@ -40,7 +40,10 @@
 
 // 以下 設定が無いときに利用する
 var useiframe = true;  // 启用 iframe 加载下一页的总开关。体验不好，先禁用。
-var usePageNav = false;
+var IMMEDIATELY_PAGER_NUM = 1;  // 立即加载的页数
+var loadImmediatelyTime = 500;  // 立即加载延迟的时间（ms）
+
+
 var PAGE_NAVIGATION_SITE_RE = /forum|thread/i;
 var FORCE_TARGET_WINDOW = true;
 var BASE_REMAIN_HEIGHT = 600;
@@ -85,17 +88,17 @@ var EXCLUDE = [
 ];
 
 var MY_SITEINFO = [
+    {
+        url         : '^https?://(?:images|www)\\.google(?:\\.[^./]{2,3}){1,2}/(images\\?|search\\?.*tbm=isch)'
+        ,nextLink   : 'id("nn")/parent::a | id("navbar navcnt nav")//td[last()]/a'
+        ,pageElement: 'id("ImgCont ires")/table | id("ImgContent")'
+        ,exampleUrl : 'http://images.google.com/images?ndsp=18&um=1&safe=off&q=image&sa=N&gbv=1&sout=1'
+    },
 	{
 		url         : 'http://eow\\.alc\\.co\\.jp/[^/]+'
 		,nextLink   : 'id("AutoPagerizeNextLink")'
 		,pageElement: 'id("resultsList")/ul'
 		,exampleUrl : 'http://eow.alc.co.jp/%E3%81%82%E3%82%8C/UTF-8/ http://eow.alc.co.jp/are'
-	},
-	{
-		url         : '^https?://(?:images|www)\\.google(?:\\.[^./]{2,3}){1,2}/(images\\?|search\\?.*tbm=isch)'
-		,nextLink   : 'id("nn")/parent::a | id("navbar navcnt nav")//td[last()]/a'
-		,pageElement: 'id("ImgCont ires")/table | id("ImgContent")'
-		,exampleUrl : 'http://images.google.com/images?ndsp=18&um=1&safe=off&q=image&sa=N&gbv=1&sout=1'
 	},
 	{
 		url         : '^http://matome\\.naver\\.jp'
@@ -130,7 +133,7 @@ var MICROFORMAT = [
 		url         : '^https?://.*',
 		nextLink    : '//a[@rel="next"] | //link[@rel="next"]',
 		pageElement : '//*[contains(@class, "autopagerize_page_element")]',
-		insertBefore: '//*[contains(@class, "autopagerize_insert_before")]',
+		insertBefore: '//*[contains(@class, "autopagerize_insert_before")]'
 	}
 ];
 
@@ -143,7 +146,6 @@ var COLOR = {
 	terminated: '#00f',
 	error: '#f0f'
 }
-
 
 let { classes: Cc, interfaces: Ci, utils: Cu, results: Cr } = Components;
 if (!window.Services) Cu.import("resource://gre/modules/Services.jsm");
@@ -180,7 +182,7 @@ var ns = window.uAutoPagerize = {
 	get INCLUDE() INCLUDE,
 	set INCLUDE(arr) {
 		try {
-			this.INCLUDE_REGEXP = arr.length > 0 ? 
+			this.INCLUDE_REGEXP = arr.length > 0 ?
 				new RegExp(arr.map(wildcardToRegExpStr).join("|")) :
 				/./;
 			INCLUDE = arr;
@@ -222,6 +224,14 @@ var ns = window.uAutoPagerize = {
 		if (m) m.setAttribute("tooltiptext", MAX_PAGER_NUM = num);
 		return num;
 	},
+    get IMMEDIATELY_PAGER_NUM() IMMEDIATELY_PAGER_NUM,
+    set IMMEDIATELY_PAGER_NUM(num){
+        num = parseInt(num, 10);
+        if (!num) return num;
+        let m = $("uAutoPagerize-IMMEDIATELY_PAGER_NUM");
+        if (m) m.setAttribute("label", '立即加载' + (IMMEDIATELY_PAGER_NUM = num) + '页');
+        return num;
+    },
 	get DEBUG() DEBUG,
 	set DEBUG(bool) {
 		let m = $("uAutoPagerize-DEBUG");
@@ -265,7 +275,12 @@ var ns = window.uAutoPagerize = {
 				          autoCheck="true"\
 				          checked="'+ AUTO_START +'"\
 				          oncommand="uAutoPagerize.toggle(event);"/>\
-				<menuitem label="重载配置文件"\
+                <menuitem label="立即加载' + IMMEDIATELY_PAGER_NUM + '页"\
+                          id="uAutoPagerize-IMMEDIATELY_PAGER_NUM"\
+                          tooltiptext="左键立即加载，右键设置页数"\
+                          onclick="uAutoPagerize.immediatelyItemClicked(event);"/>\
+                <menuitem label="重载配置文件"\
+                          accesskey="r"\
 				          oncommand="uAutoPagerize.loadSetting(true);"/>\
 				<menuitem label="重置站点信息(SP)"\
 				          oncommand="uAutoPagerize.resetSITEINFO_NLF();"/>\
@@ -718,6 +733,21 @@ var ns = window.uAutoPagerize = {
 			} catch(e){ }
 		});
 	},
+    immediatelyItemClicked: function(event){
+        if(event.button == 0){
+            ns.loadImmediately();
+        }else if(event.button ==2){
+            ns.IMMEDIATELY_PAGER_NUM = prompt("立即加载的页数？", ns.IMMEDIATELY_PAGER_NUM);
+            ns.loadImmediately();
+        }
+    },
+    loadImmediately: function(num){
+        num = num || ns.IMMEDIATELY_PAGER_NUM;
+
+        if(content.ap){
+            content.ap.loadImmediately(num);
+        }
+    },
 	gototop: function(){
 		content.window.scroll(content.window.scrollX, 0);
 	},
@@ -773,10 +803,10 @@ function AutoPager(doc, info, nextLink) {
 AutoPager.prototype = {
 	req: null,
 	pageNum: 1,
-	lastPageURL : '',
+    immediatelyPageNum: IMMEDIATELY_PAGER_NUM,
 	_state: 'disable',
 	remove: [],
-	usePageNav: false,
+	lastPageURL : '',
 	get state() this._state,
 	set state(state) {
 		if (this.state !== "terminated" && this.state !== "error") {
@@ -838,13 +868,6 @@ AutoPager.prototype = {
 			this.scroll();
 		if (this.getScrollHeight() == this.win.innerHeight)
 			this.body.style.minHeight = (this.win.innerHeight + 1) + 'px';
-
-		// bbs论坛导航栏
-		// this.addStyle('.autopagerize_page_info a, .autopagerize_page_info strong{\
-		//     margin-left: 4px;\
-		// }');
-		// this.usePageNav = PAGE_NAVIGATION_SITE_RE.test(this.doc.URL);
-
 	},
 	destroy: function(isRemoveAddPage) {
 		this.state = "disable";
@@ -933,6 +956,19 @@ AutoPager.prototype = {
 			this.req = null;
 		}
 	},
+    loadImmediately: function(num){
+        num = parseInt(num, 10);
+        if(num){
+            this.immediatelyPageNum = num;
+        }
+
+        if(this.immediatelyPageNum > 0){
+            debug("loadImmediately");
+            setTimeout(function(self){
+                self.request();
+            }, loadImmediatelyTime, this);
+        }
+    },
 	isThridParty: function(aHost, bHost) {
 		try {
 			var aTLD = Services.eTLD.getBaseDomainFromHost(aHost);
@@ -1196,7 +1232,11 @@ AutoPager.prototype = {
 		if (!url) {
 			debug('nextLink not found. requestLoad(). ', this.info.nextLink, htmlDoc);
 			this.state = 'terminated';
-		}
+		}else{
+            this.immediatelyPageNum--;
+            this.loadImmediately();
+        }
+
 		var ev = this.doc.createEvent('Event');
 		ev.initEvent('GM_AutoPagerizeNextPageLoaded', true, false);
 		this.doc.dispatchEvent(ev);
@@ -1216,15 +1256,8 @@ AutoPager.prototype = {
 		var p = this.doc.createElement('p');
 		p.setAttribute('class', 'autopagerize_page_info');
 		
-		if(usePageNav && this.usePageNav && this.nextLink){
-			var pageNav = this.nextLink.parentNode;
-			p.innerHTML = pageNav.innerHTML;
-			this.nextLink = null;
-		}else{
 			p.setAttribute('style', 'clear: both;text-align: center;');
 			p.innerHTML = innerHtmlStr;
-
-		}
 
 		if (!this.isFrame) {
 			var o = p.insertBefore(this.doc.createElement('div'), p.firstChild);
@@ -1402,14 +1435,14 @@ AutoPager.prototype = {
 		if (confirm('确定要重置 Super_preloader 及其它规则吗？'))
 			requestSITEINFO(SITEINFO_NLF_IMPORT_URLS);
 	};
-	
+
 	ns.loadSetting_NLF = function(isAlert) {
 		var data = loadText(ns.file_NLF);
 		if (!data) return false;
 		var sandbox = new Cu.Sandbox( new XPCNativeWrapper(window) );
 		sandbox.SITEINFO = [];
 		sandbox.SITEINFO_TP = [];
-		
+
 		try {
 			Cu.evalInSandbox(data, sandbox, '1.8');
 		} catch (e) {
@@ -1418,7 +1451,7 @@ AutoPager.prototype = {
 
 		var list = [];
 		// 加上 MY_SITEINFO
-		for(var i = 0, l = SITEINFO_NLF_IMPORT_URLS.length -1; i < l; i++){
+		for(var i = 0, l = SITEINFO_NLF_IMPORT_URLS.length; i < l; i++){
 			let mSiteInfo = sandbox["MY_SITEINFO_" + i];
 			if(mSiteInfo){
 				list = list.concat(mSiteInfo);
@@ -1485,7 +1518,6 @@ AutoPager.prototype = {
 			return getCacheErrorCallback(url);
 		}
 
-		var temp;
 		var matches = res.responseText.match(/(var SITEINFO=\[[\s\S]*\])[\s\S]*var SITEINFO_comp=/i);
 		if(!matches){
 			matches = res.responseText.match(/(var MY_SITEINFO\s*=\s*\[[\s\S]*\];)/i);
@@ -1637,7 +1669,7 @@ var NLF = {
 						if(!_nextlink){
 							preS1=a.previousSibling;
 							preS2=a.previousElementSibling;
-							
+
 
 							while(!(preS1 || preS2) && initSD<searchD){
 								aP=aP.parentNode;
