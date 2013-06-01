@@ -4,7 +4,7 @@
 // @include        main
 // @author         lastdream2013
 // @charset        UTF-8
-// @version        20130531  0.12 hide menu on image and link
+// @version        20130601  0.12 autohide menu on image link and textinput area
 // @version        20130503  0.1 first release 
 // ==/UserScript==
 
@@ -291,12 +291,15 @@ var gExternalSubMenu = {
 		if (gContextMenu) {
 			var isViewable = true;
 			var SubMenu = document.getElementById("ExternalSubMenuID");
-			if (gContextMenu.onLink || gContextMenu.onImage) {
+			if (gContextMenu.onLink || gContextMenu.onImage || gContextMenu.onTextInput || gContextMenu.onMailtoLink) {
 				isViewable = false;
+			}
+			if (gContextMenu.isContentSelected) {
+				isViewable = true;
 			}
 			if (SubMenu)
 				SubMenu.hidden = !isViewable;
 		}
 	},
-	}
+}
 	gExternalSubMenu.init();
