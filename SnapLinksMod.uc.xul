@@ -6,6 +6,7 @@
 // @namespace      http://d.hatena.ne.jp/Griever/
 // @description    Snap Links for userChromeJS
 // @include        main
+// @version        2012/06/01 hide entry menu on link, image, text input area or context selected.
 // @version        2012/04/02 fixed by lastdream2013, add display count, fix open/copy url order, add context menu and fix memory leak
 // @note           CSS が適用されていなかったのを修正
 // @note           2012/03/08 フレーム跨いだりツールチップ使うのをやめた
@@ -34,7 +35,7 @@ snapLinks.init();
 " type="text/css"?>
 
 <overlay id="SnapLinks_overlay"  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-  <popupset id="mainPopupSet">
+	<popupset id="mainPopupSet">
 		<menupopup id="snapLinksMenupopup"
 			        onpopuphidden="this.className = ''; snapLinks.lowlightAll();">
 			<menuitem label="在新标签打开所有链接"
@@ -66,12 +67,12 @@ snapLinks.init();
 				id="SnapLinksCheckBoxTaggle"
 			          class="hasCheckbox"
 			          oncommand="snapLinks.checkbox();" />
-		</menupopup>
-                          <popup id="contentAreaContextMenu">
-    		<menuitem id="snaplinksMenuEntry"
-    			label="snaplinks批量操作模式"
-      			oncommand="snapLinks.init();"
-       			insertafter="context-paste"/>
+			</menupopup>
+            <popup id="contentAreaContextMenu">
+				<menuitem id="snaplinksMenuEntry"
+				label="snaplinks批量操作模式"
+				oncommand="snapLinks.init();"
+				insertafter="context-paste"/>
     		</popup>
 	</popupset>
 
@@ -83,7 +84,6 @@ var snapLinks = {
 	button: 0,
 
 	init: function() {
-
 		this.win = document.commandDispatcher.focusedWindow;
 		if (this.win == window) this.win = content;
 		this.doc = this.win.document;
@@ -384,6 +384,20 @@ var snapLinks = {
 		}
 	},
 };
-
+(function () {
+	function optionsShowHide() {
+		if (gContextMenu) {
+			var isViewable = true;
+			var SubMenu = document.getElementById("snaplinksMenuEntry");
+			if (gContextMenu.onLink || gContextMenu.onImage || gContextMenu.onTextInput || gContextMenu.onMailtoLink || gContextMenu.isContentSelected) {
+				isViewable = false;
+			}
+			if (SubMenu)
+				SubMenu.hidden = !isViewable;
+		}
+	}
+	var menu = document.getElementById("contentAreaContextMenu");
+	menu.addEventListener("popupshowing", optionsShowHide, false);
+})();
 	]]></script>
 </overlay>
