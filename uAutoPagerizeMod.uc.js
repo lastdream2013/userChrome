@@ -330,12 +330,12 @@ var ns = window.uAutoPagerize = {
 				ns[name] = ns.prefs.getBoolPref(name);
 			} catch (e) {}
 		}, ns);
-		try {
-			ns["BASE_REMAIN_HEIGHT"] = ns.prefs.getIntPref("BASE_REMAIN_HEIGHT");
-		} catch (e) {}
-		try {
-			ns["MAX_PAGER_NUM"] = ns.prefs.getIntPref("MAX_PAGER_NUM");
-		} catch (e) {}
+        ["BASE_REMAIN_HEIGHT","MAX_PAGER_NUM", "IMMEDIATELY_PAGER_NUM"].forEach(function(name) {
+            try {
+                ns[name] = ns.prefs.getIntPref(name);
+            } catch (e) {}
+        }, ns);
+
 		if (!getCache())
 			requestSITEINFO();
 		ns.INCLUDE = INCLUDE;
@@ -349,17 +349,16 @@ var ns = window.uAutoPagerize = {
 	},
 	uninit: function() {
 		ns.removeListener();
-		["DEBUG", "AUTO_START", "FORCE_TARGET_WINDOW", "SCROLL_ONLY"].forEach(function(name) {
-			try {
-				ns.prefs.setBoolPref(name, ns[name]);
-			} catch (e) {}
-		}, ns);
-		try {
-			ns.prefs.setIntPref("BASE_REMAIN_HEIGHT", ns["BASE_REMAIN_HEIGHT"]);
-		} catch (e) {}
-		try {
-			ns.prefs.setIntPref("MAX_PAGER_NUM", ns["MAX_PAGER_NUM"]);
-		} catch (e) {}
+        ["DEBUG", "AUTO_START", "FORCE_TARGET_WINDOW", "SCROLL_ONLY"].forEach(function(name) {
+            try {
+                ns.prefs.setBoolPref(name, ns[name]);
+            } catch (e) {}
+        }, ns);
+        ["BASE_REMAIN_HEIGHT", "MAX_PAGER_NUM", "IMMEDIATELY_PAGER_NUM"].forEach(function(name) {
+            try {
+                ns.prefs.setIntPref(name, ns[name]);
+            } catch (e) {}
+        }, ns);
 	},
 	theEnd: function() {
 		var ids = ["uAutoPagerize-icon", "uAutoPagerize-popup"];
@@ -1000,13 +999,6 @@ AutoPager.prototype = {
 			this.remove.push(function(){
 				self.doc.body.removeChild(self.iframe);
 			});
-
-			iframe.webNavigation.allowAuth = false;
-			iframe.webNavigation.allowImages = false;
-			iframe.webNavigation.allowJavascript = true;
-			iframe.webNavigation.allowMetaRedirects = true;
-			iframe.webNavigation.allowPlugins = false;
-			iframe.webNavigation.allowSubframes = false;
 		}
 
         if (this.iframe.src == this.requestURL) return;
