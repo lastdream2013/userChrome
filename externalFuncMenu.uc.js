@@ -29,6 +29,10 @@ var gExternalSubMenu = {
 				name : '翻译',
 				image : "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACIElEQVQ4jZXKvU8aYQDH8effaaJyISYGiFF7Ah4oInDAyfEOd71cyUVRe4jGMpAmQtLFoelgOujQdGmda2OHLtWlQ5NuNzRpjfaFGBCPF3+dSvKERYfP9P0Su5NnPLxkRLPryBR27iSaXYeHlwy7k2fIXCBv7B8c4fjkFB8+nt3J8ckp9g+OMBfIGyQQ11DfO0S5+uJe6nuHCKVWQfhUEepGDcraLuXNu2MAgLz6bKgpa7tQN2rgU0UQv6ghq1UpBb2Oi19/0e/fIqHuDPX//KIGMh9VkVArA9Xnr3B+8QfdXp8Se7RNfQm1gvmoCuIOyRCkrYHXb9/D7PaHBNMb1CdIW3CHZBDWn0M4oyOUeTLgE1dw0+nhptODVyjAJ65gKblGPeGMDtafA5laSCGc0eGLFylts4u22cVc5PFQ88WLCGd0TC2kQByciEhWBydolFa7g1a7AzYgDzVO0BDJ6nBwIsiES4CQK2GWVynNaxPNaxNprYJZXsWysk11IVfChEsAsbI8YtImppZkyo/LBq5aJn5eNvDp7CuuWiZs3vSgx6RNWFkexDIdQEIuw7aQpWzXXuL7+W80mm00mm18/vINVufyoCfkMizTAZCRyUXEpRLYoIJxLklhnDGMzEQwMhPB6MMorO44xrkk2KCCuFTC6OQiiMXhM1zBPNJKGfnC0ztJK2W4gnlYHD6DMHYPM2bzGg9sXtzHmM1rMHYP8w+pYGElCLDyYQAAAABJRU5ErkJggg=="
 			},
+			{
+				name : '收藏',
+				image : "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABpUlEQVQ4jZXOTUsCQQDG8fkyXTTbJVlpgyVC8hCESJGKG4VBL2olXergpUsFMRWFdehc0FcIQqlLdYgQEUFkckvb2lUUUfAQT6eNYBda//C7zDMMQ56EAb4Q4FhlVcTX9pgtlVURhQDHnoQBnuT9HOvdnuK7lMF3+c6eUga921Pk/Rwj5UUPetk0utcb6F7F7bneQC+bxuvKCIiyLqJzmUD7bLovncsElHURhMU8aF8soHXsN1GqKpSqarm1LxbAYh6Q8pKA1rmM5sGkiZHV1jqXUV4SQEpRN5onITR2fSZGVlvzJIRS1A1SnB9G42gW+s449J3x328rVfX3gb9nxr3G0SyK88MgBZlHnQahpSRoKQn/Zdyr0yAKMg+SD3Go0yA+t0QTI6utToPIhziQ3AwHnYahbnpMjKw2nYaRm+FAXgJD0GgEtTW3iZHVptEIXgJDIM9TLmh0Du/LfF80OofnKRfIo28Q6l4YtaSEt6jLllpSgroXxsPEIEhWcrBi3IuPfRn6YdSWj30ZxbgXWcnByI3g5DOjDnY/5kQ/MqMOdiM4+R/pecsdNP3jLwAAAABJRU5ErkJggg=="
+			},
 		],
 
 		//1.在这里定义好想要出现在主菜单下,或在主菜单子目录下的程序(subdir没有定义, 或在上面子目录名列表中找不到名称相匹配的[比如写错了], 就会出现在主菜单下面)；
@@ -65,6 +69,15 @@ var gExternalSubMenu = {
 				},
 			},
 			{
+				name : 'VeryCD搜索',
+				subdir : '搜索',
+				image :"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAC5klEQVQ4jZ2TW0hTcRzH/2Z0WZaz42VzbmdearOl5qpRLqyhFUTQNEzqoRcj8KHwqZcK9qJUpFhPlRYFETFaRUkYMS+o4ZwsszbntaXLk+5o87Kds53Jt4dgKF2ovq+/3/fD7/fj+yPCkLWQEBJD/kOC520BWRq2VoVdzdrlhVaNJs5uqauYaqp2TjVVO+2WuopOvX7j8p6Q84VmacR6jkQmbCVCW60X7peXWHOdrP/gwbKeZKmjL37T0qCEwqCEwnvxpiVbivRd34Gi8slHtxMx+roy0l7/KfKps5yYTKZV4TcXHkeazsJXfcptT4jjRigxWLUcs5p0zGrSwarkGEkSo2fden7q8ilH5FUlQs1Vz1pbTat/jPPhcbZg2c34r9OYLlXCt0UB//atmNfmYl6bB3+OCtPpcjBFcviv0BCe7mJD7ie5y1eK8V070Cm00wjeV2OuVI25nFzwBXvB6wswr8mDv3gruDvZENqVYGv328xmc2zU/fnM+Z09skRuwZyOcH8Wgg9UCJbkg9fpwev2IVCsRfCWCuH+LASeZ8BOJ3Fjpyt0UcDQ4eLjHUQEz0kJBHcWuAEFuEY1AofysajPB3czG5yLhjCYifEKKTqICG5D4YkoYORQkbFrbRwcG+Mx94RGyKsA9zkNwXoVAlfU4MbkCHkVWGyi4dgsRtfaDRgtNpRGAWxNjbqbSgp2ERFGjyQj5FGCZ9LAeVPBjcvAM2kQJpTwlKegi4jQTVHBGZNp24ojDhgKLW2EwLYmHmyjDMJXBbgJGTivDGFGgW9mOXrixGgjBO79+579lF7GZNL1pqb6WghBvzYBIacS/AANzklDGM6A00DBSgjsKckzMw0Ne36ZbfZG3TF74mamhayC52Iywu5MhF2Z+FIrQQuJRW8ixbDXrxp//x2EEG/J0TxXjvbux2zJZKA5A6GODLj2SJmB7Xn3vGXGHX80rwAVlVAL9w0P+VfGl8NlZUl/bfxXfQdwCpqwCi8HwAAAAABJRU5ErkJggg==",
+				command :
+				function () {
+					gBrowser.loadURI("javascript:q%20=%20%22%22%20+%20(window.getSelection%20?%20window.getSelection()%20:%20document.getSelection%20?%20document.getSelection()%20:%20document.selection.createRange().text);%20if%20(!q)%20q%20=%20prompt(%22You%20didn't%20select%20any%20text.%20%20Enter%20a%20search%20phrase:%22,%20%22%22);%20if%20(q!=null)%20location=%22http://www.verycd.com/search/folders/%22%20+%20encodeURIComponent(q).replace(/%20/g,%20%22+%22);%20void%200")
+				},
+			},
+			{
 				name : 'google翻译当前网页',
 				subdir : '翻译',
 				image :"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACHElEQVQ4jX2Ty2sTYRTFf5NOazNiWkdiMVFpfFFiF0LJpmBxWxBFsDSgm0JpQDetgv9BoZsuXKmr0oXQuFAqFBeiQhMTXAgqWPARqyWPUnXiNI9pMknGxTCTjCSe1fc6595z7/0EgHLxp0ELNK1or2t6hQHfkEAHuP4lxxNxHj9dczzKZT463rRCBHgYjfJtcxOATDYHYO8Bbs5MdeKbAhYy2Rx+3xGHkLXvBMGy8H5jg3v3HzB3axavR2J+aY1943eaNvagVCmT1iW2CjoAymSPIFoFOxM4DsCjlSgnAgECF6fJ1v8bHDlaNVytB9fDE2SyOWKvE2TrsiP6jC/DXCDP0e5y+xqou3lerccdJAsj+xWGpSINo86Y7CahdAOgqTuINb1CVtkltCQTm7xE4Y+C1+dnQTE9A4z4NAC28yWu9v9ggWFb3AUQWjLTPR/1Exw6jdcj8akIaV0CIOhWiac1nldOAjAq62jqjingX3R0ksG7vXR1NQdvTN6jXjf4oMC60gvAVN9n+14AEG9/tSettnhKEMKrxsEr4wC8OPsOr0eiqldtkqrVuPb2MKlfqmmhoZpD01BzuKZjBkD+yTNGZZ0+t8ibbZ1IUiSSFFn+YmY3MZBvZmCRAIyi4rCUmj9GJCkSLzfb+vJcCoALsX5ss+1EekKD5t2BQza5UfjtCND2mwrhVcNYuSwEl78bparzIxq6Zq+3bgSFv7Bp4KZzDo3/AAAAAElFTkSuQmCC",
@@ -82,6 +95,25 @@ var gExternalSubMenu = {
 					gBrowser.loadURI("javascript:%20void((function()%20{var%20element%20=%20document.createElement('script');element.id%20=%20'outfox_seed_js';element.charset%20=%20'utf-8',element.setAttribute('src',%20'http://fanyi.youdao.com/web2/seed.js?'%20+%20Date.parse(new%20Date()));document.body.appendChild(element);})())")
 				},
 			},
+			
+			{
+				name : '添加到QQ书签',
+				subdir : '收藏',
+				image :"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACpElEQVQ4jYXQ20tTAQDH8fOu+wvajtZL0IWoHqKoRKGHIiLMLLXNdR+VpEQX0jo1Csm8VGa2SkWXrm3O41S0ufIyLbqAJJaWc0cWLtSNFnbvwW8PwWll0A8+r9+HnyAIgtBVpE+Sj6yRPJc3Se7afZJsNUmyPVeS5ROSy31acsqnJJe7QHLKBVJTZ2mS8Pfqs5bjKM5n7MUTotH3fPgQJRKJEA6HmZqaYnJykunpaUITfh4/c3bPCVRtTMR1IoPukjya7edxO8y0Nl6kyVFEQ/11bja0UnpvgCv2AawNx+YGPDtFgsd1eDN0fP4xybvv9//JbLPR11PHnIDPmEjgUBw+YyKhbx10RpP/4I2m4I2mcKj6KN6HtrmBXoPImCmOHv08Jr520B5eq+qIrMcTScYTSWa/5Rgd3rv/COyax9iBOHr1Wt5+aad5apWq/Plq0suGMFkVthUNkOMIcbQxxJ6qQel3QK/FvzeeXr2W4Jc2nKEVqku+lZisCk/Ds5hdCi0Ts9T4ZzFYYgI+vY5RYzw+g47xT63cDS5RFfYsx2RVaAxC7u0XZNeNUzgEuyyvYgMib/QafAYdgY9uagILVRe6lnGwTqHkJVwbhuIhKBqEzEp/TMAg8jpTQ1+2iH+mmVujC1Tmh0s5UKuQ/xSV+RnstAR+B/oMIiM7NPQbRUZnZG68FlXnvIvZV6Nw0ofqbD+kV8QE+rMTGE7T0G9MYHRGpmJEqzpzfxG7qxXyOlHld0FabKArcz7D2zQ82v0rUK+sU5X5Usi+o5DTAged38hpgVMeSC2PCXhPbujuTBVpyUqkvc1Bq9uGy1mLvaGKG7cryKpUONz0lc3FQ93bK99R8AC2Xo058X8zWLxSenmfJAiCkHFrJGlLWUDKqA4nCYIg/ARyAjMF98rlzQAAAABJRU5ErkJggg==",
+				command :
+				function () {
+					gBrowser.loadURI("javascript:{window.open('http://shuqian.qq.com/post?from=3&amp;title='+encodeURIComponent(document.title)+'&amp;uri='+encodeURIComponent(document.location.href)+'&amp;jumpback=2&amp;noui=1','favit','width=930,height=470,left=50,top=50,toolbar=no,menubar=no,location=no,scrollbars=yes,status=yes,resizable=yes');void(0)}")
+				},
+			},
+			{
+				name : '添加到百度首页',
+				subdir : '收藏',
+				image :"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABWUlEQVQ4jaWSy0sCURjF/XfuRugukha1CzeBCBKIFFFIBEGrCoRwE4EErlskoYW0EFy0iBAkCMFNBCGuKrqjNg6OgzOTjY+5nhbh3ehMrw/O8vud73E8hDL8Rx5CGf5ajoBCsQuvT0IubwIATk51xA/bsPkPAdFtBYQyLIXeUCpbYtybQtcd0Na+LHb2WiCUYTXaRC5vCsBdyXIG3D/0QCjD2qaCl9cB9g9UPFb66OgcuzEVmayBpmKjVLamAxJJTTg9PQ+mHm1+sQ5CGS4ujUlAJmuAUIaZOQkdnaNS7SMYlhGKyKjVh7B6I2EQi6uTAJsDV9fvqFT7YNIQsws10eAPNNDWODa2FHh9Eoq3H85faKk2/IHGRGCWV2RYvZH7Fzo6n9o8VmS9CcPkzoBUWv82umfnhjNgfEg3pdK6M8AwuUihP9DA0bGGRFJDMCyLYLmu8NsSgP/oExgMERjFwInkAAAAAElFTkSuQmCC",
+				command :
+				function () {
+					gBrowser.loadURI("javascript:if(typeof%20yXzyxe58==typeof%20alert)yXzyxe58();((function(s,%20d,%20e)%20{var%20u=location;var%20f%20=%20'http://s.share.baidu.com?click=1&amp;to=bdhome&amp;from=addtobaidu&amp;url='+e(u.href)+'&amp;title='+e(d.title)+'&amp;uid=&amp;type=text&amp;pic=&amp;key=&amp;sign=on&amp;desc=&amp;comment=&amp;searchPic=&amp;relatedUid=&amp;l=&amp;linkid=&amp;sloc=&amp;_t='+new%20Date().getTime();function%20a()%20{if%20(!window.open(f,%20'bdshare',%20'toolbar=0,status=0,resizable=1,width=700,height=450,left='+(s.width%20-%20700)%20/%202+',top='+(s.height%20-%20650)%20/%202))%20u.href%20=%20f;};if%20(/Firefox/.test(navigator.userAgent))%20setTimeout(a,%200);else%20a();})(screen,%20document,%20encodeURIComponent));")
+				},
+			},	
 			{
 				name : '繁简转换',
 				subdir : '',
