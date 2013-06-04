@@ -4,7 +4,8 @@
 // @include        main
 // @author         lastdream2013
 // @charset        UTF-8
-// @version        20130601  0.12 autohide menu on image link and textinput area, minor fix
+// @version        20130604  0.13 minor fix
+// @version        20130601  0.12 autohide menu on image link and textinput area
 // @version        20130503  0.1 first release 
 // ==/UserScript==
 
@@ -44,188 +45,234 @@ var gExternalSubMenu = {
 			{
 				name : '谷歌站內搜索',
 				subdir : '搜索',
-				image :"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABWUlEQVQ4jaXTPUvDQBgH8HyzkiCVdlBcFD+CDgUn0bU5rUMRS6mD4BuCVgfFKmitCl0s+FKhvoEgVvsyWKuRS9JLcvm7tcplSHW44e6e5/c8x91JAaKFZJXWFELRzZBVWgsQLST9JfknInlt9ExRJLMMqSOG67ID7gLb5xbG100h1hNIFyzM51gbu61wnN7Znl14Al+GC7LTas9nMi20bPgHPnUXmatOxbE1E89v3D8wd8DAbGBiw0R/XMfupY3RJcM/oBCKkUUDiUMGF/h1HN+AQiiC0xSa4aL04mBgVvcPTKZNbBYspHIMy3mGJnXx+s4xmBARAVg4Ybh4ctAb66wNJXSUGxx7RfEqBaDa5EgdMSEwmWXIlnwA+Qcb5QbHcLLTbjBGcfboILLq4yX2xXVsFSzUP1zcVzmOb2zsF21EVsRkhVD89zPVJTmqhWWV1rsGVFqRo1r4G6iM33AbQTj+AAAAAElFTkSuQmCC",
+				image : "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABWUlEQVQ4jaXTPUvDQBgH8HyzkiCVdlBcFD+CDgUn0bU5rUMRS6mD4BuCVgfFKmitCl0s+FKhvoEgVvsyWKuRS9JLcvm7tcplSHW44e6e5/c8x91JAaKFZJXWFELRzZBVWgsQLST9JfknInlt9ExRJLMMqSOG67ID7gLb5xbG100h1hNIFyzM51gbu61wnN7Znl14Al+GC7LTas9nMi20bPgHPnUXmatOxbE1E89v3D8wd8DAbGBiw0R/XMfupY3RJcM/oBCKkUUDiUMGF/h1HN+AQiiC0xSa4aL04mBgVvcPTKZNbBYspHIMy3mGJnXx+s4xmBARAVg4Ybh4ctAb66wNJXSUGxx7RfEqBaDa5EgdMSEwmWXIlnwA+Qcb5QbHcLLTbjBGcfboILLq4yX2xXVsFSzUP1zcVzmOb2zsF21EVsRkhVD89zPVJTmqhWWV1rsGVFqRo1r4G6iM33AbQTj+AAAAAElFTkSuQmCC",
 				command :
-				function () {
+				function ()
+				{
 					gBrowser.loadURI("javascript:q%20=%20%22%22%20+%20(window.getSelection%20?%20window.getSelection()%20:%20document.getSelection%20?%20document.getSelection()%20:%20document.selection.createRange().text);%20if%20(!q)%20q%20=%20prompt(%22%E8%AF%B7%E8%BE%93%E5%85%A5%E5%85%B3%E9%94%AE%E8%AF%8D:%22,%20%22%22);%20if%20(q!=null)%20{var%20qlocation=%22%20%22;qlocation=('http://www.google.com/search?num=30&amp;hl=zh-CN&amp;newwindow=1&amp;q='+q+'&amp;sitesearch='+location.host+'');window.open(qlocation);}%20void%200")
 				},
 			},
 			{
 				name : '百度站內搜索',
 				subdir : '搜索',
-				image :"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACWklEQVQ4jZ2TzUuUURTGf2dmnFHLpCh1kSa0yV2k1iZokRURRNAiSrDAlZFhSUQgRBYGRX+BEFQEISJBENW2hRUlgaLpjBPqaI7mt+i877z3nhbjfKi7Dlw4zzn3Hp77nHOEh4MKgFVQCxYwJoWNBWtT2Ev7Odh4BAC0rYr/Man/iA+r2xLhEUc72md1oD+hAJGwo9GIu/2i8fBh7aaY6yrPO5fk1ctlnj6eJxpxaWyYprkpTjTibilgNzNYXDAEg4I1sLvIL/lBkfk5Q2LdijEq83NmcwHPEMCkGIyPJXnQNqv5BT7qzhTK4rzhcHWImmMFXGsszryZGE9SXpGXYQB3+1RVtev1oh4oGbHHa39bVdXRsKOJdatpGw07evliTC9dmLB/ppKqqsrZLs1oUHkwSHlFnpSUBuT9u1UAbt2Y5nbzNNGIS0/3CtFRlx/fEhIbT2603hLApv51pKaAljt7dCbucagqKC3X4/pryCGU75OZuNH2jn3ypXeNsrKA7i3x52jgpRj4/XDu/E6Zinm0NscZHnIwHrK2aun9vC73Wmf0ybNSiU0kqawMSrYLXlbZ0XCSm01xBgdcPA/JFXx4yJVH9/+yvyJPMhlj8KW7oAo9b5a1/6ejyeT2mVlYsPr9a4KJsZyktQQwWQZ5IcFxFL8f1KLWKj6/iN+HKrC2Zpma9HIGSbMaiMCVq8UyGfMYGXbZVeSTE3WFALztXpGlRUt1bYiTp3dILgOh4ZPqi1PpkAJ9wJaZzVgQqE4DOdqJUP9B8bzsmhq7saobvjXgaWqVM0cz6/8PC5Bp7zdzt94AAAAASUVORK5CYII=",
+				image : "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACWklEQVQ4jZ2TzUuUURTGf2dmnFHLpCh1kSa0yV2k1iZokRURRNAiSrDAlZFhSUQgRBYGRX+BEFQEISJBENW2hRUlgaLpjBPqaI7mt+i877z3nhbjfKi7Dlw4zzn3Hp77nHOEh4MKgFVQCxYwJoWNBWtT2Ev7Odh4BAC0rYr/Man/iA+r2xLhEUc72md1oD+hAJGwo9GIu/2i8fBh7aaY6yrPO5fk1ctlnj6eJxpxaWyYprkpTjTibilgNzNYXDAEg4I1sLvIL/lBkfk5Q2LdijEq83NmcwHPEMCkGIyPJXnQNqv5BT7qzhTK4rzhcHWImmMFXGsszryZGE9SXpGXYQB3+1RVtev1oh4oGbHHa39bVdXRsKOJdatpGw07evliTC9dmLB/ppKqqsrZLs1oUHkwSHlFnpSUBuT9u1UAbt2Y5nbzNNGIS0/3CtFRlx/fEhIbT2603hLApv51pKaAljt7dCbucagqKC3X4/pryCGU75OZuNH2jn3ypXeNsrKA7i3x52jgpRj4/XDu/E6Zinm0NscZHnIwHrK2aun9vC73Wmf0ybNSiU0kqawMSrYLXlbZ0XCSm01xBgdcPA/JFXx4yJVH9/+yvyJPMhlj8KW7oAo9b5a1/6ejyeT2mVlYsPr9a4KJsZyktQQwWQZ5IcFxFL8f1KLWKj6/iN+HKrC2Zpma9HIGSbMaiMCVq8UyGfMYGXbZVeSTE3WFALztXpGlRUt1bYiTp3dILgOh4ZPqi1PpkAJ9wJaZzVgQqE4DOdqJUP9B8bzsmhq7saobvjXgaWqVM0cz6/8PC5Bp7zdzt94AAAAASUVORK5CYII=",
 				command :
-				function () {
+				function ()
+				{
 					gBrowser.loadURI("javascript:(function(){ p=prompt('%E5%9C%A8 '+document.location.href.split('/')[2]+' %E4%B8%AD%E6%90%9C%E7%B4%A2',''); if(p){ document.open('http://www.baidu.com/s?wd=site:'+document.location.href.split('/')[2]+' '+p,'','')} })();")
 				},
 			},
 			{
 				name : 'WIKI搜索',
 				subdir : '搜索',
-				image :"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAB5klEQVQ4ja2Tv2saYRjHP0lBSqCYhECzNNNZhCJ2CMVB9I6TRIKQk6RdbhMzpOAeOpz5E/w/inJTMvSOZnApoZhrKKTlhdMhNFSveg7SwWCHkLexdSnpA+/wPjzfz/PrfefG1+MJ97D5+4j/D8B1XUzTpLBVwHVdAOpv6xS2CliWhRACAMuyME0TIQRCCCqVCqZpMq/rOolnCdqdtqTuvNwBoFFvABB0AxYeLqCpGoqisBRdAkBTtZsWdl/tEg5CbNsm6AYAGEWDcBDitTx83+fy2yXlvfJU+eW98g1AURQyaga7YeP7PgCqppJMJqkeVnEcBzWjSuHZpzN5l0MslUoAOI7DLdQoGoivgvPP57KtoBtw+uGUxeXFaYCu6ySTSZrNphycqqmkUinCfiiz98M+o58jdF2fBgCk02mcdw5ey5vqtd1pyw2dvD9h7cna7zXeDTx4c4DyVKFhNwi6AV7LI/E8wcryCrZtA9Dr9igaRal5YFWtw7uQYTik9bHF1fcrVh+vsm1sMxgOOD46JhKJMBqN2MhvzK4AIBaL0fvRk29AURSy2SwAtVqNXC43LRhfjyd/nvxmfpLfzE8uvlxI3/7r/Uk8Hv8rdm7Wb3Rdl+ijKOsv1qVPCEGn05HTv7WZgH+xX3yx7irlByjQAAAAAElFTkSuQmCC",
+				image : "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAB5klEQVQ4ja2Tv2saYRjHP0lBSqCYhECzNNNZhCJ2CMVB9I6TRIKQk6RdbhMzpOAeOpz5E/w/inJTMvSOZnApoZhrKKTlhdMhNFSveg7SwWCHkLexdSnpA+/wPjzfz/PrfefG1+MJ97D5+4j/D8B1XUzTpLBVwHVdAOpv6xS2CliWhRACAMuyME0TIQRCCCqVCqZpMq/rOolnCdqdtqTuvNwBoFFvABB0AxYeLqCpGoqisBRdAkBTtZsWdl/tEg5CbNsm6AYAGEWDcBDitTx83+fy2yXlvfJU+eW98g1AURQyaga7YeP7PgCqppJMJqkeVnEcBzWjSuHZpzN5l0MslUoAOI7DLdQoGoivgvPP57KtoBtw+uGUxeXFaYCu6ySTSZrNphycqqmkUinCfiiz98M+o58jdF2fBgCk02mcdw5ey5vqtd1pyw2dvD9h7cna7zXeDTx4c4DyVKFhNwi6AV7LI/E8wcryCrZtA9Dr9igaRal5YFWtw7uQYTik9bHF1fcrVh+vsm1sMxgOOD46JhKJMBqN2MhvzK4AIBaL0fvRk29AURSy2SwAtVqNXC43LRhfjyd/nvxmfpLfzE8uvlxI3/7r/Uk8Hv8rdm7Wb3Rdl+ijKOsv1qVPCEGn05HTv7WZgH+xX3yx7irlByjQAAAAAElFTkSuQmCC",
 				command :
-				function () {
+				function ()
+				{
 					gBrowser.loadURI("javascript:(function(){q=document.getSelection();%20if(!q){void(q=prompt('Wikipedia%20keywords:',''))};%20if(q)location.href='http://en.wikipedia.org/w/wiki.phtml?search='+escape(q)})()")
 				},
 			},
 			{
 				name : 'VeryCD搜索',
 				subdir : '搜索',
-				image :"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAC5klEQVQ4jZ2TW0hTcRzH/2Z0WZaz42VzbmdearOl5qpRLqyhFUTQNEzqoRcj8KHwqZcK9qJUpFhPlRYFETFaRUkYMS+o4ZwsszbntaXLk+5o87Kds53Jt4dgKF2ovq+/3/fD7/fj+yPCkLWQEBJD/kOC520BWRq2VoVdzdrlhVaNJs5uqauYaqp2TjVVO+2WuopOvX7j8p6Q84VmacR6jkQmbCVCW60X7peXWHOdrP/gwbKeZKmjL37T0qCEwqCEwnvxpiVbivRd34Gi8slHtxMx+roy0l7/KfKps5yYTKZV4TcXHkeazsJXfcptT4jjRigxWLUcs5p0zGrSwarkGEkSo2fden7q8ilH5FUlQs1Vz1pbTat/jPPhcbZg2c34r9OYLlXCt0UB//atmNfmYl6bB3+OCtPpcjBFcviv0BCe7mJD7ie5y1eK8V070Cm00wjeV2OuVI25nFzwBXvB6wswr8mDv3gruDvZENqVYGv328xmc2zU/fnM+Z09skRuwZyOcH8Wgg9UCJbkg9fpwev2IVCsRfCWCuH+LASeZ8BOJ3Fjpyt0UcDQ4eLjHUQEz0kJBHcWuAEFuEY1AofysajPB3czG5yLhjCYifEKKTqICG5D4YkoYORQkbFrbRwcG+Mx94RGyKsA9zkNwXoVAlfU4MbkCHkVWGyi4dgsRtfaDRgtNpRGAWxNjbqbSgp2ERFGjyQj5FGCZ9LAeVPBjcvAM2kQJpTwlKegi4jQTVHBGZNp24ojDhgKLW2EwLYmHmyjDMJXBbgJGTivDGFGgW9mOXrixGgjBO79+579lF7GZNL1pqb6WghBvzYBIacS/AANzklDGM6A00DBSgjsKckzMw0Ne36ZbfZG3TF74mamhayC52Iywu5MhF2Z+FIrQQuJRW8ixbDXrxp//x2EEG/J0TxXjvbux2zJZKA5A6GODLj2SJmB7Xn3vGXGHX80rwAVlVAL9w0P+VfGl8NlZUl/bfxXfQdwCpqwCi8HwAAAAABJRU5ErkJggg==",
+				image : "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAC5klEQVQ4jZ2TW0hTcRzH/2Z0WZaz42VzbmdearOl5qpRLqyhFUTQNEzqoRcj8KHwqZcK9qJUpFhPlRYFETFaRUkYMS+o4ZwsszbntaXLk+5o87Kds53Jt4dgKF2ovq+/3/fD7/fj+yPCkLWQEBJD/kOC520BWRq2VoVdzdrlhVaNJs5uqauYaqp2TjVVO+2WuopOvX7j8p6Q84VmacR6jkQmbCVCW60X7peXWHOdrP/gwbKeZKmjL37T0qCEwqCEwnvxpiVbivRd34Gi8slHtxMx+roy0l7/KfKps5yYTKZV4TcXHkeazsJXfcptT4jjRigxWLUcs5p0zGrSwarkGEkSo2fden7q8ilH5FUlQs1Vz1pbTat/jPPhcbZg2c34r9OYLlXCt0UB//atmNfmYl6bB3+OCtPpcjBFcviv0BCe7mJD7ie5y1eK8V070Cm00wjeV2OuVI25nFzwBXvB6wswr8mDv3gruDvZENqVYGv328xmc2zU/fnM+Z09skRuwZyOcH8Wgg9UCJbkg9fpwev2IVCsRfCWCuH+LASeZ8BOJ3Fjpyt0UcDQ4eLjHUQEz0kJBHcWuAEFuEY1AofysajPB3czG5yLhjCYifEKKTqICG5D4YkoYORQkbFrbRwcG+Mx94RGyKsA9zkNwXoVAlfU4MbkCHkVWGyi4dgsRtfaDRgtNpRGAWxNjbqbSgp2ERFGjyQj5FGCZ9LAeVPBjcvAM2kQJpTwlKegi4jQTVHBGZNp24ojDhgKLW2EwLYmHmyjDMJXBbgJGTivDGFGgW9mOXrixGgjBO79+579lF7GZNL1pqb6WghBvzYBIacS/AANzklDGM6A00DBSgjsKckzMw0Ne36ZbfZG3TF74mamhayC52Iywu5MhF2Z+FIrQQuJRW8ixbDXrxp//x2EEG/J0TxXjvbux2zJZKA5A6GODLj2SJmB7Xn3vGXGHX80rwAVlVAL9w0P+VfGl8NlZUl/bfxXfQdwCpqwCi8HwAAAAABJRU5ErkJggg==",
 				command :
-				function () {
+				function ()
+				{
 					gBrowser.loadURI("javascript:q%20=%20%22%22%20+%20(window.getSelection%20?%20window.getSelection()%20:%20document.getSelection%20?%20document.getSelection()%20:%20document.selection.createRange().text);%20if%20(!q)%20q%20=%20prompt(%22You%20didn't%20select%20any%20text.%20%20Enter%20a%20search%20phrase:%22,%20%22%22);%20if%20(q!=null)%20location=%22http://www.verycd.com/search/folders/%22%20+%20encodeURIComponent(q).replace(/%20/g,%20%22+%22);%20void%200")
+				},
+			},
+			{
+				name : 'A,B,N,P站视频',
+				subdir : '',
+				command :
+				function ()
+				{
+					gBrowser.loadURI("javascript:q=''+(window.getSelection?window.getSelection():document.getSelection?document.getSelection():document.selection.createRange().text);q=q.replace(/\s/g,'');if(!q)%20q=prompt('Please%20input%20the%20keyword:','');if(q!=null){p=encodeURI(q);if(p.match(/^ac\d+$/)){window.open('%20http://www.acfun.tv/v/'+p);}%20else%20if(p.match(/^av\d+$/)){window.open('%20http://www.bilibili.tv/video/'+p);}%20else%20if(p.match(/^sm\d+$/)){window.open('http://nicosound.anyap.info/sound/'+p);}%20else%20if(p.match(/^\d+$/)){window.open('%20http://www.pixiv.net/member_illust.php?mode=medium&illust_id=%20'+p);}%20else{alert('Invalid%20keywords!')}}void%200")
 				},
 			},
 			{
 				name : 'google翻译当前网页',
 				subdir : '翻译',
-				image :"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACHElEQVQ4jX2Ty2sTYRTFf5NOazNiWkdiMVFpfFFiF0LJpmBxWxBFsDSgm0JpQDetgv9BoZsuXKmr0oXQuFAqFBeiQhMTXAgqWPARqyWPUnXiNI9pMknGxTCTjCSe1fc6595z7/0EgHLxp0ELNK1or2t6hQHfkEAHuP4lxxNxHj9dczzKZT463rRCBHgYjfJtcxOATDYHYO8Bbs5MdeKbAhYy2Rx+3xGHkLXvBMGy8H5jg3v3HzB3axavR2J+aY1943eaNvagVCmT1iW2CjoAymSPIFoFOxM4DsCjlSgnAgECF6fJ1v8bHDlaNVytB9fDE2SyOWKvE2TrsiP6jC/DXCDP0e5y+xqou3lerccdJAsj+xWGpSINo86Y7CahdAOgqTuINb1CVtkltCQTm7xE4Y+C1+dnQTE9A4z4NAC28yWu9v9ggWFb3AUQWjLTPR/1Exw6jdcj8akIaV0CIOhWiac1nldOAjAq62jqjingX3R0ksG7vXR1NQdvTN6jXjf4oMC60gvAVN9n+14AEG9/tSettnhKEMKrxsEr4wC8OPsOr0eiqldtkqrVuPb2MKlfqmmhoZpD01BzuKZjBkD+yTNGZZ0+t8ibbZ1IUiSSFFn+YmY3MZBvZmCRAIyi4rCUmj9GJCkSLzfb+vJcCoALsX5ss+1EekKD5t2BQza5UfjtCND2mwrhVcNYuSwEl78bparzIxq6Zq+3bgSFv7Bp4KZzDo3/AAAAAElFTkSuQmCC",
+				image : "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACHElEQVQ4jX2Ty2sTYRTFf5NOazNiWkdiMVFpfFFiF0LJpmBxWxBFsDSgm0JpQDetgv9BoZsuXKmr0oXQuFAqFBeiQhMTXAgqWPARqyWPUnXiNI9pMknGxTCTjCSe1fc6595z7/0EgHLxp0ELNK1or2t6hQHfkEAHuP4lxxNxHj9dczzKZT463rRCBHgYjfJtcxOATDYHYO8Bbs5MdeKbAhYy2Rx+3xGHkLXvBMGy8H5jg3v3HzB3axavR2J+aY1943eaNvagVCmT1iW2CjoAymSPIFoFOxM4DsCjlSgnAgECF6fJ1v8bHDlaNVytB9fDE2SyOWKvE2TrsiP6jC/DXCDP0e5y+xqou3lerccdJAsj+xWGpSINo86Y7CahdAOgqTuINb1CVtkltCQTm7xE4Y+C1+dnQTE9A4z4NAC28yWu9v9ggWFb3AUQWjLTPR/1Exw6jdcj8akIaV0CIOhWiac1nldOAjAq62jqjingX3R0ksG7vXR1NQdvTN6jXjf4oMC60gvAVN9n+14AEG9/tSettnhKEMKrxsEr4wC8OPsOr0eiqldtkqrVuPb2MKlfqmmhoZpD01BzuKZjBkD+yTNGZZ0+t8ibbZ1IUiSSFFn+YmY3MZBvZmCRAIyi4rCUmj9GJCkSLzfb+vJcCoALsX5ss+1EekKD5t2BQza5UfjtCND2mwrhVcNYuSwEl78bparzIxq6Zq+3bgSFv7Bp4KZzDo3/AAAAAElFTkSuQmCC",
 				command :
-				function () {
+				function ()
+				{
 					gBrowser.loadURI("javascript:{d=document;b=d.body;o=d.createElement('scri'+'pt');o.setAttribute('src','http://translate.google.cn/translate_a/element.js?cb=googleTranslateElementInit');o.setAttribute('type','text/javascript');b.appendChild(o);v=b.insertBefore(d.createElement('div'),b.firstChild);v.id='google_translate_element';v.style.display='none';p=d.createElement('scri'+'pt');p.text='function%20googleTranslateElementInit(){new%20google.translate.TranslateElement({pageLanguage:%22%22},%22google_translate_element%22);}';p.setAttribute('type','text/javascript');b.appendChild(p);}void%200")
 				},
-			}, 
+			},
 			{
 				name : '有道翻译当前网页',
 				subdir : '翻译',
-				image :"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAyklEQVQ4jc1QsQ3CMBB0R5seJJ/F2wPQpUtHSwN1RoiYgA0YgVEYIQNQuEFCiS1lhNDg5IE4gQpO+ub0d39/QvwVaujcK9N6ZVoP3dwACCFErWjH+VGTblGZNhhYIOF8VHyd06K/ZOwU/wYnacWingJfSUoD76DPUYPnRSq6bhRte94c4gagNbtUOlBWSUqdpH2fbLn57IXIhGIHcRE043FDaTxVVDwECyTcoIbORwUO+uhA2WOKr6/H/nbQpQWSaQPo5lU4GfvnuAOO7rs1HAnRyQAAAABJRU5ErkJggg==",
+				image : "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAyklEQVQ4jc1QsQ3CMBB0R5seJJ/F2wPQpUtHSwN1RoiYgA0YgVEYIQNQuEFCiS1lhNDg5IE4gQpO+ub0d39/QvwVaujcK9N6ZVoP3dwACCFErWjH+VGTblGZNhhYIOF8VHyd06K/ZOwU/wYnacWingJfSUoD76DPUYPnRSq6bhRte94c4gagNbtUOlBWSUqdpH2fbLn57IXIhGIHcRE043FDaTxVVDwECyTcoIbORwUO+uhA2WOKr6/H/nbQpQWSaQPo5lU4GfvnuAOO7rs1HAnRyQAAAABJRU5ErkJggg==",
 				command :
-				function () {
+				function ()
+				{
 					gBrowser.loadURI("javascript:%20void((function()%20{var%20element%20=%20document.createElement('script');element.id%20=%20'outfox_seed_js';element.charset%20=%20'utf-8',element.setAttribute('src',%20'http://fanyi.youdao.com/web2/seed.js?'%20+%20Date.parse(new%20Date()));document.body.appendChild(element);})())")
 				},
 			},
-			
+
 			{
 				name : '添加到QQ书签',
 				subdir : '收藏',
-				image :"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACpElEQVQ4jYXQ20tTAQDH8fOu+wvajtZL0IWoHqKoRKGHIiLMLLXNdR+VpEQX0jo1Csm8VGa2SkWXrm3O41S0ufIyLbqAJJaWc0cWLtSNFnbvwW8PwWll0A8+r9+HnyAIgtBVpE+Sj6yRPJc3Se7afZJsNUmyPVeS5ROSy31acsqnJJe7QHLKBVJTZ2mS8Pfqs5bjKM5n7MUTotH3fPgQJRKJEA6HmZqaYnJykunpaUITfh4/c3bPCVRtTMR1IoPukjya7edxO8y0Nl6kyVFEQ/11bja0UnpvgCv2AawNx+YGPDtFgsd1eDN0fP4xybvv9//JbLPR11PHnIDPmEjgUBw+YyKhbx10RpP/4I2m4I2mcKj6KN6HtrmBXoPImCmOHv08Jr520B5eq+qIrMcTScYTSWa/5Rgd3rv/COyax9iBOHr1Wt5+aad5apWq/Plq0suGMFkVthUNkOMIcbQxxJ6qQel3QK/FvzeeXr2W4Jc2nKEVqku+lZisCk/Ds5hdCi0Ts9T4ZzFYYgI+vY5RYzw+g47xT63cDS5RFfYsx2RVaAxC7u0XZNeNUzgEuyyvYgMib/QafAYdgY9uagILVRe6lnGwTqHkJVwbhuIhKBqEzEp/TMAg8jpTQ1+2iH+mmVujC1Tmh0s5UKuQ/xSV+RnstAR+B/oMIiM7NPQbRUZnZG68FlXnvIvZV6Nw0ofqbD+kV8QE+rMTGE7T0G9MYHRGpmJEqzpzfxG7qxXyOlHld0FabKArcz7D2zQ82v0rUK+sU5X5Usi+o5DTAged38hpgVMeSC2PCXhPbujuTBVpyUqkvc1Bq9uGy1mLvaGKG7cryKpUONz0lc3FQ93bK99R8AC2Xo058X8zWLxSenmfJAiCkHFrJGlLWUDKqA4nCYIg/ARyAjMF98rlzQAAAABJRU5ErkJggg==",
+				image : "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACpElEQVQ4jYXQ20tTAQDH8fOu+wvajtZL0IWoHqKoRKGHIiLMLLXNdR+VpEQX0jo1Csm8VGa2SkWXrm3O41S0ufIyLbqAJJaWc0cWLtSNFnbvwW8PwWll0A8+r9+HnyAIgtBVpE+Sj6yRPJc3Se7afZJsNUmyPVeS5ROSy31acsqnJJe7QHLKBVJTZ2mS8Pfqs5bjKM5n7MUTotH3fPgQJRKJEA6HmZqaYnJykunpaUITfh4/c3bPCVRtTMR1IoPukjya7edxO8y0Nl6kyVFEQ/11bja0UnpvgCv2AawNx+YGPDtFgsd1eDN0fP4xybvv9//JbLPR11PHnIDPmEjgUBw+YyKhbx10RpP/4I2m4I2mcKj6KN6HtrmBXoPImCmOHv08Jr520B5eq+qIrMcTScYTSWa/5Rgd3rv/COyax9iBOHr1Wt5+aad5apWq/Plq0suGMFkVthUNkOMIcbQxxJ6qQel3QK/FvzeeXr2W4Jc2nKEVqku+lZisCk/Ds5hdCi0Ts9T4ZzFYYgI+vY5RYzw+g47xT63cDS5RFfYsx2RVaAxC7u0XZNeNUzgEuyyvYgMib/QafAYdgY9uagILVRe6lnGwTqHkJVwbhuIhKBqEzEp/TMAg8jpTQ1+2iH+mmVujC1Tmh0s5UKuQ/xSV+RnstAR+B/oMIiM7NPQbRUZnZG68FlXnvIvZV6Nw0ofqbD+kV8QE+rMTGE7T0G9MYHRGpmJEqzpzfxG7qxXyOlHld0FabKArcz7D2zQ82v0rUK+sU5X5Usi+o5DTAged38hpgVMeSC2PCXhPbujuTBVpyUqkvc1Bq9uGy1mLvaGKG7cryKpUONz0lc3FQ93bK99R8AC2Xo058X8zWLxSenmfJAiCkHFrJGlLWUDKqA4nCYIg/ARyAjMF98rlzQAAAABJRU5ErkJggg==",
 				command :
-				function () {
+				function ()
+				{
 					gBrowser.loadURI("javascript:{window.open('http://shuqian.qq.com/post?from=3&amp;title='+encodeURIComponent(document.title)+'&amp;uri='+encodeURIComponent(document.location.href)+'&amp;jumpback=2&amp;noui=1','favit','width=930,height=470,left=50,top=50,toolbar=no,menubar=no,location=no,scrollbars=yes,status=yes,resizable=yes');void(0)}")
 				},
 			},
 			{
 				name : '添加到百度首页',
 				subdir : '收藏',
-				image :"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABWUlEQVQ4jaWSy0sCURjF/XfuRugukha1CzeBCBKIFFFIBEGrCoRwE4EErlskoYW0EFy0iBAkCMFNBCGuKrqjNg6OgzOTjY+5nhbh3ehMrw/O8vud73E8hDL8Rx5CGf5ajoBCsQuvT0IubwIATk51xA/bsPkPAdFtBYQyLIXeUCpbYtybQtcd0Na+LHb2WiCUYTXaRC5vCsBdyXIG3D/0QCjD2qaCl9cB9g9UPFb66OgcuzEVmayBpmKjVLamAxJJTTg9PQ+mHm1+sQ5CGS4ujUlAJmuAUIaZOQkdnaNS7SMYlhGKyKjVh7B6I2EQi6uTAJsDV9fvqFT7YNIQsws10eAPNNDWODa2FHh9Eoq3H85faKk2/IHGRGCWV2RYvZH7Fzo6n9o8VmS9CcPkzoBUWv82umfnhjNgfEg3pdK6M8AwuUihP9DA0bGGRFJDMCyLYLmu8NsSgP/oExgMERjFwInkAAAAAElFTkSuQmCC",
+				image : "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABWUlEQVQ4jaWSy0sCURjF/XfuRugukha1CzeBCBKIFFFIBEGrCoRwE4EErlskoYW0EFy0iBAkCMFNBCGuKrqjNg6OgzOTjY+5nhbh3ehMrw/O8vud73E8hDL8Rx5CGf5ajoBCsQuvT0IubwIATk51xA/bsPkPAdFtBYQyLIXeUCpbYtybQtcd0Na+LHb2WiCUYTXaRC5vCsBdyXIG3D/0QCjD2qaCl9cB9g9UPFb66OgcuzEVmayBpmKjVLamAxJJTTg9PQ+mHm1+sQ5CGS4ujUlAJmuAUIaZOQkdnaNS7SMYlhGKyKjVh7B6I2EQi6uTAJsDV9fvqFT7YNIQsws10eAPNNDWODa2FHh9Eoq3H85faKk2/IHGRGCWV2RYvZH7Fzo6n9o8VmS9CcPkzoBUWv82umfnhjNgfEg3pdK6M8AwuUihP9DA0bGGRFJDMCyLYLmu8NsSgP/oExgMERjFwInkAAAAAElFTkSuQmCC",
 				command :
-				function () {
+				function ()
+				{
 					gBrowser.loadURI("javascript:if(typeof%20yXzyxe58==typeof%20alert)yXzyxe58();((function(s,%20d,%20e)%20{var%20u=location;var%20f%20=%20'http://s.share.baidu.com?click=1&amp;to=bdhome&amp;from=addtobaidu&amp;url='+e(u.href)+'&amp;title='+e(d.title)+'&amp;uid=&amp;type=text&amp;pic=&amp;key=&amp;sign=on&amp;desc=&amp;comment=&amp;searchPic=&amp;relatedUid=&amp;l=&amp;linkid=&amp;sloc=&amp;_t='+new%20Date().getTime();function%20a()%20{if%20(!window.open(f,%20'bdshare',%20'toolbar=0,status=0,resizable=1,width=700,height=450,left='+(s.width%20-%20700)%20/%202+',top='+(s.height%20-%20650)%20/%202))%20u.href%20=%20f;};if%20(/Firefox/.test(navigator.userAgent))%20setTimeout(a,%200);else%20a();})(screen,%20document,%20encodeURIComponent));")
 				},
-			},	
+			},
 			{
 				name : '繁简转换',
 				subdir : '',
-				image :"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADNUlEQVQ4jY3TX0xTZxgG8CMEZvkrBEQ2GyBUMylUN2J0hQCntZW2lhYowjm1lLQd0tFKsZRaKLSJk242tegWITGkyp+uRVTsMl1kihpEN6MzXnhB5EJNdrdl02SLMX7PLtYYWDTxTX6Xz5PvTd6PolaMrkeQeiSqtYfmXdfHb7rvH418Pmrsk5ZS7zNNzvLM0Tnr4sxDLzm12I7RBQOm7jkQvjPwot3LqB3HIlJX8GzDPtuR/LcWeMLqQOhOJ/FfUcE/p4Z/To2jV1QIXm1CaNHzOnzrKQkv/EbOzC39tb8/yKwKl5dTScM/6p54YlXwxKrh/b4a3lg1PLEqDF6sxIl5Fl/O/oSh2WUMXVhGYObXP2vkTRveFOyQZWf4Yg0v7NFS2KNl6JkWoGdaAHu0DAcjfAxdroUrcg59kSW4vlvC4fOPiZIxq1c+Yo3ztPhnW7gEnRPFsMR1ThTDMl4Mz0UZLKHbsIQeoXPsEXrPPHglUjZ8umqNFuc2tm+mgnSMFWKl7qkyYgn1E23gLtjAXeiP3yPN3cdjFEUlrCqQ6vJS249tvW8NfQzTCBemk1yYRrjomhAS1h8jMvc8ZO551B9eIHWOyWs04+S/Ce/tL6pqGy5cMo0UkLbhD6EP5kMfzEdrMB+Gbzei7Rs+5AMDqLD+AKHlEoSWS6g0T/9epTBtoRrs3O3ar/OeM74cML5csL5csF/9h/HlgvHloGUoB4wvD2K7A58YZ7HNcAFb285hh8Y9SmlcGy43DqyDZjALGk8WNN5sNMVpvNnQeLLQOLgO9f2ZULkKIGidRKk2ipLmKWzf45iklAczl+t606Fyxh3KgDpO5UxHXW86lI40KHvSILelQMAGsLk+BF6t72WFpFFO1Zqzf5Ed4EBuS4HClgJFd5wtBXIbB/IuDmRdHMisa7GrI5UU1NgJr9r6bKe4WUtRFEXt1hXpdu1Pei01J0P6xf+YkyExJ0PSkQSRKZFItJtufEarxXw+P23VEUnZIrfYmPySNiZCtAJtTARtSABtSCQSlntDKBSsf+dvrFSUlYtbCsZE+7Ke0a2cv2n92n9oXcYfIuajazUKgZ7H433wtty/EmGelA1I/y4AAAAASUVORK5CYII=",
+				image : "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADNUlEQVQ4jY3TX0xTZxgG8CMEZvkrBEQ2GyBUMylUN2J0hQCntZW2lhYowjm1lLQd0tFKsZRaKLSJk242tegWITGkyp+uRVTsMl1kihpEN6MzXnhB5EJNdrdl02SLMX7PLtYYWDTxTX6Xz5PvTd6PolaMrkeQeiSqtYfmXdfHb7rvH418Pmrsk5ZS7zNNzvLM0Tnr4sxDLzm12I7RBQOm7jkQvjPwot3LqB3HIlJX8GzDPtuR/LcWeMLqQOhOJ/FfUcE/p4Z/To2jV1QIXm1CaNHzOnzrKQkv/EbOzC39tb8/yKwKl5dTScM/6p54YlXwxKrh/b4a3lg1PLEqDF6sxIl5Fl/O/oSh2WUMXVhGYObXP2vkTRveFOyQZWf4Yg0v7NFS2KNl6JkWoGdaAHu0DAcjfAxdroUrcg59kSW4vlvC4fOPiZIxq1c+Yo3ztPhnW7gEnRPFsMR1ThTDMl4Mz0UZLKHbsIQeoXPsEXrPPHglUjZ8umqNFuc2tm+mgnSMFWKl7qkyYgn1E23gLtjAXeiP3yPN3cdjFEUlrCqQ6vJS249tvW8NfQzTCBemk1yYRrjomhAS1h8jMvc8ZO551B9eIHWOyWs04+S/Ce/tL6pqGy5cMo0UkLbhD6EP5kMfzEdrMB+Gbzei7Rs+5AMDqLD+AKHlEoSWS6g0T/9epTBtoRrs3O3ar/OeM74cML5csL5csF/9h/HlgvHloGUoB4wvD2K7A58YZ7HNcAFb285hh8Y9SmlcGy43DqyDZjALGk8WNN5sNMVpvNnQeLLQOLgO9f2ZULkKIGidRKk2ipLmKWzf45iklAczl+t606Fyxh3KgDpO5UxHXW86lI40KHvSILelQMAGsLk+BF6t72WFpFFO1Zqzf5Ed4EBuS4HClgJFd5wtBXIbB/IuDmRdHMisa7GrI5UU1NgJr9r6bKe4WUtRFEXt1hXpdu1Pei01J0P6xf+YkyExJ0PSkQSRKZFItJtufEarxXw+P23VEUnZIrfYmPySNiZCtAJtTARtSABtSCQSlntDKBSsf+dvrFSUlYtbCsZE+7Ke0a2cv2n92n9oXcYfIuajazUKgZ7H433wtty/EmGelA1I/y4AAAAASUVORK5CYII=",
 				command :
-				function () {
+				function ()
+				{
 					gBrowser.loadURI("javascript:(function(){var%20s=document.getElementById(%22tongwenlet_cn%22);if(s!=null){document.body.removeChild(s);}var%20s=document.createElement(%22script%22);s.language=%22javascript%22;s.type=%22text/javascript%22;s.src=%22http://tongwen.openfoundry.org/NewTongWen/tools/bookmarklet_cn.js%22;s.id=%22tongwenlet_cn%22;document.body.appendChild(s);%20})();")
 				},
 			},
 			{
 				name : '当前页面google快照',
 				subdir : '',
-				image :"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADGElEQVQ4jW3RXUyTBxSA4e9yF4sXy+KycDMj1Bik/aDW2krcaMtm3ELmSBhbUMBlgBA0ss0IW1jXimJFGtTA1KJQftJ2OlosWlAqtcAaoP6w4NSFfQhhTiNshEyL6/LuglDTZCd5knNz3psjWM50iJ1en1Td3IPyoIf0w/0U1nkJT9wjPHYLu1pLd2ISfaoUBjM1jH6oJ6DX0q1Ikc4nJIhCu+eK9OfCIpcGZ/Dcnsdze562aw95Mv8cgKd3bzF99hBLQXfMs+sX+L3RjDt5vST0BkP8E42y336HvPb75LXfJ7flLqd9DwB4HB5jWKtm3lgc79Q39GtEhOGb4wAUnRlFc3yErdYwSkuI7PobADz6KYR/TRJ/5L8X53FRFv5NKQjXQncAcAQl3tjfw9pvB1hdeZW8huWAv6iEvrcSuZEoY2zDeibSkpnUyJl5O5WrchlCtsnNyuw5PcQrBR28WeJgfGqOr8+bMZRv4YOKdAqrtvCFWYvxqAZLqZLj+akc0soQUg92sb02gHd0mr/+XorFrJebWWfNZGe3gYo+HVV+Hd8FMqgZfCem0KZBECu72HriJq9/eYlV+W1xAdlRPbldhrijFUeGdBSc1SDI9jpQm4OsKrvIq7vsjE/NxSLN152sNWaww2nAFMiIUxvcxs7vNyMo9rTS6p+MO4zMTcf2H0KXEY/oKPfoqOrNiKnpzyK3YTNCt394+d8jTibqVDyol/PLsQ089NXFIpWOw+TYDVR4dDHm3mx2HFMjXBkYYmnhEb+ekLM08BHRkV28GMxhxqbiSdgFQGvAxfZGPaXOl0zeT3i/Ro3g9QeJRhb5rSmJFz45//oVRPsVLP6YzGzACsBJ3zm2ndKzu+0lk7uATOMmBJe3j2eRCE9/voDUrmW2JYHZlgSkix8TjSwAoK/N4d2Tej61LStuzaLasZv0AyoE67kO6d7kFM8jEf5vbD02ypqKMTpKMbmWVXeW8FlDNqq9Skn4ymIV6212qdnpZkVTp4sDjRbWFel4LU9kdWEaa4qVKMqVKPdtRLlvI2llaZL4uSj+B/6jwzxuLzMiAAAAAElFTkSuQmCC",
+				image : "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADGElEQVQ4jW3RXUyTBxSA4e9yF4sXy+KycDMj1Bik/aDW2krcaMtm3ELmSBhbUMBlgBA0ss0IW1jXimJFGtTA1KJQftJ2OlosWlAqtcAaoP6w4NSFfQhhTiNshEyL6/LuglDTZCd5knNz3psjWM50iJ1en1Td3IPyoIf0w/0U1nkJT9wjPHYLu1pLd2ISfaoUBjM1jH6oJ6DX0q1Ikc4nJIhCu+eK9OfCIpcGZ/Dcnsdze562aw95Mv8cgKd3bzF99hBLQXfMs+sX+L3RjDt5vST0BkP8E42y336HvPb75LXfJ7flLqd9DwB4HB5jWKtm3lgc79Q39GtEhOGb4wAUnRlFc3yErdYwSkuI7PobADz6KYR/TRJ/5L8X53FRFv5NKQjXQncAcAQl3tjfw9pvB1hdeZW8huWAv6iEvrcSuZEoY2zDeibSkpnUyJl5O5WrchlCtsnNyuw5PcQrBR28WeJgfGqOr8+bMZRv4YOKdAqrtvCFWYvxqAZLqZLj+akc0soQUg92sb02gHd0mr/+XorFrJebWWfNZGe3gYo+HVV+Hd8FMqgZfCem0KZBECu72HriJq9/eYlV+W1xAdlRPbldhrijFUeGdBSc1SDI9jpQm4OsKrvIq7vsjE/NxSLN152sNWaww2nAFMiIUxvcxs7vNyMo9rTS6p+MO4zMTcf2H0KXEY/oKPfoqOrNiKnpzyK3YTNCt394+d8jTibqVDyol/PLsQ089NXFIpWOw+TYDVR4dDHm3mx2HFMjXBkYYmnhEb+ekLM08BHRkV28GMxhxqbiSdgFQGvAxfZGPaXOl0zeT3i/Ro3g9QeJRhb5rSmJFz45//oVRPsVLP6YzGzACsBJ3zm2ndKzu+0lk7uATOMmBJe3j2eRCE9/voDUrmW2JYHZlgSkix8TjSwAoK/N4d2Tej61LStuzaLasZv0AyoE67kO6d7kFM8jEf5vbD02ypqKMTpKMbmWVXeW8FlDNqq9Skn4ymIV6212qdnpZkVTp4sDjRbWFel4LU9kdWEaa4qVKMqVKPdtRLlvI2llaZL4uSj+B/6jwzxuLzMiAAAAAElFTkSuQmCC",
 				command :
-				function () {
+				function ()
+				{
 					gBrowser.loadURI("javascript:(function(){%20document.location.href='http://webcache.googleusercontent.com/search?q=cache:'+escape(document.location.href)%20})();")
 				},
 			},
-			
+
 			{
 				name : '清除隐藏文字',
 				subdir : '',
-				image :"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACxklEQVQ4jX2SzUuTARzHfzAsqD2F9Q8UjxV4CZZNVzbZTFh4muVBlA6VIHYps2KHhRYdjAgCOxREHVLKWgRFBR2ilUUhJWy1pvVszT209uzNt5yiz6dD7/byhc/t+/2cviJ/RtlltTYupkFRvH/p/pGVd2prgwuXLmFeu4YZCGAGAjAwgHn5Mn01NQP/Hd92OoMLZ87AhQvM9fVhPHhAIRxmrr8fLl7EPHuW/m3brv99XFkZXPD54ORJiqdPk02lGH3xgkQoxPTEBIVz56CnB9Pvp9/h+E2y7JbNFlzYtw8OHGDO76dw/jyZdJo3z56hDQ8zMzVF5tQp8Pvh8GHM9nauVFRcFRER65Il5YbHAy0t0NpKsqeH5Lt35AyDyNOnxL4Lurrg4EFob4c9e4h5PFMislKWl5Rs/FRbi7lzJzQ3k+juJhmNkjMMQoODaK9e8XlykszRo8y3tTHf2gpNTcTq6qZEZLUsLynZOOZ0Mltfj+n1Evf5SEUi5HSdYj7PbKHA/OQkiWPHmI7HGevtxWxoIOZ2/xRoW7Ywvn07Mzt28L6jg8+GQTGTYTabZTabpZjJkHj+nNTICDmvl2J9PaM1NT8F0cpK0k4nebebyP79FJJJxnWdiW+M6zqFZJLRQIBpj4eJujreVld/FSwV2RDctGlGdzhIVVcT2ruXtKZhaBpGLPYVTSOtaUSOHCHndpNxuQiUl38UkVUiItYyRekYtNmKY1VVvHa5eDs0hB6N/kb44UMSLhefnE4C69blV1gsTb9+oVRVlM7HNlsxbrcT3L2bJ3fv8uT+fR7fu0fw5k1eNjaib93KjbKyfKnF0iIi1sVvLFUVpfORzVbUNm9mtKKCmN1O3G7nQ1UVCYeD66r6z/EPyVpFOXRCVUPHVTV8XFXD3aoa7lLVsG/NmuFSi6X5f+PvWSEiqoisX8RaEVm2uPwFgl/ntiLCO0UAAAAASUVORK5CYII=",
+				image : "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACxklEQVQ4jX2SzUuTARzHfzAsqD2F9Q8UjxV4CZZNVzbZTFh4muVBlA6VIHYps2KHhRYdjAgCOxREHVLKWgRFBR2ilUUhJWy1pvVszT209uzNt5yiz6dD7/byhc/t+/2cviJ/RtlltTYupkFRvH/p/pGVd2prgwuXLmFeu4YZCGAGAjAwgHn5Mn01NQP/Hd92OoMLZ87AhQvM9fVhPHhAIRxmrr8fLl7EPHuW/m3brv99XFkZXPD54ORJiqdPk02lGH3xgkQoxPTEBIVz56CnB9Pvp9/h+E2y7JbNFlzYtw8OHGDO76dw/jyZdJo3z56hDQ8zMzVF5tQp8Pvh8GHM9nauVFRcFRER65Il5YbHAy0t0NpKsqeH5Lt35AyDyNOnxL4Lurrg4EFob4c9e4h5PFMislKWl5Rs/FRbi7lzJzQ3k+juJhmNkjMMQoODaK9e8XlykszRo8y3tTHf2gpNTcTq6qZEZLUsLynZOOZ0Mltfj+n1Evf5SEUi5HSdYj7PbKHA/OQkiWPHmI7HGevtxWxoIOZ2/xRoW7Ywvn07Mzt28L6jg8+GQTGTYTabZTabpZjJkHj+nNTICDmvl2J9PaM1NT8F0cpK0k4nebebyP79FJJJxnWdiW+M6zqFZJLRQIBpj4eJujreVld/FSwV2RDctGlGdzhIVVcT2ruXtKZhaBpGLPYVTSOtaUSOHCHndpNxuQiUl38UkVUiItYyRekYtNmKY1VVvHa5eDs0hB6N/kb44UMSLhefnE4C69blV1gsTb9+oVRVlM7HNlsxbrcT3L2bJ3fv8uT+fR7fu0fw5k1eNjaib93KjbKyfKnF0iIi1sVvLFUVpfORzVbUNm9mtKKCmN1O3G7nQ1UVCYeD66r6z/EPyVpFOXRCVUPHVTV8XFXD3aoa7lLVsG/NmuFSi6X5f+PvWSEiqoisX8RaEVm2uPwFgl/ntiLCO0UAAAAASUVORK5CYII=",
 				command :
-				function () {
-					gBrowser.loadURI("javascript:getobjstyle=function(node,prop){return node.ownerDocument.defaultView.getComputedStyle(node,'').getPropertyValue(prop);};RemoveHide=function(objname){var minValue=15;var objs=document.getElementsByTagName(objname);if(objs.length==0){}else{for(var i=objs.length-1;i>=0;i--){var node=objs.item(i);if(getobjstyle(node,'display')=='none' || getobjstyle(node,'visibility')=='hidden' || parseInt(getobjstyle(node,'font-size'))==0){node.parentNode.removeChild(node);}else{if(node.parentNode){var orgNode=node;var orgColor=getobjstyle(orgNode,'color');var orgRGB=CleanHidegetRGB(orgColor);var parentNode=node.parentNode;var parentBgColor=getobjstyle(parentNode,'background-color');var isLast=false;while(parentBgColor=='transparent'){if(parentNode.parentNode==null){isLast=true;break;}parentNode=parentNode.parentNode;parentBgColor=getobjstyle(parentNode,'background-color');if(parentBgColor != 'transparent'){break;}}if(isLast){if((Math.abs(orgRGB[0]-255)<=minValue)&&(Math.abs(orgRGB[1]-255)<=minValue)&&(Math.abs(orgRGB[2]-255)<=minValue)){orgNode.parentNode.removeChild(orgNode);}}else{parentBgRGB=CleanHidegetRGB(parentBgColor);if((Math.abs(orgRGB[0]-parentBgRGB[0])<=minValue)&&(Math.abs(orgRGB[1]-parentBgRGB[1])<=minValue)&&(Math.abs(orgRGB[2]-parentBgRGB[2])<=minValue)){orgNode.parentNode.removeChild(orgNode);}}}}}}var itemFrames=document.getElementsByTagName('frame');var itemiFrames=document.getElementsByTagName('iframe');var frame,iframe;if (itemFrames.length>0){for (var i=0;i<itemFrames.length;i++){frame=itemFrames[i].contentDocument;this.RemoveHide(frame,objname);}}if(itemiFrames.length>0){for(var i=0;i<itemiFrames.length;i++){iframe=itemiFrames[i].contentDocument;this.RemoveHide(iframe,objname);}}};function CleanHidegetRGB(colorString){var RGB=new Array;var tempSting=colorString.substring(4,colorString.length-1);var tempArray=tempSting.split(",");RGB[0]=parseInt(tempArray[0]);RGB[1]=parseInt(tempArray[1]);RGB[2]=parseInt(tempArray[2]);return RGB;};RemoveHide('span');RemoveHide('font');RemoveHide('div');RemoveHide('p');")
+				function ()
+				{
+					gBrowser.loadURI("javascript:getobjstyle=function(node,prop){return node.ownerDocument.defaultView.getComputedStyle(node,'').getPropertyValue(prop);};RemoveHide=function(objname){var minValue=15;var objs=document.getElementsByTagName(objname);if(objs.length==0){}else{for(var i=objs.length-1;i>=0;i--){var node=objs.item(i);if(getobjstyle(node,'display')=='none' || getobjstyle(node,'visibility')=='hidden' || parseInt(getobjstyle(node,'font-size'))==0){node.parentNode.removeChild(node);}else{if(node.parentNode){var orgNode=node;var orgColor=getobjstyle(orgNode,'color');var orgRGB=CleanHidegetRGB(orgColor);var parentNode=node.parentNode;var parentBgColor=getobjstyle(parentNode,'background-color');var isLast=false;while(parentBgColor=='transparent'){if(parentNode.parentNode==null){isLast=true;break;}parentNode=parentNode.parentNode;parentBgColor=getobjstyle(parentNode,'background-color');if(parentBgColor != 'transparent'){break;}}if(isLast){if((Math.abs(orgRGB[0]-255)<=minValue)&&(Math.abs(orgRGB[1]-255)<=minValue)&&(Math.abs(orgRGB[2]-255)<=minValue)){orgNode.parentNode.removeChild(orgNode);}}else{parentBgRGB=CleanHidegetRGB(parentBgColor);if((Math.abs(orgRGB[0]-parentBgRGB[0])<=minValue)&&(Math.abs(orgRGB[1]-parentBgRGB[1])<=minValue)&&(Math.abs(orgRGB[2]-parentBgRGB[2])<=minValue)){orgNode.parentNode.removeChild(orgNode);}}}}}}var itemFrames=document.getElementsByTagName('frame');var itemiFrames=document.getElementsByTagName('iframe');var frame,iframe;if (itemFrames.length>0){for (var i=0;i<itemFrames.length;i++){frame=itemFrames[i].contentDocument;this.RemoveHide(frame,objname);}}if(itemiFrames.length>0){for(var i=0;i<itemiFrames.length;i++){iframe=itemiFrames[i].contentDocument;this.RemoveHide(iframe,objname);}}};function CleanHidegetRGB(colorString){var RGB=new Array;var tempSting=colorString.substring(4,colorString.length-1);var tempArray=tempSting.split(", ");RGB[0]=parseInt(tempArray[0]);RGB[1]=parseInt(tempArray[1]);RGB[2]=parseInt(tempArray[2]);return RGB;};RemoveHide('span');RemoveHide('font');RemoveHide('div');RemoveHide('p');")
 				},
 			},
 			{
 				name : 'Mouseover DOM Inspector',
 				subdir : '',
-				image :"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA3ElEQVQ4jaWSvQuDMBDF+0e7ujs6O3YWFycXXQSpQyCgg1LIoAQqSigEER1eJ8X4XTy4IXD53bt399CcGHfyoTkxlpFwASvMpiLDowhyvqrbBNCy2e1mE3YOMP10F2B4FG0/HAPmH0bZQc6huwSFkOcKDI9OgOfrjVp2AKB0/tsDm7DrAACIWLWCXB5hjFp2sAlbQU5NXEb++UJ3yQSJWHUMKISEFWaK3Plq5we1ArT9oGzB9FPlrTkxaNnsAwohFbnLNP303MRxhCurPDSx7QckXCDhYvMGFMCd/AHHS24Twewa9gAAAABJRU5ErkJggg==",
+				image : "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA3ElEQVQ4jaWSvQuDMBDF+0e7ujs6O3YWFycXXQSpQyCgg1LIoAQqSigEER1eJ8X4XTy4IXD53bt399CcGHfyoTkxlpFwASvMpiLDowhyvqrbBNCy2e1mE3YOMP10F2B4FG0/HAPmH0bZQc6huwSFkOcKDI9OgOfrjVp2AKB0/tsDm7DrAACIWLWCXB5hjFp2sAlbQU5NXEb++UJ3yQSJWHUMKISEFWaK3Plq5we1ArT9oGzB9FPlrTkxaNnsAwohFbnLNP303MRxhCurPDSx7QckXCDhYvMGFMCd/AHHS24Twewa9gAAAABJRU5ErkJggg==",
 				command :
-				function () {
+				function ()
+				{
 					gBrowser.loadURI("javascript:void(z=document.body.appendChild(document.createElement('script')));void(z.language='javascript');void(z.type='text/javascript');void(z.src='http://slayeroffice.com/tools/modi/modi.js');void(z.id='modi');")
 				},
 			},
 			{
 				name : '短网址',
 				subdir : '',
-				image :"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAB5ElEQVQ4jcWSTUiUURSGn3O++WmMtMKSKEGoRX+QLdqEOUiOkBsjml0Q0SqCCFooBC0SXQZtgqByFZQQuHNjIJkhVARBREQWBBUi5Yw62nzfd06LYcTR3NaBC/fe977P5b73wP8uWb1429Y6DpoFcHe+fPha33PjmGzetr2ACiKCmz1bPPcwW/VodTLU0rIpCBLZIFBUFdB3PbOz81wZLUYWv3dz3Aycdm7lM+sAB5obF1Qr5iBQjky+PlzVfp9/dBAzLDbcjPTWYKEG0NH/7cznuuagaE4QJBD1q2vfGppddnfMHVE0de9sfgWQ1PSTBx1DiAplgf1PX95eB7jw+A6AC+COiAwDaOfNn+OIogIjR/v4UYgaN0p8OVFocBEcx81J3D09oaLeBIKI8mZPjuHWi8WNAK8WZ5aOp0LMHMyQiJ0C0DVYdBREldg9HOvdkvobYH6yq1wqWXLXdD2BGeGlEdFKQFxzUywWME229y92rzVHU7nuTEqSscXcb5gjjKJeWNVInQMld6lsiTtj1+tqmiycOumV487MrzK7T03Iyi8AROHcDkERBETpHCiNV7WlF9lR85jKMAKNm6pazS0dg8sfBd0nDiLG9/KndJ5D1pc7EVaCBjObzrQ937tR0P++/gAfa8dxFS7RuQAAAABJRU5ErkJggg==",
+				image : "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAB5ElEQVQ4jcWSTUiUURSGn3O++WmMtMKSKEGoRX+QLdqEOUiOkBsjml0Q0SqCCFooBC0SXQZtgqByFZQQuHNjIJkhVARBREQWBBUi5Yw62nzfd06LYcTR3NaBC/fe977P5b73wP8uWb1429Y6DpoFcHe+fPha33PjmGzetr2ACiKCmz1bPPcwW/VodTLU0rIpCBLZIFBUFdB3PbOz81wZLUYWv3dz3Aycdm7lM+sAB5obF1Qr5iBQjky+PlzVfp9/dBAzLDbcjPTWYKEG0NH/7cznuuagaE4QJBD1q2vfGppddnfMHVE0de9sfgWQ1PSTBx1DiAplgf1PX95eB7jw+A6AC+COiAwDaOfNn+OIogIjR/v4UYgaN0p8OVFocBEcx81J3D09oaLeBIKI8mZPjuHWi8WNAK8WZ5aOp0LMHMyQiJ0C0DVYdBREldg9HOvdkvobYH6yq1wqWXLXdD2BGeGlEdFKQFxzUywWME229y92rzVHU7nuTEqSscXcb5gjjKJeWNVInQMld6lsiTtj1+tqmiycOumV487MrzK7T03Iyi8AROHcDkERBETpHCiNV7WlF9lR85jKMAKNm6pazS0dg8sfBd0nDiLG9/KndJ5D1pc7EVaCBjObzrQ937tR0P++/gAfa8dxFS7RuQAAAABJRU5ErkJggg==",
 				command :
-				function () {
+				function ()
+				{
 					gBrowser.loadURI("javascript:function%20iprl5(){var%20d=document,z=d.createElement('scr'+'ipt'),b=d.body,l=d.location;try{if(!b)throw(0);if%20(!l)%20{alert('%E8%AF%B7%E8%BE%93%E5%85%A5%E7%BD%91%E5%9D%80%EF%BC%81');return;}d.title='(Shortening...)%20'+d.title;z.setAttribute('src','http://www.ruanyifeng.com/webapp/url_shortener_plugin.php?longUrl='+encodeURIComponent(l));b.appendChild(z);}catch(e){alert('%E8%AF%B7%E7%AD%89%E5%BE%85%E7%BD%91%E9%A1%B5%E5%8A%A0%E8%BD%BD%E5%AE%8C%E6%AF%95%EF%BC%81');}}iprl5();void(0)")
 				},
 			},
 			{
 				name : '图片适应窗口',
 				subdir : '',
-				image :"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABz0lEQVQ4jb2RzWsTURTFf+/NTMfGNDVGsVAQ8YPsghVcCS4EXQmC6F/QTXDXf0Aoxf4XLrtIFy6LBEI/CBjEVfGji9ZWA0K0rakjmXlvOnNdmIZI0iIIHji8x73nHe55F/4RamntrUTG0okMYWQJI4sxMcZajD0EBb7nMOJ6+L7H6cwpHEfhOA6FfBbXT/aZODeO1lm0Viile+ej5h38jSyL95bQWv/R01qxvdPEBZi6Xho63v31x+hLI1y9cnlo/+NOE31Svtg1uNdO/gN3WHH59Qf2vgcUDx/COixuN5icyHNrqjgori2viYjI3Is5+VscaVfrDdEoRa7sYUsBlYMF5uuzx447X5+lcrCALQXkyh5aKajWVmSrtSkz8bSY2EqappIkSY/9SNNUbGxlJp6WrdamrNYbQrW2IkmSyLf2194jY22PaSpdpj2j3R+73QivRAOICPnsWUQEEcHRGkdrau+rPHv3FKVAKdWLUhgrdG/q9xZSkaGZgzDgRvHmQL1f7gJIOmhgYkNl8jljGwU+BZ8p333SZ3CkF1Tzy77stdsEHcPPTkQntHRCS2gsHRPxpvWS2xcf4HseZ3I+rlZkRjNkR30unM8fu7H/h1+ePDbJO/G73gAAAABJRU5ErkJggg==",
+				image : "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABz0lEQVQ4jb2RzWsTURTFf+/NTMfGNDVGsVAQ8YPsghVcCS4EXQmC6F/QTXDXf0Aoxf4XLrtIFy6LBEI/CBjEVfGji9ZWA0K0rakjmXlvOnNdmIZI0iIIHji8x73nHe55F/4RamntrUTG0okMYWQJI4sxMcZajD0EBb7nMOJ6+L7H6cwpHEfhOA6FfBbXT/aZODeO1lm0Viile+ej5h38jSyL95bQWv/R01qxvdPEBZi6Xho63v31x+hLI1y9cnlo/+NOE31Svtg1uNdO/gN3WHH59Qf2vgcUDx/COixuN5icyHNrqjgori2viYjI3Is5+VscaVfrDdEoRa7sYUsBlYMF5uuzx447X5+lcrCALQXkyh5aKajWVmSrtSkz8bSY2EqappIkSY/9SNNUbGxlJp6WrdamrNYbQrW2IkmSyLf2194jY22PaSpdpj2j3R+73QivRAOICPnsWUQEEcHRGkdrau+rPHv3FKVAKdWLUhgrdG/q9xZSkaGZgzDgRvHmQL1f7gJIOmhgYkNl8jljGwU+BZ8p333SZ3CkF1Tzy77stdsEHcPPTkQntHRCS2gsHRPxpvWS2xcf4HseZ3I+rlZkRjNkR30unM8fu7H/h1+ePDbJO/G73gAAAABJRU5ErkJggg==",
 				command :
-				function () {
+				function ()
+				{
 					gBrowser.loadURI("javascript:(function(){function%20t(f){a=d.createNodeIterator(d,1,f,false);while(a.nextNode()){}}var%20d=document;t(function(e){x=e.offsetLeft;l=e.offsetParent;while(l!=null){x+=l.offsetLeft;l=l.offsetParent}var%20w=d.documentElement.clientWidth-x;var%20s=e.style;if(s.marginLeft)w-=s.marginLeft;if(s.marginRight)w-=s.marginRight;if(s.paddingLeft)w-=s.paddingLeft;if(s.paddingRight)w-=s.paddingRight;if(s.borderSize)w-=s.borderSize;w-=d.defaultView.innerWidth-d.documentElement.offsetWidth;if(e.tagName=='IMG'){h=e.clientHeight*w/e.clientWidth;s.maxHeight=h}s.maxWidth=w+'px'})})();")
 				},
 			},
 			{
 				name : '明文显示密码',
 				subdir : '',
-				image :"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADRElEQVQ4jW3Tf0zUdRzH8Y9QkUHLOW9KYEmtGkziPMexDicMuB/Q0TFg2MQK2gkRP+JEQjhyJr8Kji/I7zhghLBkghvS6cFUfhxwcXLFFvpPK4iTWLM/+0NW7dkftwJX7+315+vxx2t7C3X9ZEy8ZWYxt64PveUWGsnxv1E3TJF8yUFK2wKJzXPEW2YW1fWTMSLBMr3Z3VTN2vkIhk1xaKXZf0sZHfPIM84gC1PxbGAI+4JfQhb4ArFqLeUDtzk77N4UGsnBNXMKK4VBTBSEo5EcaCUHxYMuDsmjEUI8lmOh+8mtbya5ppuMum6ERnJgaLCTYniLTGmcU1YXlpvLpGVloZUJSo4KqmOexvKmjK7UA/S2f8JHc79gmlzhw+t3vYBGchD5fhX5fQ4sN5dI77FT+2Uf9p6PGb3aSf9wHy2D/Vzs7KLA0kG+ZKWwyUpRc+828LZkI+ezTnJGnZTZlzFarOiyC4nUGHg5XIHsQBDyqGiSUtKRyWQE+D3JHv/d20DxoIuTHSMUX53myBvH0CTq0adlIHb5IITgOdl+XMvf8+iPP+m/MoKv327vLv8A58fuYbK5OXQkisOvy/n90RYAn7d2Inx8USXo2HkZWUYvoG6cJb5hhrKBWd7ttSF8nyI7J4/fHj5kdXWVv4CjquOEK1UsLC6SlpoKwNDomBeIqryB0mzjvdoh0lqG2RvyGrFqLaXnKjiVmQnA6fwi/J4JwDowRE11NQA9l7/yAkqzDaXZhrZmkqrriyR92o4QgtN5BWx41tna2iI6Ng4hBK+EHmbi1h1u35kiLELBnsCD24DSbMN0+S5VC6skVDQSoT9BZYuV7DPl7A15lefD5BxUqIgwZBKbV05yVQe5Y0uPA0qzjbNDS7S5PFTM/4xxzE32iJOiiXuUzPxE6fw6JY41yhY8SN/9SvP0j/8FlGYbxy/Yye9zUnfjPm1ODy0uD63frNPuXOPS1A9UXnGS1ziCIceMUFaMP9hZTmya4YP+OYq7xiltGsBYWEbSCSP6k7no0rOJM7zDi6EKdvk8gRDigVCUXtNFnvt6M/qCnSLbfWrdHmq/3eCie4PKqRVMrV8QH7qPAH9/goKDdz7Wpr8Qur8B/c1d/jmhRwsAAAAASUVORK5CYII=",
+				image : "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADRElEQVQ4jW3Tf0zUdRzH8Y9QkUHLOW9KYEmtGkziPMexDicMuB/Q0TFg2MQK2gkRP+JEQjhyJr8Kji/I7zhghLBkghvS6cFUfhxwcXLFFvpPK4iTWLM/+0NW7dkftwJX7+315+vxx2t7C3X9ZEy8ZWYxt64PveUWGsnxv1E3TJF8yUFK2wKJzXPEW2YW1fWTMSLBMr3Z3VTN2vkIhk1xaKXZf0sZHfPIM84gC1PxbGAI+4JfQhb4ArFqLeUDtzk77N4UGsnBNXMKK4VBTBSEo5EcaCUHxYMuDsmjEUI8lmOh+8mtbya5ppuMum6ERnJgaLCTYniLTGmcU1YXlpvLpGVloZUJSo4KqmOexvKmjK7UA/S2f8JHc79gmlzhw+t3vYBGchD5fhX5fQ4sN5dI77FT+2Uf9p6PGb3aSf9wHy2D/Vzs7KLA0kG+ZKWwyUpRc+828LZkI+ezTnJGnZTZlzFarOiyC4nUGHg5XIHsQBDyqGiSUtKRyWQE+D3JHv/d20DxoIuTHSMUX53myBvH0CTq0adlIHb5IITgOdl+XMvf8+iPP+m/MoKv327vLv8A58fuYbK5OXQkisOvy/n90RYAn7d2Inx8USXo2HkZWUYvoG6cJb5hhrKBWd7ttSF8nyI7J4/fHj5kdXWVv4CjquOEK1UsLC6SlpoKwNDomBeIqryB0mzjvdoh0lqG2RvyGrFqLaXnKjiVmQnA6fwi/J4JwDowRE11NQA9l7/yAkqzDaXZhrZmkqrriyR92o4QgtN5BWx41tna2iI6Ng4hBK+EHmbi1h1u35kiLELBnsCD24DSbMN0+S5VC6skVDQSoT9BZYuV7DPl7A15lefD5BxUqIgwZBKbV05yVQe5Y0uPA0qzjbNDS7S5PFTM/4xxzE32iJOiiXuUzPxE6fw6JY41yhY8SN/9SvP0j/8FlGYbxy/Yye9zUnfjPm1ODy0uD63frNPuXOPS1A9UXnGS1ziCIceMUFaMP9hZTmya4YP+OYq7xiltGsBYWEbSCSP6k7no0rOJM7zDi6EKdvk8gRDigVCUXtNFnvt6M/qCnSLbfWrdHmq/3eCie4PKqRVMrV8QH7qPAH9/goKDdz7Wpr8Qur8B/c1d/jmhRwsAAAAASUVORK5CYII=",
 				command :
-				function () {
+				function ()
+				{
 					gBrowser.loadURI("javascript:(function()%7Bvar%20IN,F;IN=document.getElementsByTagName('input');for(var%20i=0;i<IN.length;i++)%7BF=IN%5Bi%5D;if(F.type.toLowerCase()=='password')%7Btry%7BF.type='text'%7Dcatch(r)%7Bvar%20n,Fa;n=document.createElement('input');Fa=F.attributes;for(var%20ii=0;ii<Fa.length;ii++)%7Bvar%20k,knn,knv;k=Fa%5Bii%5D;knn=k.nodeName;knv=k.nodeValue;if(knn.toLowerCase()!='type')%7Bif(knn!='height'&&knn!='width'&!!knv)n%5Bknn%5D=knv%7D%7D;F.parentNode.replaceChild(n,F)%7D%7D%7D%7D)()")
 				},
 			},
 			{
 				name : '页面可见区域截图',
 				subdir : '截图',
-				command : 
-					function() {
-						var canvas = document.createElementNS("http://www.w3.org/1999/xhtml", "canvas");
-						canvas.width = content.innerWidth;
-						canvas.height = content.innerHeight;
-						var ctx = canvas.getContext("2d");
-						ctx.drawWindow(content, content.pageXOffset, content.pageYOffset, canvas.width, canvas.height, "rgb(255,255,255)");
-						saveImageURL(canvas.toDataURL(), content.document.title + ".png",  null, null, null, null, document);
-					},
+				command :
+				function ()
+				{
+					var canvas = document.createElementNS("http://www.w3.org/1999/xhtml", "canvas");
+					canvas.width = content.innerWidth;
+					canvas.height = content.innerHeight;
+					var ctx = canvas.getContext("2d");
+					ctx.drawWindow(content, content.pageXOffset, content.pageYOffset, canvas.width, canvas.height, "rgb(255,255,255)");
+					saveImageURL(canvas.toDataURL(), content.document.title + ".png", null, null, null, null, document);
+				},
 			},
 			{
 				name : '页面所有区域截图',
 				subdir : '截图',
-				command : 
-					function() {
-						var canvas = document.createElementNS("http://www.w3.org/1999/xhtml", "canvas");
-						canvas.width = content.document.documentElement.scrollWidth;
-						canvas.height = content.document.documentElement.scrollHeight;
-						var ctx = canvas.getContext("2d");
-						ctx.drawWindow(content, 0, 0, canvas.width, canvas.height, "rgb(255,255,255)");
-						saveImageURL(canvas.toDataURL(), content.document.title + ".png",  null, null, null, null, document);
-					},
+				command :
+				function ()
+				{
+					var canvas = document.createElementNS("http://www.w3.org/1999/xhtml", "canvas");
+					canvas.width = content.document.documentElement.scrollWidth;
+					canvas.height = content.document.documentElement.scrollHeight;
+					var ctx = canvas.getContext("2d");
+					ctx.drawWindow(content, 0, 0, canvas.width, canvas.height, "rgb(255,255,255)");
+					saveImageURL(canvas.toDataURL(), content.document.title + ".png", null, null, null, null, document);
+				},
 			},
 			{
 				name : '浏览器界面截图',
 				subdir : '截图',
-				command : 
-					function() {
-						var canvas = document.createElementNS("http://www.w3.org/1999/xhtml", "canvas");
-						canvas.width = innerWidth;
-						canvas.height = innerHeight;
-						var ctx = canvas.getContext("2d");
-						ctx.drawWindow(window, 0, 0, canvas.width, canvas.height, "rgb(255,255,255)");
-						saveImageURL(canvas.toDataURL(), content.document.title + ".png",  null, null, null, null, document);
-					},
-			},
-			{
-				name : 'A,B,N,P站视频',
-				subdir : '',
-				command : 
-				function () {
-gBrowser.loadURI("javascript:q=''+(window.getSelection?window.getSelection():document.getSelection?document.getSelection():document.selection.createRange().text);q=q.replace(/\s/g,'');if(!q)%20q=prompt('Please%20input%20the%20keyword:','');if(q!=null){p=encodeURI(q);if(p.match(/^ac\d+$/)){window.open('%20http://www.acfun.tv/v/'+p);}%20else%20if(p.match(/^av\d+$/)){window.open('%20http://www.bilibili.tv/video/'+p);}%20else%20if(p.match(/^sm\d+$/)){window.open('http://nicosound.anyap.info/sound/'+p);}%20else%20if(p.match(/^\d+$/)){window.open('%20http://www.pixiv.net/member_illust.php?mode=medium&illust_id=%20'+p);}%20else{alert('Invalid%20keywords!')}}void%200")
+				command :
+				function ()
+				{
+					var canvas = document.createElementNS("http://www.w3.org/1999/xhtml", "canvas");
+					canvas.width = innerWidth;
+					canvas.height = innerHeight;
+					var ctx = canvas.getContext("2d");
+					ctx.drawWindow(window, 0, 0, canvas.width, canvas.height, "rgb(255,255,255)");
+					saveImageURL(canvas.toDataURL(), content.document.title + ".png", null, null, null, null, document);
 				},
 			},
-			
+			{
+				name : 'IE打开当前网址',
+				subdir : '',
+				image : "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADL0lEQVQ4jYWTa0iTURjHj61NoyghuyBiRRZNgtQ3nbNs5jT1i/RB0DIFQ8UUiUmrKLrKQryQVjrHnNSmqGlheL+Q8zZ1ur2a7VbN65q5pvMWXta7pw/TZZH0wIHD8z//HzyXg9CfsQ39P7Z8sy5gZOSVGu0akV1Cv1bc7ZcskLhG5IiQz/XLCGHkrSDWhG+K14lEoaKoYQhUk0bQGRdAZ1yA4VED8OoG4WSScAj5sE7/DbFezqad8mJVrOBfvppGDHMTTfi4uVqqhWqpFpoGx3/2aKbMzXIt+LEr5pEf22PdS0IIITvkQt/hGCcck2p08t7P07Ks2kEQdmgWJZ+mZWKFXsFtVRLPGodB0KZcy6/D4WC8SIncwuwRQnZWTvDdGP57dblUa6hJFkrgafPHbwRBsAEgAQDiRr/PF9yulBG3Xw9Y0qtl5mBOLaDQR5c2SiA5XX3u/BYfuxEj6IRIQbclo0X1Qa4zpfeMGvP6x2ZyeseNuUnlAz9iXkosia961kIz6wnSFV7ZBsAOhd85cDqnzRTKFVtCeN3EeZ4EfAu6gM6VWE9BFzAKu+BcfjswX7QBxqkFcqJQ/nsEqeUlB+7VgPczsfnUi07w4/ctMkW47kIJrg8uxb8Gi2T68FL5yEWRVBspkn45fP+dhpRS9toGoLAq32y/W0Psy2hdcczugLg6dT0AOC6urlLnV1aOLS8vH+qZnA9rnzCF8/snA1wf12Ionn/EBiAlcKMoHDGQnrxfI+VILHt58plixZT7hp4t04c45PWZyVldBHrQtEp62AqUZEH07x64hdmT83AlJasD9hTKzDv5Q2DPww1RLaO8yKaRIgoPn9vFH4LdBf1mh0wxUHJlKhQQ4LAxRusipXI9EV9jcinVAL1KZaZVqYFargRqmRJ8qtTgW6n66VyiBlSoMKG0V56bF8kGOR6Vwtyf1bB0pnEKEqWzcAufJW7KZ4mEvhmgN+rBKbN+iXo5Nehvsw2CYYjsz2Cw3WNZuAdHZAgqalkKLGpZ8uCIDNRYFu7PYLAxDCP/6zPZ+oFhGDkQw476e3syaTRaBI1Gi/D39mQGYtjRdbPdZsMvtAyiG2p6whQAAAAASUVORK5CYII=",
+				command :
+				function ()
+				{
+					const IE_PATH = "C:\\Program Files\\Internet Explorer\\iexplore.exe";
+					var file = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsILocalFile);
+					file.initWithPath(IE_PATH);
+					if (!file.exists())
+					{
+						alert("File does not exist: " + IE_PATH);
+						return;
+					}
+					var process = Cc["@mozilla.org/process/util;1"].createInstance(Ci.nsIProcess);
+					try
+					{
+						var args = [window.content.location.href];
+						process.init(file);
+						process.run(false, args, args.length);
+					}
+					catch (ex)
+					{
+						alert("Failed to execute: " + IE_PATH);
+					}
+				},
+			},
 		],
 
 	},
@@ -239,7 +286,7 @@ gBrowser.loadURI("javascript:q=''+(window.getSelection?window.getSelection():doc
 		  .replace(/&lt;/g, '<')
 		  .replace(/&gt;/g, '>')
 		  .replace(/&apos;/g, '\'')
-		  .replace(/\\/g, '\\\\');
+		  .replace(/([^\\])\\([^\\])/g, '$1\\\\$2');
 	},
 	init : function () {
 		var insertPos = document.getElementById(this.insertafter);
@@ -295,6 +342,7 @@ gBrowser.loadURI("javascript:q=''+(window.getSelection?window.getSelection():doc
 				configItems.setAttribute('label', this.toolbar.configs[i].name);
 				configItems.setAttribute('image', this.toolbar.configs[i].image);
 				if (typeof this.toolbar.configs[i].command == 'function') {
+					//Application.console.log(this.unescapeHTML(this.toolbar.configs[i].command.toSource()));
 					configItems.setAttribute('oncommand', this.unescapeHTML(this.toolbar.configs[i].command.toSource()) + '.call(this, event);');
 				} else {
 					configItems.setAttribute('oncommand', this.toolbar.configs[i].command);
