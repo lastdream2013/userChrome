@@ -37,6 +37,7 @@ const CLASS_INDEX = PREFIX + 'index';
 const EVENT_RESPONSE = 'RESPONSE_' + UID;
 
 var GET_KEYWORD = true;
+var enableBooklink = true;  // 百度搜索的 booklink.me 不要高亮
 var wmap = new WeakMap();
 
 window.gWHT = {
@@ -45,6 +46,10 @@ window.gWHT = {
 		{
 			url: '^https?://developer\\.mozilla\\.org/.*/docs/',
 			delayTime: 1500,  // 单位毫秒
+		},
+		{
+			url: '^https?://www\\.sharejs\\.com/tutorial/tutorial_class/',
+			delayTime: 2000,  // 单位毫秒
 		},
 	],
 	
@@ -245,7 +250,9 @@ window.gWHT = {
                 setTimeout(function(){
                     self.launch(doc, keywords);
                 }, delay);
-                this.fixAutoPage(doc, win);
+                setTimeout(function(self){
+                	self.fixAutoPage(doc, win);
+                }, 2000, this)
 
 				break;
 			case "pageshow":
@@ -301,14 +308,37 @@ window.gWHT = {
 				break;
 		}
 	},
+
+    delayLaunch: function(doc){
+
+        if(enableBooklink && doc.URL.indexOf("baidu.com") > -1 && doc.referrer.indexOf("booklink.me") > -1){
+            return;
+        }
+
+        var keywords = this.GET_KEYWORD ? this.getKeyword(this.SITEINFO, doc) : [];
+
+        var delay = 0;
+        if(new RegExp(this.delayUrl).test(doc.URL)){
+            delay = this.delayTime;
+            debug("delay ", delay);
+        }
+        setTimeout(function(self){
+            self.launch(doc, keywords);
+        }, delay, this);
+    },
     fixAutoPage: function(doc, win){
+    	var _bodyHeight = doc.body.clientHeight;
         // 创建观察者对象
         var observer = new win.MutationObserver(function(mutations){
-            if(mutations[0].addedNodes){
+            if(mutations[0].addedNodes && doc.body.clientHeight > _bodyHeight){
+
                 debug("MutationObserver addedNodes");
+                _bodyHeight = doc.body.clientHeight;
+
                 setTimeout(function(){
                     gWHT.recoveryToolbar();
                 }, 200);
+                
             }
         });
         observer.observe(doc, {childList: true, subtree: true});
