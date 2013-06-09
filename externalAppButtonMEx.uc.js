@@ -5,6 +5,7 @@
 // @include        main
 // @author         ithinc &  lastdream2013
 // @charset        UTF-8
+// @version        20130609.1.1.7 minor fix
 // @version        20130511.1.1.6 tidy and merge moveable code 
 // @version        20130504.1.1.3 delay load exefile, may speedup firefox startup  
 // @version        20130414.1.1.0 support submenu
@@ -323,7 +324,8 @@ var gExternalAppbuttonMEx = {
 		  .replace(/&quot;/g, '\"')
 		  .replace(/&lt;/g, '<')
 		  .replace(/&gt;/g, '>')
-		  .replace(/&apos;/g, '\'');
+		  .replace(/&apos;/g, '\'')
+		  .replace(/([^\\])\\([^\\])/g, '$1\\\\$2');
 	},
     init : function () {
     	this.handleRelativePath(this.toolbar.apps);
