@@ -4,6 +4,7 @@
 // @include        main
 // @author         lastdream2013
 // @charset        UTF-8
+// @version        20130609 0.11 minor fix
 // @version        20130513 0.1 Initial release
 // ==/UserScript==
 
@@ -56,7 +57,7 @@ var gCustomAppMenu = {
     		{name : 'user.js',          subdir : '配置文件', path : '\\user.js'},
 
     		// 建议把要放在子目录下的程序定义在上面, 下面的定义放在主菜单下的最常用的程序
-/*    		{name : 'separator'},
+     		{name : 'separator'},
     		{name : 'HyperSnap 7', path : 'E:\\software\\HyperSnap 7\\HprSnap7.exe'},
     		{name : 'Everything',  path : 'E:\\software\\Everything\\Everything.exe'},
     		{name : 'separator'},
@@ -66,7 +67,7 @@ var gCustomAppMenu = {
     		{name : 'SourceInsight',path : 'E:\\software\\SourceInsight\\Insight3.exe'},
     		{name : 'separator'},
     		{name : 'chrome',path : '\\chrome'},
-*/
+ 
     	],
     	//   在这里定义firefox的功能按钮, command就是一小段程序, 可以从firefox api, 小书签或鼠标手势中摘取;可选自定义图标;
     	//    同样, 建议先写完上面想要定义, 分类在子目录下的程序,  之后从中摘出你最常用的, 去掉后面的subdir定义, 放在最下面
@@ -241,12 +242,13 @@ var gCustomAppMenu = {
 
 	subdirPopupHash : [],
 	subdirMenuHash : [],
-	unescapeHTML : function (input) {
-		return input.replace(/&amp;/g, '&')
-		.replace(/&quot;/g, '\"')
-		.replace(/&lt;/g, '<')
-		.replace(/&gt;/g, '>')
-		.replace(/&apos;/g, '\'');
+	unescapeHTML : function(input) {
+			return input.replace(/&amp;/g, '&')
+		  .replace(/&quot;/g, '\"')
+		  .replace(/&lt;/g, '<')
+		  .replace(/&gt;/g, '>')
+		  .replace(/&apos;/g, '\'')
+		  .replace(/([^\\])\\([^\\])/g, '$1\\\\$2');
 	},
 	init : function () {
 		this.handleRelativePath(this.toolbar.apps);
