@@ -4,7 +4,7 @@
 // @description   只显示国旗在前端，不过和https时的前面的图标不冲突
 // @include         chrome://browser/content/browser.xul
 // @author          紫云飞
-// @note             version20130408: mod by lastdream2013 
+// @note             version20130612: mod by lastdream2013 
 // ==/UserScript==
 
 (function(){
@@ -19,7 +19,7 @@ if (/^(\\)/.test(localFlagPath)) {
     FullPath = FullPath +localFlagPath;
 }
 else{
-  FullPath = FullPath + "\\" + localFlagPath;
+	FullPath = FullPath + "\\" + localFlagPath;
 }
 
 var file = Cc['@mozilla.org/file/local;1'].createInstance(Ci.nsILocalFile);
@@ -63,24 +63,26 @@ try {
         (event.type == "TabSelect" || event.originalTarget == content.document) && (self.showFlag.src = self.flag);
         self.isReqFlagHash[host] = true;
         let req = new XMLHttpRequest();
-        req.open("GET", 'http://freegeoip.net/json/' + ip, true);
+        req.open("GET", 'http://ip.taobao.com/service/getIpInfo.php?ip=' + ip, true);
         req.send(null);
         req.onload = function () {
             if (req.status == 200) {
-                //self.showFlagHash[host] = (req.responseText.match(/"country_code": "([^"]+)/) || ["", "CN"])[1].toLocaleLowerCase();
                 var responseObj =JSON.parse(req.responseText);
-                self.showFlagHash[host] =responseObj.country_code.toLocaleLowerCase();
-            host == content.location.hostname;
-             if (IsUserLocalFlag) { self.showFlag.src = CountryFlags[self.showFlagHash[host]];  }
-             else { self.showFlag.src = self.flagPath + self.showFlagHash[host] + ".gif"; }
+                if (responseObj.code == 0){
+	                self.showFlagHash[host] =responseObj.data.country_id.toLocaleLowerCase();
+	
+	                host == content.location.hostname;
+	                 if (IsUserLocalFlag) { self.showFlag.src = CountryFlags[self.showFlagHash[host]];  }
+	                 else { self.showFlag.src = self.flagPath + self.showFlagHash[host] + ".gif"; }
 	 
-                if ( gBrowser.currentURI.spec.indexOf("https://") >= 0 )  { 
-                	gProxyFavIcon.removeAttribute("src");
-                 	self.showFlag.removeAttribute("hidden"); 
-                 }
-                else{ 
-                	gProxyFavIcon.src = self.showFlag.src; 
-                	self.showFlag.setAttribute("hidden", "true");
+	                if ( gBrowser.currentURI.spec.indexOf("https://") >= 0 )  { 
+	                	gProxyFavIcon.removeAttribute("src");
+	                 	self.showFlag.removeAttribute("hidden"); 
+	                 }
+	                else{ 
+	                	gProxyFavIcon.src = self.showFlag.src; 
+	                	self.showFlag.setAttribute("hidden", "true");
+	                }
                 }
             }
             self.isReqFlagHash[host] = false;
