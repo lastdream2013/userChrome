@@ -4,7 +4,7 @@
 // @description     显示国旗与IP
 // @include         chrome://browser/content/browser.xul
 // @author          紫云飞
-// @note            version20130516: mod by lastdream2013 
+// @note            version20130612: mod by lastdream2013 
 // ==/UserScript==
 
 (function(){
@@ -80,44 +80,31 @@ try {
     var ip = Components.classes["@mozilla.org/network/dns-service;1"].getService(Components.interfaces.nsIDNSService).resolve(host, 0).getNextAddrAsString();
     var server = (gBrowser.mCurrentBrowser.webNavigation.currentDocumentChannel.QueryInterface(Components.interfaces.nsIHttpChannel).getResponseHeader("server").match(/\w+/) || ["\u672A\u77E5"])[0];
     
-    if (!self.showFlagTooltipHash[host]) {
-        (event.type == "TabSelect" || event.originalTarget == content.document);
-        self.isReqLocationHash[host] = true;
-        let req = new XMLHttpRequest();
-        req.open("GET", 'http://www.cz88.net/ip/index.aspx?ip=' + ip, true);
-        req.send(null);
-        req.onload = function () {
-            if (req.status == 200) {
-				var lmsg = req.responseText.match(/"InputIPAddrMessage">([^<]+)/);
-				if ( lmsg )
-					var location = lmsg[1].replace(/\s*CZ88.NET.*/, "") + " \n";
-				else 
-					var location = "";
-                //设置文字提示内容
-                self.showFlagTooltipHash[host] = location + server + " \n" + ip;
-                host == content.location.hostname && (self.showFlag.tooltipText = self.showFlagTooltipHash[host]);
-            }
-            self.isReqLocationHash[host] = false;
-        }
-    } else {
-        host == content.location.hostname && (self.showFlag.tooltipText = self.showFlagTooltipHash[host]);
-    }
-    
     if (!self.showFlagHash[host]) {
         (event.type == "TabSelect" || event.originalTarget == content.document) && (self.showFlag.src = self.flag);
         self.isReqFlagHash[host] = true;
         let req = new XMLHttpRequest();
-        req.open("GET", 'http://freegeoip.net/json/' + ip, true);
+        req.open("GET", 'http://ip.taobao.com/service/getIpInfo.php?ip=' + ip, true);
         req.send(null);
         req.onload = function () {
             if (req.status == 200) {
-                //self.showFlagHash[host] = (req.responseText.match(/"country_code": "([^"]+)/) || ["", "CN"])[1].toLocaleLowerCase();
                 var responseObj =JSON.parse(req.responseText);
-                self.showFlagHash[host] =responseObj.country_code.toLocaleLowerCase();
-
-                host == content.location.hostname;
-                 if (IsUserLocalFlag) { self.showFlag.src = CountryFlags[self.showFlagHash[host]];  }
-                 else { self.showFlag.src = self.flagPath + self.showFlagHash[host] + ".gif"; }
+                if (responseObj.code == 0){
+	                self.showFlagHash[host] =responseObj.data.country_id.toLocaleLowerCase();
+	
+	                host == content.location.hostname;
+	                 if (IsUserLocalFlag) { self.showFlag.src = CountryFlags[self.showFlagHash[host]];  }
+	                 else { self.showFlag.src = self.flagPath + self.showFlagHash[host] + ".gif"; }
+	                 
+	                self.showFlagTooltipHash[host] ="country   ：" + responseObj.data.country + "\n" +
+	                								"area      ：" + responseObj.data.area + "\n" +
+	                								"region    ：" + responseObj.data.region + "\n" +
+	                								"city      ：" + responseObj.data.city + "\n" +
+	                								"isp       ：" + responseObj.data.isp + "\n" +
+	                 								"server    : " + server + "\n" + 
+	                 								"ip        : " + ip;
+	                self.showFlag.tooltipText = self.showFlagTooltipHash[host];
+                }
             }
             self.isReqFlagHash[host] = false;
         }
@@ -125,6 +112,7 @@ try {
     	        host == content.location.hostname;
                  if (IsUserLocalFlag) { self.showFlag.src = CountryFlags[self.showFlagHash[host]];  }
                  else { self.showFlag.src = self.flagPath + self.showFlagHash[host] + ".gif"; }
+                 self.showFlag.tooltipText = self.showFlagTooltipHash[host];
     }
 } catch (e) {
     (event.type == "TabSelect" || event.originalTarget == content.document) && (self.showFlag.src = self.flag) && (self.showFlag.tooltipText = "");
