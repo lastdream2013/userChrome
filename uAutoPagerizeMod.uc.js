@@ -39,10 +39,9 @@
 (function(css) {
 
 // 以下 設定が無いときに利用する
-var useiframe = true;  // 启用 iframe 加载下一页的总开关。体验不好，先禁用。
-var IMMEDIATELY_PAGER_NUM = 1;  // 立即加载的页数
+var useiframe = true;  // 启用 iframe 加载下一页的总开关。
+var IMMEDIATELY_PAGER_NUM = 0;  // 立即加载的页数
 var loadImmediatelyTime = 500;  // 立即加载延迟的时间（ms）
-
 
 var PAGE_NAVIGATION_SITE_RE = /forum|thread/i;
 var FORCE_TARGET_WINDOW = true;
@@ -151,7 +150,7 @@ let { classes: Cc, interfaces: Ci, utils: Cu, results: Cr } = Components;
 if (!window.Services) Cu.import("resource://gre/modules/Services.jsm");
 
 if (typeof window.uAutoPagerize != 'undefined') {
-	window.uAutoPagerize.theEnd();
+	window.uAutoPagerize.destroy();
 }
 
 
@@ -227,7 +226,7 @@ var ns = window.uAutoPagerize = {
     get IMMEDIATELY_PAGER_NUM() IMMEDIATELY_PAGER_NUM,
     set IMMEDIATELY_PAGER_NUM(num){
         num = parseInt(num, 10);
-        if (!num) return num;
+        if (!num && (num != 0)) return num;
         let m = $("uAutoPagerize-IMMEDIATELY_PAGER_NUM");
         if (m) m.setAttribute("label", '立即加载' + (IMMEDIATELY_PAGER_NUM = num) + '页');
         return num;
@@ -802,7 +801,7 @@ function AutoPager(doc, info, nextLink) {
 AutoPager.prototype = {
 	req: null,
 	pageNum: 1,
-    immediatelyPageNum: IMMEDIATELY_PAGER_NUM,
+    immediatelyPageNum: 0,
 	_state: 'disable',
 	remove: [],
 	lastPageURL : '',
@@ -986,37 +985,6 @@ AutoPager.prototype = {
 			this.httpRequest();
 		}
 	},
-	frameRequest: function(){
-		var self = this;
-
-		if(!this.iframe){
-			this.iframe = this.doc.createElement('iframe');
-			this.iframe.name = 'uAutoPagerizeRequest';
-			this.iframe.width = this.iframe.height = 1;
-			this.iframe.style.visibility = 'hidden';
-
-			this.doc.body.appendChild(this.iframe);
-			this.remove.push(function(){
-				self.doc.body.removeChild(self.iframe);
-			});
-		}
-
-        if (this.iframe.src == this.requestURL) return;
-        this.iframe.src = this.requestURL;
-
-		this.iframe.addEventListener("load", iframeLoad, false);
-
-		function iframeLoad(){
-			debug("iframe load");
-			self.iframeLoad(self.iframe);
-		}
-
-		this.cleanIframe = function(){
-			self.iframe.src = "about:blank";
-			self.iframe.contentDocument.location.href = "about:blank";
-			self.iframe.removeEventListener("load", iframeLoad, false);
-		};
-	},
 	httpRequest: function(){
 		var [reqScheme,,reqHost] = this.requestURL.split('/');
 		var {protocol, host} = this.win.location;
@@ -1048,6 +1016,37 @@ AutoPager.prototype = {
 		this.win.requestFilters.forEach(function(i) { i(opt) }, this);
 		this.state = 'loading';
 		this.req = GM_xmlhttpRequest(opt);
+	},
+	frameRequest: function(){
+		var self = this;
+
+		if(!this.iframe){
+			this.iframe = this.doc.createElement('iframe');
+			this.iframe.name = 'uAutoPagerizeRequest';
+			this.iframe.width = this.iframe.height = 1;
+			this.iframe.style.visibility = 'hidden';
+
+			this.doc.body.appendChild(this.iframe);
+			this.remove.push(function(){
+				self.doc.body.removeChild(self.iframe);
+			});
+		}
+
+        if (this.iframe.src == this.requestURL) return;
+        this.iframe.src = this.requestURL;
+
+		this.iframe.addEventListener("load", iframeLoad, false);
+
+		function iframeLoad(){
+			debug("iframe load");
+			self.iframeLoad(self.iframe);
+		}
+
+		this.cleanIframe = function(){
+			self.iframe.src = "about:blank";
+			self.iframe.contentDocument.location.href = "about:blank";
+			self.iframe.removeEventListener("load", iframeLoad, false);
+		};
 	},
 	getRalativePageStr : function (lastUrl, CurrentUrl, NextUrl) {
 		let getRalativePageNumArray = function (lasturl, url) {
