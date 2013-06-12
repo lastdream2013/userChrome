@@ -73,8 +73,8 @@ if (!self.showLocation) {
 }
 try {
     var host = (event.originalTarget.location || content.location).hostname;
-    if (!/tp/.test(content.location.protocol) || !host || self.isReqLocationHash[host]) {
-        (event.type == "TabSelect" || event.originalTarget == content.document) && (self.showFlag.src = self.flag) && (self.showFlag.tooltipText = "");
+    if (!/tp/.test(content.location.protocol)) {
+        (event.type == "TabSelect" || event.originalTarget == content.document) && (self.showFlag.src = self.flag);
         return
     }
     var ip = Components.classes["@mozilla.org/network/dns-service;1"].getService(Components.interfaces.nsIDNSService).resolve(host, 0).getNextAddrAsString();
@@ -115,7 +115,7 @@ try {
                  self.showFlag.tooltipText = self.showFlagTooltipHash[host];
     }
 } catch (e) {
-    (event.type == "TabSelect" || event.originalTarget == content.document) && (self.showFlag.src = self.flag) && (self.showFlag.tooltipText = "");
+    (event.type == "TabSelect" || event.originalTarget == content.document) && (self.showFlag.src = self.flag);
 }
 }, false)
 })();
