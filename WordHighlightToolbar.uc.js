@@ -50,6 +50,10 @@ window.gWHT = {
 			url: '^https?://www\\.sharejs\\.com/tutorial/tutorial_class/',
 			delayTime: 2000,  // 单位毫秒
 		},
+		{
+			url: '^https?://www\\.onlineqrlab\\.com/',
+			delayTime: 2000,  // 单位毫秒
+		},
 	],
 	
 	SITEINFO: [
