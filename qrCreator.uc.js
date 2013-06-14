@@ -1,12 +1,13 @@
 // ==UserScript==
 // @include        chrome://browser/content/browser.xul
 // @name           qrCreator.uc.js
+// @version        2013.06.14 - 0.11 minor fix
 // @version        2013.06.13 - 0.1 first release
 // @author         lastdream2013
 // ==/UserScript==
 (function(){
 var qrCreator = {
-  convertFromUnicode : function (charset, str) {
+	convertFromUnicode : function (charset, str) {
 		try {
 			var unicodeConverter = Components
 				.classes["@mozilla.org/intl/scriptableunicodeconverter"]
@@ -22,7 +23,7 @@ var qrCreator = {
 	createQrcode : function (text, typeNumber, errorCorrectLevel) {
 		for (var type = 4; type <= 40; type += 1) {
 			try {
-				var qr = qrcode(type, 'M');
+				var qr = qrcode(type, 'L');
 				qr.addData("" + convertFromUnicode("UTF-8", text));
 				qr.make();
 
