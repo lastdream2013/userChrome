@@ -1,12 +1,13 @@
 // ==UserScript==
 // @name           GoogleSearchIcons.uc.js
-// @note           20130430: modify by lastdream2013 for uAutoPagerize
+// @note           20130614: modify by lastdream2013 for uAutoPagerize
 // @include        main
 // ==/UserScript==
 
 (function () {
 	var googleicon = function (doc) {
-		if (doc && doc.location.href.match(/^https?:\/\/.*\.google\..*\/search?.*$/i)) {
+		if (!doc || !doc.location) return;
+		if (doc.location.href.match(/^https?:\/\/.*\.google\..*\/search?.*$/i)) {
 
 			// Check if already loaded  原来要注释掉了，为配合uAutoPagerize翻页
 			//if(doc.getElementById("googleicon")) return;
@@ -43,7 +44,8 @@
 					if (safe) {
 						var newimg = new Image();
 						newimg.src = url;
-						newimg.addEventListener("load", function () {
+						newimg.addEventListener("load", function (doc) {
+							if (!img) return;
 							img.src = url;
 						}, false);
 					}
