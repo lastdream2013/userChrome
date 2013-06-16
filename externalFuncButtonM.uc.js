@@ -4,7 +4,7 @@
 // @include        main
 // @author         lastdream2013
 // @charset        UTF-8
-// @version        20130609.0.12 minor fix
+// @version        20130616.0.13 minor fix
 // @version        20130511.0.11 tidy and merge moveable code 
 // @version        20130507 0.1 first release 
 // ==/UserScript==
@@ -201,7 +201,7 @@ var gExternalFuncButtonM = {
 		ExternalFuncBtn.setAttribute("class", "toolbarbutton-1 chromeclass-toolbar-additional");
 		ExternalFuncBtn.setAttribute("type", "menu");
 		ExternalFuncBtn.setAttribute("removable", "true");
-		ExternalFuncBtn.style.listStyleImage = "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAYUlEQVQ4jWNgYPj/n5GRPMzA8P8/AyPjfyj4hx3/w4H/Qw2BGPDv/7SzRVjxU1FVrPj/v3//GRj+UWYAxS4YTgb8+///f8ruD1jx369pWPH//6MGUNcAPFkJrwwkR1KYnQHdFt9E917n4QAAAABJRU5ErkJggg==)";
+		ExternalFuncBtn.setAttribute("image", "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAYUlEQVQ4jWNgYPj/n5GRPMzA8P8/AyPjfyj4hx3/w4H/Qw2BGPDv/7SzRVjxU1FVrPj/v3//GRj+UWYAxS4YTgb8+///f8ruD1jx369pWPH//6MGUNcAPFkJrwwkR1KYnQHdFt9E917n4QAAAABJRU5ErkJggg==");
 
 
 		var ExternalFuncPopup = document.createElement('menupopup');
