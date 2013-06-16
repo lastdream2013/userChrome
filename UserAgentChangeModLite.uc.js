@@ -2,7 +2,7 @@
 // @name UserAgentChangeModLite.uc.js
 // @namespace http://www.sephiroth-j.de/mozilla/
 // @charset     utf-8
-// @note  modify by lastdream2013 at 20130615 mino fix
+// @note  modify by lastdream2013 at 20130616 mino fix
 // @note  modify by lastdream2013 at 20130409 sitelist : change SITELIST idx to Name
 // @note  modify by lastdream2013 for navigator.userAgent https://g.mozest.com/thread-43428-1-2
 // @include chrome://browser/content/browser.xul
@@ -26,7 +26,7 @@ var ucjs_UAChanger = {
 			url : "https?://(?:mybank1?|b2c1)\\.icbc\\.com\\.cn/",
 			Name : "Firefox10.0"
 		},{
-			url : "http://vod\\.kankan\\.com/v/",
+			url : "http://vod\\.kankan\\.com/",
 			Name : "Safari - Mac"
 		}, //直接可以看kankan视频，无需高清组件
 
