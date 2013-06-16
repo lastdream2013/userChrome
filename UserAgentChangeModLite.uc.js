@@ -1,7 +1,8 @@
 // ==UserScript==
 // @name UserAgentChangeModLite.uc.js
 // @namespace http://www.sephiroth-j.de/mozilla/
-// @note  modify by lastdream2013 at 20130515 mino fix
+// @charset     utf-8
+// @note  modify by lastdream2013 at 20130615 mino fix
 // @note  modify by lastdream2013 at 20130409 sitelist : change SITELIST idx to Name
 // @note  modify by lastdream2013 for navigator.userAgent https://g.mozest.com/thread-43428-1-2
 // @include chrome://browser/content/browser.xul
@@ -10,45 +11,22 @@ var ucjs_UAChanger = {
 
 	DISPLAY_TYPE : 1, // 0显示列表为radiobox, 1显示为ua图标列表
 
-	//----讲解开始----
 	//（1）在url后面添加网站，注意用正则表达式
-
-	//正则表达式简单教程：先把网址里的/换成\/
-	//然后把.换成\.
-	//比如 www.google.com/for.com 就是 www\.google\.com\/for\.com
-
-	//*代表任意位数的字母数字，推荐看http://msdn.microsoft.com/zh-cn/library/cc295435.aspx
-	//所以要通吃 http和 https 可以用 http*: 或者https?: 或者 http+:
-	//要通吃www.google.com/reader/2.html和 www.google.com/music/2.html,就用www\.google\.com\/*\/2\.html
-
-	// www.google.com/chrome.exe 一般通配符就可以写成2种（.*包含了所有后缀名）
-	// 即 www\.google\.com\/.exe或者www\.google\.com\/.*
-	// 添加网站开始，不想要的前面添加 //
-
 	SITE_LIST : [
 
 		// 在 http://www.google.co.jp/m 伪装成日本DoCoMo手机
 		{
-			url : "http:\/\/www\.google\.co\.jp\/m\/.*",
+			url : "http://www\\.google\\.co\\.jp/m/",
 			Name : "iPhone"
 		}, //此处添加你需要的useragent的名称
 		{
-			url : "http:\/\/www\.icbc\.com\.cn\/*",
+			url : "https?://www\\.icbc\\.com\\.cn/",
 			Name : "Firefox10.0"
 		}, {
-			url : "https:\/\/www\.icbc\.com\.cn\/*",
+			url : "https?://(?:mybank1?|b2c1)\\.icbc\\.com\\.cn/",
 			Name : "Firefox10.0"
-		}, {
-			url : "https:\/\/mybank\.icbc\.com\.cn\/*",
-			Name : "Firefox10.0"
-		}, {
-			url : "https:\/\/mybank1\.icbc\.com\.cn\/*",
-			Name : "Firefox10.0"
-		}, {
-			url : "https:\/\/b2c1\.icbc\.com\.cn\/*",
-			Name : "Firefox10.0"
-		}, {
-			url : "http:\/\/vod\.kankan\.com\/v\/*",
+		},{
+			url : "http://vod\\.kankan\\.com/v/",
 			Name : "Safari - Mac"
 		}, //直接可以看kankan视频，无需高清组件
 
@@ -150,13 +128,8 @@ var ucjs_UAChanger = {
 	// defautl: ステータスバーの右端に表示する
 	TARGET : null, // 定义一个target，用来调整状态栏顺序,null为空
 
-	PANEL_TYPE : true, // true:状态栏显示图标  false:显示文字
-
 	ADD_OTHER_FX : true, // true:自动添加其他版本firefox的ua  false:不添加
-
-	WIDE_WIDTH : 38, // 追加其他版本firefox状态栏宽度
-	NARROW_WIDTH : 26, // 不追加时状态栏宽度
-
+	
 	//2种版本firefox，下面请勿修改
 	EXT_FX_LIST : [{
 			name : "Firefox4.0",
@@ -239,34 +212,35 @@ var ucjs_UAChanger = {
 	mkPanel : function () {
 		var uacPanel = document.createElement("toolbarbutton");
 		uacPanel.setAttribute("id", "uac_statusbar_panel");
-		if (this.PANEL_TYPE) {
-			uacPanel.setAttribute("class", "toolbarbutton-1 chromeclass-toolbar-additional");
-			uacPanel.setAttribute("type", "menu");
-			// css 解决按钮定义在urlbar-icons撑大地址栏，变宽……
-			document.insertBefore(document.createProcessingInstruction('xml-stylesheet', 'type="text/css" href="data:text/css;utf-8,' + encodeURIComponent(
-			'\
-			#uac_statusbar_panel {\
-			  -moz-appearance: none !important;\
-			  border-style: none !important;\
-			  border-radius: 0 !important;\
-			  padding: 0 3px !important;\
-			  margin: 0 !important;\
-			  background: transparent !important;\
-			  box-shadow: none !important;\
-			  -moz-box-align: center !important;\
-			  -moz-box-pack: center !important;\
-			  min-width: 18px !important;\
-			  min-height: 18px !important;\
-			          }\
-			#uac_statusbar_panel > .toolbarbutton-icon {\
-				max-width: 18px !important;\
-			    padding: 0 !important;\
-			    margin: 0 !important;\
-			}\
-			#uac_statusbar_panel dropmarker{display: none !important;}\
-			    ') + '"'), document.documentElement);
-		} else
-			uacPanel.setAttribute("style", "min-width: " + (this.ADD_OTHER_FX ? this.WIDE_WIDTH : this.NARROW_WIDTH) + "px; text-align: center; padding: 0px;");
+		uacPanel.setAttribute("class", "toolbarbutton-1 chromeclass-toolbar-additional");
+		uacPanel.setAttribute("type", "menu");
+		// css 解决按钮定义在urlbar-icons撑大地址栏，变宽……
+		document.insertBefore(document.createProcessingInstruction('xml-stylesheet', 'type="text/css" href="data:text/css;utf-8,' + encodeURIComponent(
+		'\
+		#uac_statusbar_panel {\
+		  -moz-appearance: none !important;\
+		  border-style: none !important;\
+		  border-radius: 0 !important;\
+		  padding: 0 3px !important;\
+		  margin: 0 !important;\
+		  background: transparent !important;\
+		  box-shadow: none !important;\
+		  -moz-box-align: center !important;\
+		  -moz-box-pack: center !important;\
+		  min-width: 18px !important;\
+		  min-height: 18px !important;\
+		          }\
+		#uac_statusbar_panel > .toolbarbutton-icon {\
+			max-width: 18px !important;\
+		    padding: 0 !important;\
+		    margin: 0 !important;\
+		}\
+		#uac_statusbar_panel dropmarker{display: none !important;}\
+		    ') + '"'), document.documentElement);
+
+		uacPanel.setAttribute("image", this.UA_LIST[this.def_idx].img);
+		uacPanel.style.padding = "0px 2px";
+
 		var toolbar = document.getElementById("urlbar-icons");
 		if (this.TARGET != null) { // default から書き換えている場合
 			this.TARGET = document.getElementById(this.TARGET);
@@ -310,7 +284,6 @@ var ucjs_UAChanger = {
 		// パネルの変更を可能にする
 		uacPanel.setAttribute("context", "uac_statusbar_panel_popup");
 		uacPanel.setAttribute("onclick", "event.stopPropagation();");
-		this.setImage(this.def_idx);
 	},
 	// URL 指定で User-Agent の書き換え(UserAgentSwitcher.uc.js より)
 	observe : function (subject, topic, data) {
@@ -388,12 +361,10 @@ var ucjs_UAChanger = {
 	// UA パネル画像とツールチップを設定
 	setImage : function (i) {
 		var uacPanel = document.getElementById("uac_statusbar_panel");
-		if (this.PANEL_TYPE) {
-			uacPanel.setAttribute("image", this.UA_LIST[i].img);
-			uacPanel.style.padding = "0px 2px";
-		} else
-			uacPanel.setAttribute("label", this.UA_LIST[i].label);
-		uacPanel.setAttribute("tooltiptext", "User Agent(" + this.UA_LIST[i].name + ")");
+
+		uacPanel.setAttribute("image", this.UA_LIST[i].img);
+		uacPanel.style.padding = "0px 2px";
+
 		this.Current_idx = i;
 	},
 	// アプリケーションのバージョンを取得する(Alice0775 氏のスクリプトから頂きました。)
