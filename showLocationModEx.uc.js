@@ -4,7 +4,7 @@
 // @description     显示国旗与IP
 // @include         chrome://browser/content/browser.xul
 // @author          紫云飞
-// @note            version20130613: mod by lastdream2013
+// @note            version20130617: mod by lastdream2013
 // ==/UserScript==
 
 (function () {
@@ -38,6 +38,7 @@ location == "chrome://browser/content/browser.xul" && gBrowser.addEventListener(
 			#identity-icon-country-label {\
 			 visibility: collapse !important;\
 			}\
+			#urlbar   {height:24px !important;}\
 			');
 		var style = document.createProcessingInstruction('xml-stylesheet', 'type="text/css" href="data:text/css;utf-8,' + encodeURIComponent(cssStr) + '"');
 		document.insertBefore(style, document.documentElement);
@@ -54,8 +55,6 @@ location == "chrome://browser/content/browser.xul" && gBrowser.addEventListener(
 			Components.classes['@mozilla.org/widget/clipboardhelper;1'].createInstance(Components.interfaces.nsIClipboardHelper).copyString(self.showFlag.tooltipText);
 		}, false);
 
-		//self.showFlag.style.width = "16px";
-		//self.showFlag.style.Maxheight = "16px";
 		if (showLocationPos == "identity-box") {
 			self.showFlag.style.marginLeft = "4px";
 			self.showFlag.style.marginRight = "2px";
