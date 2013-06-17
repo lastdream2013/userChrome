@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name           showLocationModSpecial.uc.js
-// @charset         UTF-8
+// @charset        UTF-8
 // @description   只显示国旗在前端，不过和https时的前面的图标不冲突
-// @include         chrome://browser/content/browser.xul
-// @author          紫云飞
-// @note             version20130612: mod by lastdream2013 
+// @include       chrome://browser/content/browser.xul
+// @author        紫云飞
+// @note          version20130617: mod by lastdream2013 
 // ==/UserScript==
 
 (function(){
@@ -30,6 +30,11 @@ if (file.exists()) {
 }
 
 location == "chrome://browser/content/browser.xul" && gBrowser.addEventListener("DOMWindowCreated", function (event) {
+		var cssStr = ('\
+			#urlbar   {height:24px !important;}\
+			');
+		var style = document.createProcessingInstruction('xml-stylesheet', 'type="text/css" href="data:text/css;utf-8,' + encodeURIComponent(cssStr) + '"');
+		document.insertBefore(style, document.documentElement);
 var self = arguments.callee;
 if (!self.showLocation) {
 window.addEventListener("TabSelect", self, false);
