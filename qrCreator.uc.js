@@ -1,7 +1,7 @@
 // ==UserScript==
 // @include        chrome://browser/content/browser.xul
 // @name           qrCreator.uc.js
-// @version        2013.06.14 - 0.11 minor fix
+// @charset        UTF-8
 // @version        2013.06.13 - 0.1 first release
 // @author         lastdream2013
 // ==/UserScript==
@@ -39,10 +39,10 @@ var qrCreator = {
 	checkLength : function (arg) {
 		if (arg) {
 			if (arg.length == 0) {
-				alert("\u6CA1\u6709\u8981\u8F6C\u5316\u4E3A\u4E8C\u7EF4\u7801\u7684\u5185\u5BB9\uFF01");
+				alert("没有要转化为二维码的内容！");
 				return false;
 			} else if (arg.length > 250) {
-				alert("\u8981\u8F6C\u5316\u4E3A\u4E8C\u7EF4\u7801\u7684\u6570\u636E\u8D85\u957F\u4E86\uFF01(\u5927\u4E8E250\u5B57\u8282)");
+				alert("要转化为二维码的数据超长了！(大于250字节)");
 				return false;
 			} else {
 				return true;
@@ -95,19 +95,19 @@ var qrCreator = {
 		if (content.document.getElementById('qrCreatorimageboxid'))
 			return;
 		var target_data = '';
-		var altText = "QR\u7801\u5185\u5BB9[\u7F51\u5740]";
+		var altText = "QR码内容[网址]";
 
 		if (gContextMenu) {
 			if (gContextMenu.isTextSelected) {
 				target_data = content.getSelection().toString();
-				altText = "QR\u7801\u5185\u5BB9[\u6587\u672C]";
+				altText = "QR码内容[文本]";
 			} else if (gContextMenu.onLink) {
 				target_data = gContextMenu.linkURL;
 			} else if (gContextMenu.onImage) {
 				target_data = gContextMenu.target.src;
 			} else if ((content.document.location == "about:blank" || content.document.location == "about:newtab")) {
-				altText = "QR\u7801\u5185\u5BB9[\u6587\u672C]";
-				target_data = prompt("\u8BF7\u8F93\u5165\u6587\u672C\u521B\u5EFA\u4E00\u4E2AQR\u7801\uFF08\u957F\u5EA6\u4E0D\u8D85\u8FC7250\u5B57\u8282\uFF09\uFF1A", "");
+				altText = "QR码内容[文本]";
+				target_data = prompt("请输入文本创建一个QR码（长度不超过250字节）：", "");
 			} else {
 				target_data = content.document.location;
 			}
@@ -157,7 +157,7 @@ var qrCreator = {
 		menuItem.addEventListener("command", function () {
 			qrCreator.onMenuItemCommand();
 		}, false);
-		menuItem.setAttribute("label", "\u5728\u7EBF\u751F\u6210QR\u7801");
+		menuItem.setAttribute("label", "在线生成QR码");
 		menuItem.setAttribute("class", "menuitem-iconic");
 		menu.setAttribute("accesskey", "S");
 		menuItem.setAttribute("image", "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAzUlEQVQ4jaWOQYqFMBBE+xgewBO4ceEiIAQaBBHxPjlrFkKWucGbxaf/T/zGYZiCoqraoozwTwhACIHjOCoCt94YQvgM7PterVou762OAGzbRkufvr0H1nWt1stsvtURgGVZvmh3Q6sjPEBVUdWnymvAe4/3ntKX+UkFYJ5nTJ98masXtOCcwzl3m00FYJqmLxrMt1QAxnGs/mz5N30PDMNAS0vedQSg7/vqBWW++mtXYoyoKl3XVQQqvd5UlRgjknMmpcR5nn9iSomcMz9lng2NV0gSXAAAAABJRU5ErkJggg==");
@@ -168,20 +168,20 @@ var qrCreator = {
 		var labelText;
 		if (gContextMenu) {
 			if (gContextMenu.isTextSelected) {
-				labelText = "\u9009\u533A\u6587\u672C";
+				labelText = "选区文本";
 			} else if (gContextMenu.onLink) {
-				labelText = "\u94FE\u63A5\u5730\u5740";
+				labelText = "链接地址";
 			} else if (gContextMenu.onImage) {
-				labelText = "\u56FE\u8C61\u5730\u5740";
+				labelText = "图象地址";
 			} else if (content.document.location == "about:blank" || content.document.location == "about:newtab") {
-				labelText = "\u624B\u5DE5\u8F93\u5165";
+				labelText = "手工输入";
 			} else {
-				labelText = "\u5F53\u524D\u7F51\u5740";
+				labelText = "当前网址";
 			}
 			//Services.console.logStringMessage('[ content.document.location optionsChangeLabel ]: ' + content.document.location );
 			var currentEntry = document.getElementById("qrCreator.menu");
 			if (currentEntry) {
-				let LABELTEXT = "\u751F\u6210QR\u7801 : " + labelText;
+				let LABELTEXT = "生成QR码 : " + labelText;
 				currentEntry.setAttribute("label", LABELTEXT);
 			}
 		}
