@@ -43,7 +43,6 @@ var useiframe = true;  // 启用 iframe 加载下一页的总开关。
 var IMMEDIATELY_PAGER_NUM = 0;  // 立即加载的页数
 var loadImmediatelyTime = 500;  // 立即加载延迟的时间（ms）
 
-var PAGE_NAVIGATION_SITE_RE = /forum|thread/i;
 var FORCE_TARGET_WINDOW = true;
 var BASE_REMAIN_HEIGHT = 600;
 var MAX_PAGER_NUM = 10;   //默认最大翻页数， -1表示无限制
@@ -480,8 +479,7 @@ var ns = window.uAutoPagerize = {
 		// 还得加上nextLink，不加上的话会查找下一页链接 2 次，特别是加了自动查找功能后
 		var index = -1, info, nextLink;
 
-		// 这个范围有些大，每次都得检测 2 次。先不加上 |com\.hk
-		if (/\bgoogle\.(?:com|co\.jp)$/.test(win.location.host)) {
+		if (/\bgoogle\.(?:com|co\.jp|com\.hk)$/.test(win.location.host)) {
 			if (!timer || timer < 400) timer = 400;
 			win.addEventListener("hashchange", function(event) {
 				if (!win.ap) {
@@ -577,7 +575,7 @@ var ns = window.uAutoPagerize = {
 					img.removeAttribute('data-src');
 				});
 			});
-		} 
+		}
 		// 水木清华社区延迟加载及下一页加载的修复
 		else if (win.location.host === 'www.newsmth.net') {
 			timer = 1000;   // 这个网站 =400 则找到的下一页链接会错误
@@ -1882,7 +1880,7 @@ function updateIcon(){
 	var tooltiptext = "";
     var checkautomenu = $("uAutoPagerize-AUTOSTART");
 	if (ns.AUTO_START == false) {
-		newState = "off"; 
+		newState = "off";
 		tooltiptext = "自动翻页已关闭";
 		checkautomenu.setAttribute("checked", false);
 	} else {
@@ -1892,7 +1890,7 @@ function updateIcon(){
 			if (tooltiptext == "terminated"){ tooltiptext = "自动翻页已结束" };
 			if (tooltiptext == "enable")	{ tooltiptext = "自动翻页已启用" };
 		} else {
-			newState = "disable"; 
+			newState = "disable";
 			tooltiptext = "此页面不支持自动翻页";
 		}
 		checkautomenu.setAttribute("checked", true);
@@ -2001,7 +1999,7 @@ function getXPathResult(xpath, node, resultType) {
 		}catch(e){
 			log(xpath);
 		}
-		
+
 		var defaultResolver = resolver;
 		resolver = function (prefix) {
 			return (prefix == defaultPrefix)
@@ -2185,7 +2183,7 @@ function GM_xmlhttpRequest(obj, win) {
 			req.setRequestHeader(i,obj.headers[i]);
 	if (obj.overrideMimeType)
 		req.overrideMimeType(obj.overrideMimeType);
-	
+
 	['onload','onerror','onreadystatechange'].forEach(function(k) {
 		if (obj[k] && (typeof(obj[k]) == 'function' || obj[k] instanceof Function)) req[k] = function() {
 			obj[k]({
