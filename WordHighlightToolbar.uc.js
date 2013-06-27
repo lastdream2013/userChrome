@@ -7,7 +7,8 @@
 // @compatibility  Firefox 17
 // @charset        UTF-8
 // @include        main
-// @version        0.0.7 完善解决一些站点css高亮冲突bug, add DELAY_SITEINFO 参考ywzhaiqi
+// @version        0.0.7
+// @note           增加延迟及 super_preloader 加载下一页高亮的支持 By ywzhaiqi
 // @note           0.0.7 ツールバーが自動で消えないことがあったのを修正
 // @note           0.0.6 アイコンを作って検索時の強調を ON/OFF できるようにした
 // @note           0.0.6 背面のタブを複数開いた際の引き継ぎを修正
@@ -37,25 +38,11 @@ const CLASS_INDEX = PREFIX + 'index';
 const EVENT_RESPONSE = 'RESPONSE_' + UID;
 
 var GET_KEYWORD = true;
+var enableBooklink = true;  // 来自 booklink.me 的百度搜索不要高亮。
 var wmap = new WeakMap();
 
 window.gWHT = {
 	DEBUG: false,
-	DELAY_SITEINFO: [
-		{
-			url: '^https?://developer\\.mozilla\\.org/.*/docs/',
-			delayTime: 1500,  // 单位毫秒
-		},
-		{
-			url: '^https?://www\\.sharejs\\.com/tutorial/tutorial_class/',
-			delayTime: 2000,  // 单位毫秒
-		},
-		{
-			url: '^https?://www\\.onlineqrlab\\.com/',
-			delayTime: 2000,  // 单位毫秒
-		},
-	],
-	
 	SITEINFO: [
 		/**
 			url     URL。正規表現。keyword, input が無い場合は $1 がキーワードになる。
@@ -240,19 +227,8 @@ window.gWHT = {
 				// HTMLDocument じゃない場合
 				if (!checkDoc(doc)) return;
 
-				var keywords = this.GET_KEYWORD ? this.getKeyword(this.SITEINFO, doc) : [];
-
-                var delay = 0;
-				for (let [index, info] in Iterator(this.DELAY_SITEINFO)) { 
-					if( new RegExp(info.url).test(win.location.href) ) {
-						delay = info.delayTime;
-						break;
-					}
-				}
-                var self = this;
-                setTimeout(function(){
-                    self.launch(doc, keywords);
-                }, delay);
+                this.delayLaunch(doc, win);
+                
                 setTimeout(function(self, doc, win){
                 	self.fixAutoPage(doc, win);
                 }, 1000, this, doc, win)
@@ -311,8 +287,32 @@ window.gWHT = {
 				break;
 		}
 	},
+
+    delayLaunch: function(doc, win){
+
+        if(enableBooklink && doc.URL.indexOf("baidu.com") > -1 && doc.referrer.indexOf("booklink.me") > -1){
+            return;
+        }
+
+        var self = this;
+        var keywords = this.GET_KEYWORD ? this.getKeyword(this.SITEINFO, doc) : [];
+
+        var SyntaxHighlighter = win.wrappedJSObject.SyntaxHighlighter;
+        if(typeof SyntaxHighlighter != "undefined"){
+        	win.addEventListener("load", function(){
+        		setTimeout(function(){
+        			self.launch(doc, keywords);
+        		}, 500);
+        		doc.removeEventListener("load", arguments.callee, false);
+        	}, false);
+
+        	return;
+        }
+
+        this.launch(doc, keywords);
+    },
     fixAutoPage: function(doc, win){
-    	if (!checkDoc(doc)) return;
+    	if(!checkDoc(doc)) return;
     	var _bodyHeight = doc.body.clientHeight;
         // 创建观察者对象
         var observer = new win.MutationObserver(function(mutations){
