@@ -7,7 +7,8 @@
 // @author         slimx
 // @version        2.0.0.2
 // @updateURL     https://j.mozest.com/ucscript/script/7.meta.js
-// @note          2013/07/11 modified by lastdream2013 稍做修正，增加右键点击菜单项设置所有页面默认的缩放率
+// @note          2013/07/12 modified by lastdream2013 修正恢复上次关闭网页时有可能在第一个页面失效的问题
+// @note          2013/07/11 稍做修正，增加右键点击菜单项设置所有页面默认的缩放率
 // ==/UserScript==
 
 //@11/22 第一版
@@ -740,7 +741,7 @@ var fullZoomBtn = {
 		case 'DOMContentLoaded':
 			setTimeout(function(){
 				this.init(event);
-				}, 500);
+				}, 1000);
 			
 			break;
 		case 'unload':
