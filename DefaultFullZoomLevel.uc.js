@@ -13,7 +13,7 @@
 //@11/22 第一版
 //@1/2/13 第二版
 var FullZoomConfig = new function () {
-  //默认的缩放级别
+	//默认的缩放级别
 	this.defaultLv = 125;
 	//只缩放文字
 	this.Textmode = false;
@@ -738,7 +738,10 @@ var fullZoomBtn = {
 			this.windowResized(event);
 			break;
 		case 'DOMContentLoaded':
-			this.init(event);
+			setTimeout(function(){
+				this.init(event);
+				}, 500);
+			
 			break;
 		case 'unload':
 			this.uninit(event);
