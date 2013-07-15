@@ -7,7 +7,7 @@
 // @author         slimx
 // @version        2.0.0.2
 // @updateURL     https://j.mozest.com/ucscript/script/7.meta.js
-// @note          2013/07/12 modified by lastdream2013 修正恢复上次关闭网页时有可能在第一个页面失效的问题
+// @note          2013/07/15 modified by lastdream2013 修正恢复上次关闭网页时有可能在第一个页面失效的问题
 // @note          2013/07/11 稍做修正，增加右键点击菜单项设置所有页面默认的缩放率
 // ==/UserScript==
 
@@ -738,12 +738,12 @@ var fullZoomBtn = {
 		case 'resize':
 			this.windowResized(event);
 			break;
-		case 'DOMContentLoaded':
+		/*case 'DOMContentLoaded':
 			setTimeout(function(){
 				this.init(event);
 				}, 1000);
 			
-			break;
+			break;*/
 		case 'unload':
 			this.uninit(event);
 		}
@@ -1304,5 +1304,15 @@ function fullZoomUI() {
 }
 fullZoomUI();
 
-FullZoom.init();
-fullZoomBtn.init();
+
+var delayloadFullZoom = function (aEvent) {
+	setTimeout(function () {
+		FullZoom.init();
+		fullZoomBtn.init();
+	}, 1000);
+};
+var loadFullZoom = function () {
+	gBrowser.addEventListener("DOMContentLoaded", delayloadFullZoom, true);
+};
+window.addEventListener("pageshow", loadFullZoom, false);
+
