@@ -36,14 +36,15 @@
 // Released under the GPL license
 // http://www.gnu.org/copyleft/gpl.html
 
-(function(css) {
 
+(function (css) {
 
 // 原版规则是否启用？略大，但很多站点都可以翻页
 var ORIGINAL_SITEINFO = false;
+var SIMPLE_SEPARATOR = false; // true 原版的分隔条，false 多功能分隔条
 
-var DB_FILENAME_CN =  "uSuper_preloader.db.js";   // 中文数据库的位置
-var DB_FILENAME_JSON = "uAutoPagerize.json";      // 原版数据库位置
+var DB_FILENAME_CN = "uSuper_preloader.db.js"; // 中文数据库的位置
+var DB_FILENAME_JSON = "uAutoPagerize.json"; // 原版数据库位置
 
 
 var FORCE_TARGET_WINDOW = true;
@@ -55,11 +56,17 @@ var CACHE_EXPIRE = 24 * 60 * 60 * 1000;
 var XHR_TIMEOUT = 30 * 1000;
 
 // 新增的
-var MAX_PAGER_NUM = 10;           // 默认最大翻页数， -1表示无限制
-var IMMEDIATELY_PAGER_NUM = 3;    // 立即加载的初始页数
-var USE_IFRAME = true;  // 是否启用 iframe 加载下一页（浏览器级，默认只允许JavaScript，在 createIframe 中可设置其它允许）
-var USE_FORCE_NEXT_PAGE = true;  // 是否启用强制拼接？
-var PRE_NEXT_PAGE = true;  // 提前预读下一页..就是翻完第1页,立马预读第2页,翻完第2页,立马预读第3页..(大幅加快翻页快感-_-!!)
+var MAX_PAGER_NUM = 10; // 默认最大翻页数， -1表示无限制
+var IMMEDIATELY_PAGER_NUM = 3; // 立即加载的初始页数
+var USE_IFRAME = true; // 是否启用 iframe 加载下一页（浏览器级，默认只允许JavaScript，在 createIframe 中可设置其它允许）
+var USE_FORCE_NEXT_PAGE = true; // 是否启用强制拼接？
+var PRE_REQUEST_NEXT_PAGE = true; // 提前预读下一页..就是翻完第1页,立马预读第2页,翻完第2页,立马预读第3页..(大幅加快翻页快感-_-!!)
+var PRE_REQUEST_NEXT_PAGE_FIRST_TIME = true; // 页面一载入是否预读下一页，否则加载第1页后才开始预读下一页
+var SEPARATOR_RELATIVELY = true; //分隔符.在使用上滚一页或下滚一页的时候是否保持相对位置..
+
+// 出在自动翻页信息附加显示真实相对页面信息，一般能智能识别出来。如果还有站点不能识别，可以把地址的特征字符串加到下面
+// 最好不要乱加，一些不规律的站点显示出来的数字也没有意义
+var REALPAGE_SITE_PATTERN = ['search?', 'search_', 'forum', 'thread'];
 
 var SITEINFO_CN_IMPORT_URLS = [
 	//Super_preloader 的翻页规则更新地址
@@ -70,84 +77,80 @@ var SITEINFO_CN_IMPORT_URLS = [
 ];
 
 var SITEINFO_IMPORT_URLS = ORIGINAL_SITEINFO ? [
-        'http://wedata.net/databases/AutoPagerize/items.json',
-    ] : [];
-
-// 出在自动翻页信息附加显示真实相对页面信息，一般能智能识别出来。如果还有站点不能识别，可以把地址的特征字符串加到下面
-// 最好不要乱加，一些不规律的站点显示出来的数字也没有意义
-var REALPAGE_SITE_PATTERN = ['search?', 'search_', 'forum', 'thread'];
+		'http://wedata.net/databases/AutoPagerize/items.json',
+	] : [];
 
 // ワイルドカード(*)で記述する
 var INCLUDE = [
 	"*"
 ];
 var EXCLUDE = [
-	'https://mail.google.com/*'
-	,'http://www.google.co.jp/reader/*'
-	,'http://b.hatena.ne.jp/*'
-	,'http://www.livedoor.com/*'
-	,'http://reader.livedoor.com/*'
-	,'http://fastladder.com/*'
+    'https://mail.google.com/*'
+    ,'http://www.google.co.jp/reader/*'
+    ,'http://b.hatena.ne.jp/*'
+    ,'http://www.livedoor.com/*'
+    ,'http://reader.livedoor.com/*'
+    ,'http://fastladder.com/*'
 ];
 
 var MY_SITEINFO = [
-	{
-		url          : '^https?://mobile\\.twitter\\.com/'
-		,nextLink    : '//div[contains(concat(" ",normalize-space(@class)," "), " w-button-more ")]/a[@href]'
-		,pageElement : '//div[@class="timeline"]/table[@class="tweet"] | //div[@class="user-list"]/table[@class="user-item"]'
-		,exampleUrl  : 'https://mobile.twitter.com/ https://mobile.twitter.com/search?q=css'
-	},
+    {
+        url          : '^https?://mobile\\.twitter\\.com/'
+        ,nextLink    : '//div[contains(concat(" ",normalize-space(@class)," "), " w-button-more ")]/a[@href]'
+        ,pageElement : '//div[@class="timeline"]/table[@class="tweet"] | //div[@class="user-list"]/table[@class="user-item"]'
+        ,exampleUrl  : 'https://mobile.twitter.com/ https://mobile.twitter.com/search?q=css'
+    },
 ];
 
 var MICROFORMAT = [
-	{
-		url         : '^https?://.*',
-		nextLink    : '//a[@rel="next"] | //link[@rel="next"]',
-		pageElement : '//*[contains(@class, "autopagerize_page_element")]',
-		insertBefore: '//*[contains(@class, "autopagerize_insert_before")]'
-	}
+    {
+        url         : '^https?://.*',
+        nextLink    : '//a[@rel="next"] | //link[@rel="next"]',
+        pageElement : '//*[contains(@class, "autopagerize_page_element")]',
+        insertBefore: '//*[contains(@class, "autopagerize_insert_before")]'
+    }
 ];
 
 var FORCE_SITEINFO = {
-    url        : '^https?://.*',
-    nextLink   : 'auto;',
-    pageElement: "//body/*"
+	url : '^https?://.*',
+	nextLink : 'auto;',
+	pageElement : "//body/*"
 };
 
-var nextPageKey = [  //下一页关键字
-    '下一页', '下一頁', '下1页', '下1頁', '下页', '下頁',
-    '翻页', '翻頁', '翻下頁', '翻下页',
-    '下一张', '下一張', '下一幅', '下一章', '下一节', '下一節', '下一篇',
-    '后一页', '後一頁',
-    '前进', '下篇', '后页', '往后', 'Next', 'Next Page', '次へ'
+var nextPageKey = [//下一页关键字
+	'下一页', '下一頁', '下1页', '下1頁', '下页', '下頁',
+	'翻页', '翻頁', '翻下頁', '翻下页',
+	'下一张', '下一張', '下一幅', '下一章', '下一节', '下一節', '下一篇',
+	'后一页', '後一頁',
+	'前进', '下篇', '后页', '往后', 'Next', 'Next Page', '次へ'
 ];
 var autoMatch = {
-    digitalCheck:true,  //对数字连接进行检测,从中找出下一页的链接
-    cases:false,  //关键字区分大小写....
-    pfwordl:{     //关键字前面的字符限定.
-        next:{    //下一页关键字前面的字符
-            enable:true,
-            maxPrefix:2,
-            character:[' ','　','[','［','『','「','【','(']
-        }
-    },
-    sfwordl:{//关键字后面的字符限定.
-        next:{//下一页关键字后面的字符
-            enable:true,
-            maxSubfix: 3,
-            character:[' ','　',']','］','>','﹥','›','»','>>','』','」','】',')','→']
-        }
-    }
+	digitalCheck : true, //对数字连接进行检测,从中找出下一页的链接
+	cases : false, //关键字区分大小写....
+	pfwordl : { //关键字前面的字符限定.
+		next : { //下一页关键字前面的字符
+			enable : true,
+			maxPrefix : 2,
+			character : [' ', '　', '[', '［', '『', '「', '【', '(']
+		}
+	},
+	sfwordl : { //关键字后面的字符限定.
+		next : { //下一页关键字后面的字符
+			enable : true,
+			maxSubfix : 3,
+			character : [' ', '　', ']', '］', '>', '﹥', '›', '»', '>>', '』', '」', '】', ')', '→']
+		}
+	}
 };
 
 var COLOR = {
-	on: '#0f0',
-	off: '#ccc',
-	enable: '#0f0',
-	disable: '#ccc',
-	loading: '#0ff',
-	terminated: '#00f',
-	error: '#f0f'
+	on : '#0f0',
+	off : '#ccc',
+	enable : '#0f0',
+	disable : '#ccc',
+	loading : '#0ff',
+	terminated : '#00f',
+	error : '#f0f'
 }
 
 let { classes: Cc, interfaces: Ci, utils: Cu, results: Cr } = Components;
@@ -160,11 +163,11 @@ if (typeof window.uAutoPagerize != 'undefined') {
 var ns = window.uAutoPagerize = {
 	INCLUDE_REGEXP : /./,
 	EXCLUDE_REGEXP : /^$/,
-	MICROFORMAT    : MICROFORMAT.slice(),
-	MY_SITEINFO    : MY_SITEINFO.slice(),
-	SITEINFO_CN    : [],
-	SITEINFO       : [],
-    FORCE_SITEINFO : FORCE_SITEINFO,
+	MICROFORMAT : MICROFORMAT.slice(),
+	MY_SITEINFO : MY_SITEINFO.slice(),
+	SITEINFO_CN : [],
+	SITEINFO : [],
+	FORCE_SITEINFO : FORCE_SITEINFO,
 
 	get prefs() {
 		delete this.prefs;
@@ -182,7 +185,7 @@ var ns = window.uAutoPagerize = {
 		delete this.file_cn;
 		return this.file_cn = aFile;
 	},
-	get INCLUDE() INCLUDE,
+	get INCLUDE()INCLUDE,
 	set INCLUDE(arr) {
 		try {
 			this.INCLUDE_REGEXP = arr.length > 0 ?
@@ -194,7 +197,7 @@ var ns = window.uAutoPagerize = {
 		}
 		return arr;
 	},
-	get EXCLUDE() EXCLUDE,
+	get EXCLUDE()EXCLUDE,
 	set EXCLUDE(arr) {
 		try {
 			this.EXCLUDE_REGEXP = arr.length > 0 ?
@@ -206,27 +209,27 @@ var ns = window.uAutoPagerize = {
 		}
 		return arr;
 	},
-	get AUTO_START() AUTO_START,
+	get AUTO_START()AUTO_START,
 	set AUTO_START(bool) {
 		updateIcon();
 		return AUTO_START = !!bool;
 	},
-	get BASE_REMAIN_HEIGHT() BASE_REMAIN_HEIGHT,
+	get BASE_REMAIN_HEIGHT()BASE_REMAIN_HEIGHT,
 	set BASE_REMAIN_HEIGHT(num) {
 		num = parseInt(num, 10);
-		if (!num) return num;
-		let m = $("uAutoPagerize-BASE_REMAIN_HEIGHT");
-		if (m) m.setAttribute("tooltiptext", BASE_REMAIN_HEIGHT = num);
-		return num;
-	},
-	get MAX_PAGER_NUM() MAX_PAGER_NUM,
-	set MAX_PAGER_NUM(num) {
-		num = parseInt(num, 10);
-		if (!num) return num;
-		let m = $("uAutoPagerize-MAX_PAGER_NUM");
-		if (m) m.setAttribute("tooltiptext", MAX_PAGER_NUM = num);
-		return num;
-	},
+        if (!num) return num;
+        let m = $("uAutoPagerize-BASE_REMAIN_HEIGHT");
+        if (m) m.setAttribute("tooltiptext", BASE_REMAIN_HEIGHT = num);
+        return num;
+    },
+    get MAX_PAGER_NUM() MAX_PAGER_NUM,
+    set MAX_PAGER_NUM(num) {
+        num = parseInt(num, 10);
+        if (!num) return num;
+        let m = $("uAutoPagerize-MAX_PAGER_NUM");
+        if (m) m.setAttribute("tooltiptext", MAX_PAGER_NUM = num);
+        return num;
+    },
     get IMMEDIATELY_PAGER_NUM() IMMEDIATELY_PAGER_NUM,
     set IMMEDIATELY_PAGER_NUM(num){
         num = parseInt(num, 10);
@@ -235,54 +238,54 @@ var ns = window.uAutoPagerize = {
         if (m) m.value = num;
         return num;
     },
-	get DEBUG() DEBUG,
-	set DEBUG(bool) {
-		let m = $("uAutoPagerize-DEBUG");
-		if (m) m.setAttribute("checked", DEBUG = !!bool);
-		return bool;
-	},
-	get FORCE_TARGET_WINDOW() FORCE_TARGET_WINDOW,
-	set FORCE_TARGET_WINDOW(bool) {
-		let m = $("uAutoPagerize-FORCE_TARGET_WINDOW");
-		if (m) m.setAttribute("checked", FORCE_TARGET_WINDOW = !!bool);
-		return bool;
-	},
-	get SCROLL_ONLY() SCROLL_ONLY,
-	set SCROLL_ONLY(bool) {
-		let m = $("uAutoPagerize-SCROLL_ONLY");
-		if (m) m.setAttribute("checked", SCROLL_ONLY = !!bool);
-		return bool;
-	},
-    get PRE_NEXT_PAGE() PRE_NEXT_PAGE,
-    set PRE_NEXT_PAGE(bool) {
-        let m = $("uAutoPagerize-PRE_NEXT_PAGE");
-        if (m) m.setAttribute("checked", PRE_NEXT_PAGE = !!bool);
+    get DEBUG() DEBUG,
+    set DEBUG(bool) {
+        let m = $("uAutoPagerize-DEBUG");
+        if (m) m.setAttribute("checked", DEBUG = !!bool);
+        return bool;
+    },
+    get FORCE_TARGET_WINDOW() FORCE_TARGET_WINDOW,
+    set FORCE_TARGET_WINDOW(bool) {
+        let m = $("uAutoPagerize-FORCE_TARGET_WINDOW");
+        if (m) m.setAttribute("checked", FORCE_TARGET_WINDOW = !!bool);
+        return bool;
+    },
+    get SCROLL_ONLY() SCROLL_ONLY,
+    set SCROLL_ONLY(bool) {
+        let m = $("uAutoPagerize-SCROLL_ONLY");
+        if (m) m.setAttribute("checked", SCROLL_ONLY = !!bool);
+        return bool;
+    },
+    get PRE_REQUEST_NEXT_PAGE() PRE_REQUEST_NEXT_PAGE,
+    set PRE_REQUEST_NEXT_PAGE(bool) {
+        let m = $("uAutoPagerize-PRE_REQUEST_NEXT_PAGE");
+        if (m) m.setAttribute("checked", PRE_REQUEST_NEXT_PAGE = !!bool);
         return bool;
     },
 
-	init: function() {
+	init : function () {
 		ns.style = addStyle(css);
-        ns.icon = ns.addButton();
-        ns.popupMenu = ns.addPopupMenu();
-        if(USE_FORCE_NEXT_PAGE)
-            ns.popupMenu.addEventListener("popupshowing", this.showForcePageMenu, false);
+		ns.icon = ns.addButton();
+		ns.popupMenu = ns.addPopupMenu();
+		if (USE_FORCE_NEXT_PAGE)
+			ns.popupMenu.addEventListener("popupshowing", this.showForcePageMenu, false);
 
-		["DEBUG", "AUTO_START", "FORCE_TARGET_WINDOW", "SCROLL_ONLY", "PRE_NEXT_PAGE"].forEach(function(name) {
+		["DEBUG", "AUTO_START", "FORCE_TARGET_WINDOW", "SCROLL_ONLY", "PRE_REQUEST_NEXT_PAGE"].forEach(function (name) {
 			try {
 				ns[name] = ns.prefs.getBoolPref(name);
 			} catch (e) {}
 		}, ns);
-        ["BASE_REMAIN_HEIGHT","MAX_PAGER_NUM", "IMMEDIATELY_PAGER_NUM"].forEach(function(name) {
-            try {
-                ns[name] = ns.prefs.getIntPref(name);
-            } catch (e) {}
-        }, ns);
+		["BASE_REMAIN_HEIGHT", "MAX_PAGER_NUM", "IMMEDIATELY_PAGER_NUM"].forEach(function (name) {
+			try {
+				ns[name] = ns.prefs.getIntPref(name);
+			} catch (e) {}
+		}, ns);
 
 		if (!getCache())
 			requestSITEINFO();
 
-        if(!ns.loadSetting_cn())
-            ns.requestSITEINFO_CN();
+		if (!ns.loadSetting_cn())
+			ns.requestSITEINFO_CN();
 
 		ns.INCLUDE = INCLUDE;
 		ns.EXCLUDE = EXCLUDE;
@@ -290,170 +293,171 @@ var ns = window.uAutoPagerize = {
 		ns.loadSetting();
 		updateIcon();
 	},
-	uninit: function() {
+	uninit : function () {
 		ns.removeListener();
 
-        ["DEBUG", "AUTO_START", "FORCE_TARGET_WINDOW", "SCROLL_ONLY", "PRE_NEXT_PAGE"].forEach(function(name) {
-            try {
-                ns.prefs.setBoolPref(name, ns[name]);
-            } catch (e) {}
-        }, ns);
+		["DEBUG", "AUTO_START", "FORCE_TARGET_WINDOW", "SCROLL_ONLY", "PRE_REQUEST_NEXT_PAGE"].forEach(function (name) {
+			try {
+				ns.prefs.setBoolPref(name, ns[name]);
+			} catch (e) {}
+		}, ns);
 
-        ["BASE_REMAIN_HEIGHT", "MAX_PAGER_NUM", "IMMEDIATELY_PAGER_NUM"].forEach(function(name) {
-            try {
-                ns.prefs.setIntPref(name, ns[name]);
-            } catch (e) {}
-        }, ns);
+		["BASE_REMAIN_HEIGHT", "MAX_PAGER_NUM", "IMMEDIATELY_PAGER_NUM"].forEach(function (name) {
+			try {
+				ns.prefs.setIntPref(name, ns[name]);
+			} catch (e) {}
+		}, ns);
 	},
-	theEnd: function() {
-        ns.IMMEDIATELY_PAGER_NUM = $("uAutoPagerize-immedialate-pages").value;
+	theEnd : function () {
+		ns.IMMEDIATELY_PAGER_NUM = $("uAutoPagerize-immedialate-pages").value;
 
 		var ids = ["uAutoPagerize-icon", "uAutoPagerize-popup"];
-		for (let [, id] in Iterator(ids)) {
+		for (let[, id]in Iterator(ids)) {
 			let e = document.getElementById(id);
-			if (e) e.parentNode.removeChild(e);
-		}
-		ns.style.parentNode.removeChild(ns.style);
+            if (e) e.parentNode.removeChild(e);
+        }
+        ns.style.parentNode.removeChild(ns.style);
 		ns.removeListener();
 	},
-	destroy: function() {
+	destroy : function () {
 		ns.theEnd();
 		ns.uninit();
 		delete window.uAutoPagerize;
 	},
-	addListener: function() {
+	addListener : function () {
 		gBrowser.mPanelContainer.addEventListener('DOMContentLoaded', this, true);
 		gBrowser.mTabContainer.addEventListener('TabSelect', this, false);
-        gBrowser.mTabContainer.addEventListener('TabClose', this, false);
+		gBrowser.mTabContainer.addEventListener('TabClose', this, false);
 		window.addEventListener('uAutoPagerize_destroy', this, false);
 		window.addEventListener('unload', this, false);
 	},
-	removeListener: function() {
+	removeListener : function () {
 		gBrowser.mPanelContainer.removeEventListener('DOMContentLoaded', this, true);
 		gBrowser.mTabContainer.removeEventListener('TabSelect', this, false);
-        gBrowser.mTabContainer.removeEventListener('TabClose', this, false);
+		gBrowser.mTabContainer.removeEventListener('TabClose', this, false);
 		window.removeEventListener('uAutoPagerize_destroy', this, false);
 		window.removeEventListener('unload', this, false);
 	},
-	handleEvent: function(event) {
-		switch(event.type) {
-			case "DOMContentLoaded":
-				if (this.AUTO_START)
-					this.launch(event.target.defaultView);
-				break;
-			case "TabSelect":
-				if (this.AUTO_START)
-					updateIcon();
-				break;
-            case "TabClose":
-                // 如果有 iframe 则移除
-                let browser = gBrowser.getBrowserForTab(event.target);
-                if(browser.uAutoPagerizeIframe){
-                    var parent = browser.uAutoPagerizeIframe.parentNode;
-                    parent.removeChild(browser.uAutoPagerizeIframe);
-                    browser.uAutoPagerizeIframe = null;
-                }
-                break;
-			case "uAutoPagerize_destroy":
-				this.destroy(event);
-				break;
-			case "unload":
-				this.uninit(event);
-				break;
+	handleEvent : function (event) {
+		switch (event.type) {
+		case "DOMContentLoaded":
+			if (this.AUTO_START)
+				this.launch(event.target.defaultView);
+			break;
+		case "TabSelect":
+			if (this.AUTO_START)
+				updateIcon();
+			break;
+		case "TabClose":
+			// 如果有 iframe 则移除
+			let browser = gBrowser.getBrowserForTab(event.target);
+			if (browser.uAutoPagerizeIframe) {
+				var parent = browser.uAutoPagerizeIframe.parentNode;
+				parent.removeChild(browser.uAutoPagerizeIframe);
+				browser.uAutoPagerizeIframe = null;
+			}
+			break;
+		case "uAutoPagerize_destroy":
+			this.destroy(event);
+			break;
+		case "unload":
+			this.uninit(event);
+			break;
 		}
 	},
-    addButton: function(){
-        var icon = $('urlbar-icons').appendChild($C("image", {
-                id: "uAutoPagerize-icon",
-                state: "disable",
-                tooltiptext: "disable",
-                onclick: "if (event.button != 2) uAutoPagerize.iconClick(event);",
-                context: "uAutoPagerize-popup",
-                style: "padding: 0px 2px;",
-            }));
-        return icon;
-    },
-    addPopupMenu: function(){
-        var xml = '\
-            <menupopup id="uAutoPagerize-popup"\
-                       position="after_start"\
-                       onpopupshowing="if (this.triggerNode) this.triggerNode.setAttribute(\'open\', \'true\');"\
-                       onpopuphiding="if (this.triggerNode) this.triggerNode.removeAttribute(\'open\');">\
-                <menuitem label="启用自动翻页"\
-                          id="uAutoPagerize-AUTOSTART"\
-                          type="checkbox"\
-                          autoCheck="true"\
-                          checked="'+ AUTO_START +'"\
-                          oncommand="uAutoPagerize.toggle(event);"/>\
-                <menuitem label="载入配置" accesskey="r"\
-                          oncommand="uAutoPagerize.loadSetting(true);"/>\
-                <menuitem label="更新中文规则"\
-                          oncommand="uAutoPagerize.resetSITEINFO_CN();"/>\
-                <menuitem label="更新原版规则" hidden="' + !ORIGINAL_SITEINFO + '" \
-                          oncommand="uAutoPagerize.resetSITEINFO();"/>\
-                <menuseparator/>\
-                <hbox style="padding-left:32px;">\
-                    立即翻<textbox type="number" value="' + IMMEDIATELY_PAGER_NUM + '" tooltiptext="连续翻页的数量" \
-                        id="uAutoPagerize-immedialate-pages" style="width:35px" />页\
-                    <toolbarbutton label="开始" tooltiptext="现在立即开始连续翻页" \
-                        id="uAutoPagerize-immedialate-start" oncommand="uAutoPagerize.immediatelyStart();"/>\
-                </hbox>\
-                <menuitem label="强制拼接" type="checkbox" disabled="true" \
-                          id="uAutoPagerize-force_nextpage" hidden="' + !USE_FORCE_NEXT_PAGE + '" \
-                          oncommand="uAutoPagerize.forcePageToggle();" />\
-                <menuseparator/>\
-                <menuitem label="提前预读下一页"\
-                          tooltiptext="翻完第1页,立马预读第2页,翻完第2页,立马预读第3页..(大幅加快翻页快感-_-!!)"\
-                          id="uAutoPagerize-PRE_NEXT_PAGE"\
-                          type="checkbox"\
-                          autoCheck="false"\
-                          checked="'+ PRE_NEXT_PAGE +'"\
-                          oncommand="uAutoPagerize.PRE_NEXT_PAGE = !uAutoPagerize.PRE_NEXT_PAGE;"/>\
-                <menuitem label="新标签打开链接"\
-                          id="uAutoPagerize-FORCE_TARGET_WINDOW"\
-                          type="checkbox"\
-                          autoCheck="false"\
-                          checked="'+ FORCE_TARGET_WINDOW +'"\
-                          oncommand="uAutoPagerize.FORCE_TARGET_WINDOW = !uAutoPagerize.FORCE_TARGET_WINDOW;"/>\
-                <menuitem label="设置翻页高度"\
-                          id="uAutoPagerize-BASE_REMAIN_HEIGHT"\
-                          tooltiptext="'+ BASE_REMAIN_HEIGHT +'"\
-                          oncommand="uAutoPagerize.BASE_REMAIN_HEIGHT = prompt(\'\', uAutoPagerize.BASE_REMAIN_HEIGHT);"/>\
-                <menuitem label="设置最大自动翻页数"\
-                          id="uAutoPagerize-MAX_PAGER_NUM"\
-                          tooltiptext="'+ MAX_PAGER_NUM +'"\
-                          oncommand="uAutoPagerize.MAX_PAGER_NUM = prompt(\'\', uAutoPagerize.MAX_PAGER_NUM);"/>\
-                <menuitem label="滚动时才翻页"\
-                          id="uAutoPagerize-SCROLL_ONLY"\
-                          type="checkbox"\
-                          autoCheck="false"\
-                          checked="'+ SCROLL_ONLY +'"\
-                          oncommand="uAutoPagerize.SCROLL_ONLY = !uAutoPagerize.SCROLL_ONLY;"/>\
-                <menuitem label="调试模式"\
-                          id="uAutoPagerize-DEBUG"\
-                          type="checkbox"\
-                          autoCheck="false"\
-                          checked="'+ DEBUG +'"\
-                          oncommand="uAutoPagerize.DEBUG = !uAutoPagerize.DEBUG;"/>\
-                <menuseparator/>\
-                <menuitem label="在线搜索翻页规则"\
-                          id="uAutoPagerize-search"\
-                          oncommand="uAutoPagerize.search()"/>\
-            </menupopup>\
-        ';
-        var range = document.createRange();
-        range.selectNodeContents($('mainPopupSet'));
-        range.collapse(false);
-        range.insertNode(range.createContextualFragment(xml.replace(/\n|\t/g, '')));
-        range.detach();
+	addButton : function () {
+		var icon = $('urlbar-icons').appendChild($C("image", {
+					id : "uAutoPagerize-icon",
+					state : "disable",
+					tooltiptext : "disable",
+					onclick : "if (event.button != 2) uAutoPagerize.iconClick(event);",
+					context : "uAutoPagerize-popup",
+					style : "padding: 0px 2px;",
+				}));
+		return icon;
+	},
+	addPopupMenu : function () {
+		var xml = '\
+						<menupopup id="uAutoPagerize-popup"\
+								   position="after_start"\
+								   onpopupshowing="if (this.triggerNode) this.triggerNode.setAttribute(\'open\', \'true\');"\
+								   onpopuphiding="if (this.triggerNode) this.triggerNode.removeAttribute(\'open\');">\
+							<menuitem label="启用自动翻页"\
+									  id="uAutoPagerize-AUTOSTART"\
+									  type="checkbox"\
+									  autoCheck="true"\
+									  checked="' + AUTO_START + '"\
+									  oncommand="uAutoPagerize.toggle(event);"/>\
+							<menuitem label="载入配置" accesskey="r"\
+									  oncommand="uAutoPagerize.loadSetting(true);"/>\
+							<menuitem label="更新中文规则" \
+									  tooltiptext="包含Super_preloader规则和本人维护的规则"\
+									  oncommand="uAutoPagerize.resetSITEINFO_CN();"/>\
+							<menuitem label="更新原版规则" hidden="' + !ORIGINAL_SITEINFO + '" \
+									  oncommand="uAutoPagerize.resetSITEINFO();"/>\
+							<menuseparator/>\
+							<hbox style="padding-left:32px;">\
+								立即翻<textbox type="number" value="' + IMMEDIATELY_PAGER_NUM + '" tooltiptext="连续翻页的数量" \
+									id="uAutoPagerize-immedialate-pages" style="width:35px" />页\
+								<toolbarbutton label="开始" tooltiptext="现在立即开始连续翻页" \
+									id="uAutoPagerize-immedialate-start" oncommand="uAutoPagerize.immediatelyStart();"/>\
+							</hbox>\
+							<menuitem label="强制拼接" type="checkbox" disabled="true" \
+									  id="uAutoPagerize-force_nextpage" hidden="' + !USE_FORCE_NEXT_PAGE + '" \
+									  oncommand="uAutoPagerize.forcePageToggle();" />\
+							<menuseparator/>\
+							<menuitem label="提前预读下一页"\
+									  tooltiptext="翻完第1页,立马预读第2页,翻完第2页,立马预读第3页..(大幅加快翻页快感-_-!!)"\
+									  id="uAutoPagerize-PRE_REQUEST_NEXT_PAGE"\
+									  type="checkbox"\
+									  autoCheck="false"\
+									  checked="' + PRE_REQUEST_NEXT_PAGE + '"\
+									  oncommand="uAutoPagerize.PRE_REQUEST_NEXT_PAGE = !uAutoPagerize.PRE_REQUEST_NEXT_PAGE;"/>\
+							<menuitem label="新标签打开链接"\
+									  id="uAutoPagerize-FORCE_TARGET_WINDOW"\
+									  type="checkbox"\
+									  autoCheck="false"\
+									  checked="' + FORCE_TARGET_WINDOW + '"\
+									  oncommand="uAutoPagerize.FORCE_TARGET_WINDOW = !uAutoPagerize.FORCE_TARGET_WINDOW;"/>\
+							<menuitem label="设置翻页高度"\
+									  id="uAutoPagerize-BASE_REMAIN_HEIGHT"\
+									  tooltiptext="' + BASE_REMAIN_HEIGHT + '"\
+									  oncommand="uAutoPagerize.BASE_REMAIN_HEIGHT = prompt(\'\', uAutoPagerize.BASE_REMAIN_HEIGHT);"/>\
+							<menuitem label="设置最大自动翻页数"\
+									  id="uAutoPagerize-MAX_PAGER_NUM"\
+									  tooltiptext="' + MAX_PAGER_NUM + '"\
+									  oncommand="uAutoPagerize.MAX_PAGER_NUM = prompt(\'\', uAutoPagerize.MAX_PAGER_NUM);"/>\
+							<menuitem label="滚动时才翻页"\
+									  id="uAutoPagerize-SCROLL_ONLY"\
+									  type="checkbox"\
+									  autoCheck="false"\
+									  checked="' + SCROLL_ONLY + '"\
+									  oncommand="uAutoPagerize.SCROLL_ONLY = !uAutoPagerize.SCROLL_ONLY;"/>\
+							<menuitem label="调试模式"\
+									  id="uAutoPagerize-DEBUG"\
+									  type="checkbox"\
+									  autoCheck="false"\
+									  checked="' + DEBUG + '"\
+									  oncommand="uAutoPagerize.DEBUG = !uAutoPagerize.DEBUG;"/>\
+							<menuseparator/>\
+							<menuitem label="在线搜索翻页规则"\
+									  id="uAutoPagerize-search"\
+									  oncommand="uAutoPagerize.search()"/>\
+						</menupopup>\
+					';
+		var range = document.createRange();
+		range.selectNodeContents($('mainPopupSet'));
+		range.collapse(false);
+		range.insertNode(range.createContextualFragment(xml.replace(/\n|\t/g, '')));
+		range.detach();
 
-        return $("uAutoPagerize-popup");
-    },
-	loadSetting: function(isAlert) {
+		return $("uAutoPagerize-popup");
+	},
+	loadSetting : function (isAlert) {
 		var data = loadText(this.file);
-		if (!data) return false;
-		var sandbox = new Cu.Sandbox( new XPCNativeWrapper(window) );
-		sandbox.INCLUDE = null;
+        if (!data) return false;
+        var sandbox = new Cu.Sandbox( new XPCNativeWrapper(window) );
+        sandbox.INCLUDE = null;
 		sandbox.EXCLUDE = null;
 		sandbox.MY_SITEINFO = [];
 		sandbox.MICROFORMAT = [];
@@ -463,50 +467,50 @@ var ns = window.uAutoPagerize = {
 		try {
 			Cu.evalInSandbox(data, sandbox, '1.8');
 		} catch (e) {
-            log('load error.', e);
+			log('load error.', e);
 			return alerts('uAutoPagerize', '配置文件有错误');
 		}
-		ns.MY_SITEINFO = sandbox.USE_MY_SITEINFO ? sandbox.MY_SITEINFO.concat(MY_SITEINFO): sandbox.MY_SITEINFO;
-		ns.MICROFORMAT = sandbox.USE_MICROFORMAT ? sandbox.MICROFORMAT.concat(MICROFORMAT): sandbox.MICROFORMAT;
+		ns.MY_SITEINFO = sandbox.USE_MY_SITEINFO ? sandbox.MY_SITEINFO.concat(MY_SITEINFO) : sandbox.MY_SITEINFO;
+		ns.MICROFORMAT = sandbox.USE_MICROFORMAT ? sandbox.MICROFORMAT.concat(MICROFORMAT) : sandbox.MICROFORMAT;
 		if (sandbox.INCLUDE)
 			ns.INCLUDE = sandbox.INCLUDE;
 		if (sandbox.EXCLUDE)
 			ns.EXCLUDE = sandbox.EXCLUDE;
 
-        ns.MY_SITEINFO.forEach(function(i){
-            i.type = 'my';
-        });
+		ns.MY_SITEINFO.forEach(function (i) {
+			i.type = 'my';
+		});
 
 		if (isAlert)
 			alerts('uAutoPagerize', '配置文件已经重新载入');
 
 		return true;
 	},
-	launch: function(win, timer){
-        var doc = win.document;
+	launch : function (win, timer) {
+		var doc = win.document;
 		var locationHref = win.location.href;
 		if (locationHref.indexOf('http') !== 0 ||
-		   !ns.INCLUDE_REGEXP.test(locationHref) ||
-		    ns.EXCLUDE_REGEXP.test(locationHref))
+			!ns.INCLUDE_REGEXP.test(locationHref) ||
+			ns.EXCLUDE_REGEXP.test(locationHref))
 			return updateIcon();
 
 		if (!/html|xml/i.test(doc.contentType) ||
-		    doc.body instanceof HTMLFrameSetElement ||
-		    win.frameElement && !(win.frameElement instanceof HTMLFrameElement) ||
-		    doc.querySelector('meta[http-equiv="refresh"]'))
+			doc.body instanceof HTMLFrameSetElement ||
+			win.frameElement && !(win.frameElement instanceof HTMLFrameElement) ||
+			doc.querySelector('meta[http-equiv="refresh"]'))
 			return updateIcon();
 
 		if (typeof win.AutoPagerize == 'undefined') {
-			win.filters         = [];
+			win.filters = [];
 			win.documentFilters = [];
-			win.requestFilters  = [];
+			win.requestFilters = [];
 			win.responseFilters = [];
 			win.AutoPagerize = {
-				addFilter         : function(f) { win.filters.push(f) },
-				addDocumentFilter : function(f) { win.documentFilters.push(f); },
-				addResponseFilter : function(f) { win.responseFilters.push(f); },
-				addRequestFilter  : function(f) { win.requestFilters.push(f); },
-				launchAutoPager   : function(l) { launchAutoPager_org(l, win); }
+                addFilter         : function(f) { win.filters.push(f) },
+                addDocumentFilter : function(f) { win.documentFilters.push(f); },
+                addResponseFilter : function(f) { win.responseFilters.push(f); },
+                addRequestFilter  : function(f) { win.requestFilters.push(f); },
+                launchAutoPager   : function(l) { launchAutoPager_org(l, win); }
 			}
 			// uAutoPagerize original
 			win.fragmentFilters = [];
@@ -517,80 +521,82 @@ var ns = window.uAutoPagerize = {
 
 		var miscellaneous = [];
 		// 新标签打开链接。
-		win.fragmentFilters.push(function(df){
-			if (!ns.FORCE_TARGET_WINDOW) return;
-			var arr = Array.slice(df.querySelectorAll('a[href]:not([href^="mailto:"]):not([href^="javascript:"]):not([href^="#"])'));
-			arr.forEach(function (elem){
-				elem.setAttribute('target', '_blank');
-			});
-		});
+		win.fragmentFilters.push(function (df) {
+            if (!ns.FORCE_TARGET_WINDOW) return;
+            var arr = Array.slice(df.querySelectorAll('a[href]:not([href^="mailto:"]):not([href^="javascript:"]):not([href^="#"])'));
+            arr.forEach(function (elem){
+                elem.setAttribute('target', '_blank');
+            });
+        });
 
-		// 还得加上nextLink，不加上的话会查找下一页链接 2 次，特别是加了自动查找功能后
-		var index = -1, info, nextLink;
+        // 还得加上nextLink，不加上的话会查找下一页链接 2 次，特别是加了自动查找功能后
+        var index = -1, info, nextLink;
         var hashchange = false;
 
-		if (/\bgoogle\.(?:com|co\.jp|com\.hk)$/.test(win.location.host)) {
-            // 已经移到外置规则，便于更新
-			if (!timer || timer < 400) timer = 400;
+        // 已经移到外置规则，便于更新
+        if (/\bgoogle\.(?:com|co\.jp|com\.hk)$/.test(win.location.host)) {
+            if (!timer || timer < 400) timer = 400;
             hashchange = true;
-		}else if (/^https?:\/\/(?:images|www)\.google(?:\.[^.\/]{2,3}){1,2}\/(images\?|search\?.*tbm=isch)/.test(locationHref)) {
-			// Google Image
-			[, info] = ns.getInfo(ns.MY_SITEINFO, win);
-			if (info) {
-				if (!timer || timer < 1000) timer = 1000;
-				win.requestFilters.push(function(opt) {
+        }else if (/^https?:\/\/(?:images|www)\.google(?:\.[^.\/]{2,3}){1,2}\/(images\?|search\?.*tbm=isch)/.test(locationHref)) {
+            // Google Image
+            [, info] = ns.getInfo(ns.MY_SITEINFO, win);
+            if (info) {
+                if (!timer || timer < 1000) timer = 1000;
+                win.requestFilters.push(function(opt) {
 					opt.url = opt.url
 						.replace(/&?(gbv=\d|sout=\d)/g, "")
 						.replace("?", '?gbv=1&sout=1&')
 				});
 			}
-		}else if (win.location.host === 'www.dailymotion.com') {
-			win.fragmentFilters.push(function(df) {
-				Array.slice(df.querySelectorAll('img[data-src]')).forEach(function(img) {
+		} else if (win.location.host === 'www.dailymotion.com') {
+			win.fragmentFilters.push(function (df) {
+				Array.slice(df.querySelectorAll('img[data-src]')).forEach(function (img) {
 					img.src = img.getAttribute('data-src');
 					img.removeAttribute('data-src');
 				});
 			});
-		}else if (win.location.host === 'www.newsmth.net') {  // 水木清华社区延迟加载及下一页加载的修复
+		} else if (win.location.host === 'www.newsmth.net') { // 水木清华社区延迟加载及下一页加载的修复
 			timer = 1000;
-            hashchange = true;
+			hashchange = true;
 		}
 
-        if(hashchange){
-            win.addEventListener("hashchange", function(event) {
-                debug("hashchanged: " + win.location.href);
-                if (!win.ap) {
-                    win.setTimeout(function(){
-                        let [index, info] = [-1, null];
+		if (hashchange) {
+			win.addEventListener("hashchange", function (event) {
+				debug("Add Hashchang Event listener" + win.location.href);
+				if (!win.ap) {
+					win.setTimeout(function () {
+						let[index, info] = [-1, null];
                         if (!info) [, info] = ns.getInfo(ns.MY_SITEINFO, win);
                         if (!info) [, info] = ns.getInfo(null, win);
                         if (info) win.ap = new AutoPager(win.document, info);
                         updateIcon();
                     }, timer);
-                    return;
-                }
-                let info = win.ap.info;
-                win.ap.destroy(true);
-                win.setTimeout(function(){
-                    win.ap = new AutoPager(win.document, info);
-                    updateIcon();
-                }, timer);
-            }, false);
-        }
+					return;
+				}
+				let info = win.ap.info;
+				win.ap.destroy(true);
+				win.setTimeout(function () {
+					win.ap = new AutoPager(win.document, info);
+					updateIcon();
+				}, timer);
+			}, false);
+		}
 
-		win.setTimeout(function(){
-			win.ap = null;
-			miscellaneous.forEach(function(func){ func(doc, locationHref); });
-			var index = -1;
+        win.setTimeout(function(){
+            win.ap = null;
+            miscellaneous.forEach(function(func){ func(doc, locationHref); });
+            var index = -1;
             var startTime = new Date().getTime();
+            debug("---------------------------------------------------------");
+            debug("开始查找规则：" + locationHref);
 
-			if (!info) [, info, nextLink] = ns.getInfo(ns.MY_SITEINFO, win);
+            if (!info) [, info, nextLink] = ns.getInfo(ns.MY_SITEINFO, win);
 
             // 第二检测 Super_preloader.db 的数据库
             if(!info) [index, info, nextLink] = ns.getInfo(ns.SITEINFO_CN, win);
 
-			if (info) {
-				if (info.requestFilter)
+            if (info) {
+                if (info.requestFilter)
 					win.requestFilters.push(info.requestFilter.bind(win));
 				if (info.responseFilter)
 					win.responseFilters.push(info.responseFilter.bind(win));
@@ -612,29 +618,32 @@ var ns = window.uAutoPagerize = {
 				}
 			}
 
-			if (!info) [index, info, nextLink] = ns.getInfo(ns.SITEINFO, win);
+            if (!info) [index, info, nextLink] = ns.getInfo(ns.SITEINFO, win);
 
-			if (!info) [, info, nextLink] = ns.getInfo(ns.MICROFORMAT, win);
+            if (!info) [, info, nextLink] = ns.getInfo(ns.MICROFORMAT, win);
 
             // 强制拼接
-            if(!info && win.localStorage.ap_force_nextpage){
-                nextLink = autoGetLink(doc);
-                if(nextLink){
-                    info = FORCE_SITEINFO;
-                }
-            }
+			if (!info && win.localStorage.ap_force_nextpage) {
+				nextLink = autoGetLink(doc);
+				if (nextLink) {
+					info = FORCE_SITEINFO;
+				}
+			}
 
+			let spenTime = "耗时: " + (new Date().getTime() - startTime) + 'ms。';
 			if (info) {
+				debug("  找到匹配当前站点的规则: 是[" + info.type + ']第' + (index + 1) + '规则，' + spenTime +
+					"开始运行 Autopager");
 				win.ap = new AutoPager(win.document, info, nextLink);
-                let infoType = info.type ? "[" + info.type + "]" : "";
-                debug("找到匹配当前站点的规则: 是" + infoType + '第' + (index + 1) + '规则',
-                    "耗时: "+ (new Date().getTime() - startTime) + 'ms');
-			}else{
-                // debug("没有找到规则");
-            }
+			} else {
+				let infoLength = ns.MY_SITEINFO.length + ns.SITEINFO_CN.length +
+					ns.SITEINFO.length + ns.MICROFORMAT.length;
+				debug("  所有规则都没法找到下一页或内容，" + "共查找规则" + infoLength + "个，" + spenTime +
+					"结束运行");
+			}
 
 			updateIcon();
-		}, timer||0);
+		}, timer || 0);
 	},
 	iconClick: function(event){
 		/*if (!event || !event.button == 2) {
@@ -647,11 +656,11 @@ var ns = window.uAutoPagerize = {
 			ns.loadSetting(true);
 		}
 	},
-	resetSITEINFO: function() {
+	resetSITEINFO : function () {
 		if (confirm('reset SITEINFO?'))
 			requestSITEINFO();
 	},
-	toggle: function() {
+	toggle : function () {
 		if (ns.AUTO_START) {
 			ns.AUTO_START = false;
 			updateIcon();
@@ -659,193 +668,219 @@ var ns = window.uAutoPagerize = {
 			ns.AUTO_START = true;
 			if (!content.ap)
 				ns.launch(content);
-			else updateIcon();
+			else {
+				content.ap.scroll();
+				updateIcon();
+			}
 		}
 	},
-	toggleAPstate: function() {
+	toggleAPstate : function () {
 		if (content.ap)
-		    content.ap.state = content.ap.state == 'disable'? 'enable' : 'disable';
+			content.ap.state = content.ap.state == 'disable' ? 'enable' : 'disable';
 		updateIcon();
 	},
-	getInfo: function (list, win) {
-		if (!list) list = ns.MY_SITEINFO.concat(ns.SITEINFO_CN, ns.SITEINFO);
-		if (!win)  win  = content;
-		var doc = win.document;
-		var locationHref = doc.location.href;
-		for (let [index, info] in Iterator(list)) {
-			try {
-				var exp = info.url_regexp || Object.defineProperty(info, "url_regexp", {
-						enumerable: false,
-						value: toRE(info.url)
-					}).url_regexp;
-				if ( !exp.test(locationHref) ) continue;
+    getInfo: function (list, win) {
+        if (!list) list = ns.MY_SITEINFO.concat(ns.SITEINFO_CN, ns.SITEINFO);
+        if (!win)  win  = content;
+        var doc = win.document;
+        var locationHref = doc.location.href;
+        for (let [index, info] in Iterator(list)) {
+            try {
+                var exp = info.url_regexp || Object.defineProperty(info, "url_regexp", {
+                        enumerable: false,
+                        value: toRE(info.url)
+                    }).url_regexp;
+                if ( !exp.test(locationHref) ) continue;
+
+				if (info.url.length > 12)
+					debug("  找到匹配当前站点的规则：[" + (info.type || "") + "]" + "第" + index + "个");
 
 				var nextLink = getElementMix(info.nextLink, doc);
 				if (!nextLink) {
 					// FIXME microformats case detection.
 					// limiting greater than 12 to filter microformats like SITEINFOs.
 					if (info.url.length > 12)
-						debug('nextLink not found. getInfo(). ', String(info.nextLink));
+						debug('  nextLink not found.', String(info.nextLink));
 					continue;
 				}
+
 				var pageElement = getElementMix(info.pageElement, doc);
 				if (!pageElement) {
-					if (info.url.length > 12 || (typeof(info.url) !='string'))
-						debug('pageElement not found.', info.pageElement);
+					if (info.url.length > 12 || (typeof(info.url) != 'string'))
+						debug('  pageElement not found.', info.pageElement);
 					continue;
 				}
 				return [index, info, nextLink, pageElement];
-			} catch(e) {
+			} catch (e) {
 				log('error at launchAutoPager() : ' + e);
 			}
 		}
 		return [-1, null];
 	},
-	getInfoFromURL: function (url, list) {
-		if (!url) url = content.location.href;
-		var list = ns.MY_SITEINFO.concat(ns.SITEINFO_CN, ns.SITEINFO);
-		return list.filter(function(info, index, array) {
+	getInfoFromURL : function (url, list) {
+        if (!url) url = content.location.href;
+        var list = ns.MY_SITEINFO.concat(ns.SITEINFO_CN, ns.SITEINFO);
+		return list.filter(function (info, index, array) {
 			try {
 				var exp = info.url_regexp || Object.defineProperty(info, "url_regexp", {
-						enumerable: false,
-						value: toRE(info.url)
+						enumerable : false,
+						value : toRE(info.url)
 					}).url_regexp;
 				return exp.test(url);
-			} catch(e){ }
+			} catch (e) {}
 		});
 	},
-    isInfoEqual: function (info1, info2){
-        // info1.type == info2.type
-        if(info1.url == info2.url && info1.nextLink == info2.nextLink && info1.pageElement == info2.pageElement)
-            return true;
-    },
-    immediatelyStart: function(){
-        var pages = $("uAutoPagerize-immedialate-pages").value;
+	isInfoEqual : function (info1, info2) {
+		// info1.type == info2.type
+		if (info1.url == info2.url && info1.nextLink == info2.nextLink && info1.pageElement == info2.pageElement)
+			return true;
 
-        ns.loadImmediately(pages);
-    },
-    loadImmediately: function(num){
-        num = num || ns.IMMEDIATELY_PAGER_NUM;
-
-        if(content.ap){
-            content.ap.loadImmediately(num);
-        }
-    },
-    showForcePageMenu: function(event){
-        var menu = $("uAutoPagerize-force_nextpage");
-        var reset = function(){
-            menu.setAttribute("disabled", "true");
-            menu.setAttribute("checked", "false");
-        };
-
-        if(!content.location.href.startsWith("http"))
-            return reset();
-
-        var localStorage = content.localStorage;
-        if(!localStorage)
-            return reset();
-
-        var isForce = localStorage.ap_force_nextpage;
-        if(isForce){
-            menu.setAttribute("disabled", "false");
-            menu.setAttribute("checked", "true");
-        }else{
-            if(content.ap)
-                return reset();
-
-            // 从未检测过
-            if(typeof content.ap_nextLink == 'undefined'){
-                content.ap_nextLink = autoGetLink(content.document);
-            }
-
-            if(content.ap_nextLink){
-                menu.setAttribute("disabled", "false");
-            }else{
-                reset();
-            }
-        }
-    },
-    forcePageToggle: function(event){
-        var forcePageMenu = $("uAutoPagerize-force_nextpage");
-
-        if(content.localStorage.ap_force_nextpage){
-            content.localStorage.removeItem("ap_force_nextpage");
-            forcePageMenu.setAttribute("checked", "false");
-
-            if(content.ap)
-                content.ap.destroy(true);
-        }else{
-            content.localStorage.ap_force_nextpage = true;
-            forcePageMenu.setAttribute("checked", "true");
-
-            if(content.ap)
-                content.ap.destroy(true);
-            if (content.AutoPagerize && content.AutoPagerize.launchAutoPager)
-                content.AutoPagerize.launchAutoPager([FORCE_SITEINFO]);
-        }
-    },
-    search: function(){
-        var keyword = encodeURIComponent(content.location.href);
-        gBrowser.selectedTab = gBrowser.addTab('http://ap.teesoft.info/?exp=0&url=' + keyword);
-    },
-	gototop: function(win){
-        if(!win) win = content.window;
-		win.scroll(win.scrollX, 0);
+		return false;
 	},
+	immediatelyStart : function () {
+		var pages = $("uAutoPagerize-immedialate-pages").value;
+
+		pages = pages || ns.IMMEDIATELY_PAGER_NUM;
+
+		if (content.ap) {
+			content.ap.loadImmediately(pages);
+		}
+	},
+	showForcePageMenu : function (event) {
+		var menu = $("uAutoPagerize-force_nextpage");
+		var reset = function () {
+			menu.setAttribute("disabled", "true");
+			menu.setAttribute("checked", "false");
+		};
+
+		if (!content.location.href.startsWith("http"))
+			return reset();
+
+		var localStorage = content.localStorage;
+		if (!localStorage)
+			return reset();
+
+		var isForce = localStorage.ap_force_nextpage;
+		if (isForce) {
+			menu.setAttribute("disabled", "false");
+			menu.setAttribute("checked", "true");
+		} else {
+			if (content.ap)
+				return reset();
+
+			// 从未检测过
+			if (typeof content.ap_nextLink == 'undefined') {
+				content.ap_nextLink = autoGetLink(content.document);
+			}
+
+			if (content.ap_nextLink) {
+				menu.setAttribute("disabled", "false");
+				menu.setAttribute("checked", "false");
+			} else {
+				reset();
+			}
+		}
+	},
+	forcePageToggle : function (event) {
+		var forcePageMenu = $("uAutoPagerize-force_nextpage");
+
+		if (content.localStorage.ap_force_nextpage) {
+			content.localStorage.removeItem("ap_force_nextpage");
+			forcePageMenu.setAttribute("checked", "false");
+
+			if (content.ap)
+				content.ap.destroy(true);
+		} else {
+			content.localStorage.ap_force_nextpage = true;
+			forcePageMenu.setAttribute("checked", "true");
+
+			if (content.ap)
+				content.ap.destroy(true);
+			if (content.AutoPagerize && content.AutoPagerize.launchAutoPager)
+				content.AutoPagerize.launchAutoPager([FORCE_SITEINFO]);
+		}
+	},
+	search : function () {
+		var keyword = encodeURIComponent(content.location.href);
+		gBrowser.selectedTab = gBrowser.addTab('http://ap.teesoft.info/?exp=0&url=' + keyword);
+	},
+	gototop : function (win) {
+        if(!win) win = content;
+        win.scroll(win.scrollX, 0);
+    },
     gotobottom: function(win){
-        if(!win) win = content.window;
+        if(!win) win = content;
         var doc = win.document;
         win.scroll(win.scrollX, Math.max(doc.documentElement.scrollHeight, doc.body.scrollHeight));
     },
-	gotoprev: function(win){
-        if(!win) win = content.window;
+	gotoprev : function (win, sepSelector, insertPoint) {
+		if (!win)
+			win = content;
+		if (!sepSelector)
+			sepSelector = ".autopagerize_link";
+		if (!insertPoint && win.ap)
+			insertPoint = win.ap.insertPoint.parentNode;
 
-        var [prevSepTop,] = this.getSeparators(win);
-		win.scroll(win.scrollY, prevSepTop + win.scrollY - 6);
+		var[preDS, , divS] = ns.getSeparators(win, sepSelector, insertPoint);
+		divS = divS || 0;
+		if (SEPARATOR_RELATIVELY) {
+			preDS = win.scrollY - (divS - preDS);
+		} else {
+			preDS += win.scrollY - 6;
+		}
+
+		win.scroll(win.scrollY, preDS);
 	},
-	gotonext: function(win){
-        if(!win) win = content.window;
+	gotonext : function (win, sepSelector, insertPoint) {
+		if (!win)
+			win = content;
+		if (!sepSelector)
+			sepSelector = ".autopagerize_link";
+		if (!insertPoint && win.ap)
+			insertPoint = win.ap.insertPoint.parentNode;
 
-        var [, nextSepTop] = this.getSeparators(win);
-        win.scroll(win.scrollY, nextSepTop + win.scrollY - 6);
+		var[, nextDS, divS] = this.getSeparators(win, sepSelector, insertPoint);
+		divS = divS || 0;
+		if (SEPARATOR_RELATIVELY) {
+			nextDS = win.scrollY + (-divS + nextDS);
+		} else {
+			nextDS += win.scrollY - 6;
+		}
+
+		win.scroll(win.scrollY, nextDS);
 	},
-    // 找到窗口视野内前后2个分隔条的位置
-    getSeparators: function(win){
-        var doc = win.document;
+	// 找到窗口视野内前后2个分隔条的位置
+	getSeparators : function (win, separatorSelector, insertPoint) {
+		var doc = win.document;
+		if (!insertPoint)
+			insertPoint = doc.documentElement;
 
-        var separators = doc.querySelectorAll(".autopagerize_link");
-        var viewportHeight = win.innerHeight;
-        var documentHeight = Math.max(doc.documentElement.scrollHeight, doc.body.scrollHeight);
+		var separators = doc.querySelectorAll(separatorSelector);
+		var insData = insertPoint.getBoundingClientRect();
 
-        // 得到一个数组
-        var heightArr = [- win.scrollY];
-        for (var i = 0; i < separators.length; i++) {
-            heightArr.push(separators[i].getBoundingClientRect().top);
-        }
-        heightArr.push(documentHeight);
+		// 得到一个数组
+		var heightArr = [insData.top];
+		for (var i = 0; i < separators.length; i++) {
+			heightArr.push(separators[i].getBoundingClientRect().top);
+		}
+		heightArr.push(insData.bottom);
 
-        // 查找
-        for (var i = 0; i < heightArr.length; i++) {
-            if(heightArr[i] > viewportHeight){
-                if(heightArr[i - 1] > 0){
-                    return [heightArr[i - 2], heightArr[i]];
-                }else{
-                    return [heightArr[i - 1], heightArr[i]];
-                }
-            }
-        }
+		// 查找
+		var viewportHeight = win.innerHeight;
+		for (var i = 0; i < heightArr.length; i++) {
+			if (heightArr[i] > viewportHeight) {
+				if (heightArr[i - 1] > 0) {
+					return [heightArr[i - 2], heightArr[i], heightArr[i - 1]];
+				} else {
+					return [heightArr[i - 1], heightArr[i]];
+				}
+			}
+		}
 
-        return [];
-    },
-    autoGetLink: autoGetLink
-};
-
-//分页导航的4个图标:
-var sep_icons={
-    top: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAFeElEQVRIia2SfTAUeBjHf0Y1N6QmnepuulMqlxjvL2u9HFteViHvjs45bxPJrti8lV2JU0pUwpVBiWtJaL1Op0hSs15WtrwUSfJulUovl+/9gZlTrqm7npnPH88fv8/3N/N9CPmMoR/d4kE5oL73c9588hgcpFrXjeS95ouKoLxPwfeLyo1iDbb/2Z8x2fA2F81vL6J25A+oRGza+UXk1Cgd69L+5Mlrr5JQ8fQoKp4moO71aVQNZ0wphsl7/y85JVLL8lLfkZdFL0KRJ2Lh4ng4CsYjkC8KQ8VkLCoGU98pha33/E9y7X3a27i9sS/OPfPC6WE3ZIx6IHPUC1mj3sgc9Ub6yK/gPmeAN5D0TpWz3uvz5JHqNtndUS/Thncgqc8BJ/udkDzoBLbAGqx6M5wanN6PD9ghS+SNgr7DU/oJcn6fJFeJULJJbQ+aPPbYFnHd2xDfY40jj6wR122JI/VMxNUywLlnhqOPrXCk1xpxPRZIGdiBzK5QGJ/47uMh6wJX2xxu8Z6Mvk/H/rYt4HSYIqrTFOx2Exyo9UH7VBm6cRVR13wQ2mKE6C5TRD8wBbtjMw532+DYXS+Ypq30mVf+jd9y27CbdpOhQhr2NOmDdccQIUJDBLfog13jgYa/zuPa81RUP/8dd1GI/VUeYDToIuyeIUKFBghu1QO7zQJRjbZTFmek5nYiE7DU0b9m85s9AgP483XAbNZFoEAXfrc1EVr1M6rfJKH4GQeXxw+CNx4D3tMYNLw7i7ArbvC5qYbgO3oIuqMPRrMuwlrNsfc2HbY5S/yMOGQBkWZ85bk5XeGhS7HOgMMljR6nIo0e50L1h85FmsMhV9xQ+oqNrDFvZI/5I1fEQK6IiVwREzmi3bj+9gRCKt3gzqOOeVZq93hV6vR6VWr37q4yHnTlyffbXZAMJNK7yRK5uGVLleNXSs5CLImEP/cnYcFECJIHHZE65Iq0YVekDe/A6ZFp0oZdkTLihMpXcdhT4tIt6UdWGSXLLJ5lC3fZUqt0IvVhGZZEIrDQg5c9wkD8Iysc67VDYp8dkp7YIal/Lol9tkjos0bhMzbCr7jcWsMiqz5+o5ZEwofrwEvp80BUpwli7lsgtssCv3VbIK5nfmK76YjpMkP6E38wy81vKXPIivnlpkTSIcu4JP6BM0JaDREupCGijYb97TREdtDA7pyGc3+a2T2yg4Z9bcaIaDNCYtcv8C2j3lA7TmQ++PmWFOWSiFY6dvG1ENBIAbOZgkABBcEtVLBaqWAJqdh7dy4sIRXBrboIbNEBU6ANpoACjnA73HkKN+izIQvdiDYlcd31YL4ZfOuo2HVTD7tv6SGAbzDFaKDCl6+GXY1q8G9Ug3/TXPwaVcFo0kWowASsRhqCGmgIbjBBZJMDXC/LtVidW2BCVodI0LVPfM82SF4faJAsN82pDTv1T65uCaijwbNeCe51G+FRr/AB7vXy2FVvCHrmOsHWLFk/q2zZoO05skH2eWuDbC9+y3bMl7L8174VDy0q8rlqAJcaeTheXQvn6veRg2O1LDyrKVBLkMj7+PXMM2oJUsVu5RSYl8nAtFQa5mXLQS//eoblMC+XxuZSKThVqEAnSfqTAsS4Qs4i7lDyYkKImPmZDTz7YhVo5otDnUugmU+gNYPmDCpcgq1FP8A+S6OAgIgJBgSSfD5/ISFE7AM7V8hZVDLEWVU2Fq9cOXH8Rxeu1nn7Qg2o5ohD+TyBSg6B6j/JJdiUTUAvUMDOS2YZDyZr9Tsnbit2TtTIzIS8F8B1EOcOcRYXDYavLB6PXmtyZs0hm3wtKGYugEIGwaZMAsVMAsWsGTIJ5DMITC5shM1ZpYNNorI1gomKFfwnlyW4XK74rPdvf1R3JFxfQEwAAAAASUVORK5CYII='
-    ,bottom: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAFlElEQVRIia2SezQUWBzHb0d19pA6KdXuaVdUNnE88hqTsUx5jELeFmut16nxGBPyKjNWrCKhhJVjlLQNCY08TlvpIXUGjUwpZZKEPEulx+a7fzBnj7LtttvnnM8f94/7uff87iVkCj6fLyN8fFpWNFa7pGWkeoX9EY3d5ifWQLWAQJ1HoF44JY9gLY9ArYBAnTcb9qX6MD+8Yk/laIJyRX/MUv4T7jw+31mGvI9QKJzTMXZRsWPsuvr98cvGW09ZFjDK1LC2iED7OIF28V9qFRNoHiPQLpaBU7ku3Pn6x+rGMr+rHk7RrHrCXcYXc+d+cAAhZJZQKJwj6hPJEZBZToW6ZZsqvoUWn0CvdFL9KfVKCdbxCfRKZeBUqQWrw6sFhJBZ/CdZ86bis2Y6YBqGGQolrrVa2HBGHlY1CmDULAKjZjEYNYthVb0IFmcUYFWtCK8aCnTS5Cv/Mfg+OmmyJb71FLjUK8GtXgVu9crTdDmvDPeLqgg4T4P6nrkVfxtyKZW3cTj5FcepRDlsS7FSmG2RUtimQiUmg7dSFNhoAu9GVfg0qn2gd8Ma+DZqIKSBDuODy1tph1ZvpWWpsCddxTY48A1neaQsg9genW3ucVqlNa7FGeFN5ghroiOimY4okTlYLUZgNmsjqEVnus06CGzWwTahDlhNVIQIaRPB19Yj8Op6bGugIlxoCUr6yktzvIgBIYQQRiZR9BaoXeGKtyBUREGoyADsVkOEtxkhQkzFjlvTjRBTEdFGRXgrFWwRBaE3KAhppiBQqI/YNgY2ZmtWERsiO33mmURxWzX1Snrnj4htN8XOdjPE3aWD0zEp996k0nXcXTp23aEjtp2OGDEdkW0mSLnvBudCsypiQeRmfA9NLlkSWmN1Lf9xEBI7LZEkYSC5y3pGf5FYI6nTGon3rBHfYY7sHh8E8J0FH9z8fVZEkGUxZ92vlT/jIK3HDuk9DsjodZzuY0ek9zhif7cjUh7aomiQBXa5z8xx23wiv5G/cIFpluI8qXJMsmx7lbuk7lUysgddkTvggbxBT+QNeiJ3wBO5Ax7IeeKBrH4XlI1FIoj/vZjYEFnNlKVyUlWSFy5QCCbzieMJObaHQLU3+JxZv1+dQbdfnWG3b51Bl7eAOhxZ54VLbw+geCQYx0dCp2ShaDgIhcP+OPOKg8izXnCr0BtwK1/3wLVCt8v5lG6Xe6Vh34Z8tQcKrC98iSmXzHYons/ccZ2B6DYrsG4YIeymMcJvrkfAVR1En/VC07sjEDxNhGA0EadHd6PyGRf1bzIQde4HMK/rgS0yQugNIwQJDbFdREPQxQ1vFEMWuEwblfVheb/4ZocJTrs1wtvWI0pMQ/RtE7CajLDrnA9uoRz1z3/Fhec5aPrjGDgXfRDeaoxIsQkibppge4sxosR0RF91HP+Suchhxge2yF0asP+WH/ZK7MG5uwEJ9y2Q0GmBqFZTxF8IgATncWeiGj9fDgDnjjniOyzAvWuBXe0bkXCPgb2t/uMr2cvtP/qLzA58zeR1RiG7zxPJXdZI7bbDvke24N62RPJlFlIbQ5EssUHqQzukdNkhWbIZ+x85IOdO2LhWrMbH41KM01SYZT17JwpH/JHZ54isflcc6ndFRKMlOCI7ZPW74mCvKzJ6nJE74IkiSfxLg7h1/y4uRZu7yk/Ql/GO/5yF/MGfwBvyR+GQP3hDfigY8kHegBeOPvMDvzvphcFOg82fFJeiEb3Kt7Y/513teBJKR6JRNhqLk6MxKBmJQMWLKJzqSX1JidO3+U9xKerRqv7nBgomGl7nofZpGmqf7sOFVxk405s1To03tPtfcSlasWu3Xh78DTfenkTT2+P4vbdg3DSJtuWzxKVo7lTbJhypQMNgyWvaburnufn7UH5et4Oxb6PPp+z5E0+0dyQjouurAAAAAElFTkSuQmCC'
-    ,up: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAEw0lEQVRIia3SezSUaRwH8MclsZTUljrRhSkmjAxGLjMVjt1KzaJWF21na6bbSTK6GNoaaR1r3O0Ui8Vqs8ZGI+UQti21Z5liSKm2y6B1iUViKvLdP2Y6m9rdg/qd8/njfZ/zfr/nPb+HkDHMihj3rUuO0Q+O5ZtRD/O4E/taZ94LabcEtMPUXR80fFkE87Py1gzF9cEc1A6eQWXnT7AOXbTzg4Q7hTmwL7SKFJeeJ6CkNwYlvbG49iIVFU8yhi34C7nvFb7kiP3qgsfRA5L+YOR1H8CZnhDk94Ti524+ShQRKGlPfmXJp2wbVzjjMMNT3BzRn/2Ug9QnXyCjaysyuzjI6uIis4uL9M4vIX4WgKK2hFeLBRTO2MKP0L1OPQwbSHnih4TH6/Btqy9E7UonVETtvkhs80FWNxf5j6OGXWJNdo8q3DrU0iv5TpAirsUbkQ89IZSzEd3ERnQzGzEta0aIbmYjUr4SJ9v8kPkgGMuTjP+/xDTQyCuqjqsI/2MFvmp0h+CuB8LueSD8vgfCH3jg+FvCHyjPjt51Q9RDL8Td4sAjxXD7v4bP2j3Nm/+bjyK4wRW8GhccqGfhUAMLwbdY4N9mIaSRhZA7LISqhNxRvuPfZiG4gYn9N51xtHElwm54D69MmzRyJ9P36n++57LbS56MiT1SB+yrdUSgzBH+N+yxt4aBfTKlwLqR9skYCJDZY3+9M4LqXRBQ6wj+zU9xsGoFvE9P3r1MQDTJ1ADtbW7p1EcbCx3a1hXYyn0ltvL1Z+mPNhbZdwRWuWJ7FQ3cKivsqLbCDulI3GoLBEiXYlfZ0q5tpQw5p9ShmVPKaPavWN6+qWhhq0+ubiCZ6k8mm0Qa6NOEhrqvEUKItVD/0M5fmdhylYpNVyjYXLkAfleVNqtsqjQB94ojHJM+3k8IIctE0/Vecxcb6K9JJ5P+c+E2MTo8ThkTPuVz4XVxNrzLjeFd8YZyI7DLZmFLBQOO8QZ7RnVF3xxroQ7Pt8gGzhIdOBVowUUyEUyJNpiF2mAWToSLRAuMAgJ2kTmWJEzxH0eBLm+txAb0XE0sziGwyf0HXcUyh2DV2fco8Mm3Ay1bExY/EFhlE1idIqC9wTyL4JM8Khhx08ZeYBWpw2OL7UBN14RZGoF5uhL1e5V0AtM0AtfTZmDEjeMPLCJ1eKt+pINyUhMmJwhMTxJQkgkoKSrJBHNFBE4ZJrCN1ht7AeUY4blnWmNuoiaMEgiMEwnmvGVWPIFNsjEWfK0+9gLb2ClBdqJ5MIqdgNmxBEZx6jCKU4dxvAaM4zUwJ15D+SzUGfUO1MQNAi1xh0iPEKIWVOIbbMifCZNj8wepEWaDFpHUIctvLIdoUbShxVHWg3ShzUs7od3gDP4MCMr28giImqxNpiuVSicQQtTeSRc3CLTOdwhmFv8lpJX2JS4t7kzyy5ULI87IE1Lym5JyJPIT54qavrt4vimttLglU1LcnH3qYstpUXlLbrist2z9fUWly72+Kot7fZenq0reKhCv0xB3CPQk7SGGhT3h8y/0RS+q6I13+OVZovul/uTVVwdS114byNzw+0D2huqBXJ/rz/M8ZYpC15v9hfZ1T8+Z13QXz5P1lcyQ/nnuI7FYrPE692+Bd9V75+hCGQAAAABJRU5ErkJggg=='
-    ,down: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAE1klEQVRIia3SaVBTVwAF4MviVlBUquiYuGBQIpBIgCBIIiKT1jUVtLhgnWpilTEi4ELAajCWoQQIS6NQoUChUkIFgygDArUKdopxCYhrXQJYFqGICFFRT3+QjIU6tlDPzPfnzbxz3tz7CNFHqVSaqP84+YGmq2TilY7i6TVPTtpe6y500egKvS49y1t2sSfX97eerLUXejLWVvUcXXW2O3n5z08TvSs6411Pd8XMKXwsnaFqCbNStkrMlcrVJmRg1Gr1sDtd5ybc6aq2u6ur9NB0lq0pb8yVnmk8pihuyMoubsxQnapPLS2q//aMSnv4ZH59Us5xbUJKrlYWWdyW5F/albig+E8Z41SrZJKyTjL8HwOEECO1Wj1M06wxIyBGkrIdwRPFE+Esc+5lyRxfzI1m9jKiGS/tv7Z/aRdFf0mPnN1rfXBGr5V4EkJK/EIJIUbKVoW5vtzobQP9wpZbiqiyUaDIjTE13gRUPYrcGBS5MabEEVDihsFZMR1OcWND/rVwYGy+MhY5JlMxOZ5gamJ/1EQCSgLBtERTeGcwQTtIggc94BRjLnJPt8Y0BQEtmYCWopdMMPMIgfVhAtoRUyz9gQW7qFGDH2DLx4q8js3GzFQCehoB/bs+tml9ZqcS0NNMwVc6w2FoA5aij/LosM0kYGS/4ZBN4JBFYPc9ASPLFL75zmDKzAY/MC9hrGjpCVvY5xCwcvs4/s3cHAJWrilWqRyHPsAvsgW7gMBDNRycwhHgFI4ERzUSHqoRcC8YjvmqUfArcgRTNoQjcosft31jBRv8ssnwKafAp4L6RjkVK89MgW/5NAjKOHCMfcfAijQy2ls5zsJTMcHcgBBC3JI+3CU874b1ldbYUGWDDVU28NfbUGmD9edp2FhFx9ZfOGDKLPYSQghDZmVmYB01zmK8iIwhvrlmQeuLZjWJKha2CErZDYJS14bNpWzttrIF7YHqBRBetMMXaof+LjpAWO2ALdUMBFV7YV2RS+uaE6wHfion7eoCJ+26QtfmRWn0B+MDR24mnhJi6nNsTMCe6sUQX/sYgVfdEFLrgV218xGoccFODRtBNf3t1PTZcYUN0WUXBGncsPOqG7arXRGs4WD7uUUvJuyw+LTfUS1JHS2IuOzz+sDNJdh1bT5C6zgQ3+Ai7CYXYbe4CNcLu9X3THyDi9DrXOyt42J3LRfBVzwQWucF8a++uskBlj5vvQ9eitUW+XUBou+vxIHbiyC9y4P0Hg+HBpDe40F6l4eIOzxIbvPw5U1vSH9fjOgaoW5mEGXlO/+ehUnUgIx7oTjS7I8o7RLENPAR27iin5gGPmLq+ZBp+Yi6vwzyRh8k3wrRMcPt311uiEecdUD+w+jXmR1CJDb7QtHih8N6Cr1vmvyQ8HA1Uh75I/t+RA97P+u/lRsyV0ITFDUnvFI+DURa2+fIaBcis12IjHYB0ts34eijz5D1RABlQ2Q3ex972aDKDbEX0zaXtCS/KtFF4qcOMfIfh+P44zDkdeyGqjsUBQ9jeubtd1k+pHJD7MSzhBWP0l9feH4UJZ1xKOmMxdlnCTjdpNC5R7jy/1e5IczwOVsr237E1d7juNSbg/KmdJ1nJOeT91JuCGMffZu6Q4ULbXnPOYfc38+XD8y8g6w9i2O9Nw3mnb8AgDHVe54drcYAAAAASUVORK5CYII='
+		return [];
+	},
+	autoGetLink : autoGetLink,
+	getElementMix : getElementMix,
 };
 
 // Class
@@ -853,22 +888,22 @@ function AutoPager(doc, info, nextLink) {
 	this.init.apply(this, arguments);
 };
 AutoPager.prototype = {
-	req: null,
-	pageNum: 1,
-	_state: 'disable',
-	remove: [],
+	req : null,
+	pageNum : 1,
+	_state : 'disable',
+	remove : [],
 	lastPageURL : '',
-	get state() this._state,
+	get state()this._state,
 	set state(state) {
 		if (this.state !== "terminated" && this.state !== "error") {
 			if (state === "disable") {
 				this.abort();
-			}
-			else if (state === "terminated" && state === "error") {
+            }
+            else if (state === "terminated" && state === "error") {
 				this.removeListener();
 			}
 			if (this.state !== "loading" && state !== "loading" || this.isFrame) {
-				Array.forEach(this.doc.getElementsByClassName('autopagerize_icon'), function(e) {
+				Array.forEach(this.doc.getElementsByClassName('autopagerize_icon'), function (e) {
 					e.style.backgroundColor = COLOR[state];
 					e.setAttribute("state", state);
 				});
@@ -878,7 +913,7 @@ AutoPager.prototype = {
 		}
 		return state;
 	},
-	init: function(doc, info, nextLink) {
+	init : function (doc, info, nextLink) {
 		this.doc = doc;
 		this.win = doc.defaultView;
 		this.documentElement = doc.documentElement;
@@ -886,21 +921,21 @@ AutoPager.prototype = {
 		this.isXML = this.doc.contentType.indexOf('xml') > 0;
 		this.isFrame = this.win.top != this.win;
 		this.info = {};
-		for (let [key, val] in Iterator(info)) {
+		for (let[key, val]in Iterator(info)) {
 			this.info[key] = val;
 		}
 
-        this.iframeMode = USE_IFRAME && this.info.useiframe;
+		this.iframeMode = USE_IFRAME && this.info.useiframe;
 
 		var url = this.getNextURL(nextLink ? nextLink : this.doc);
-		if ( !url ) {
-			debug("getNextURL returns null.", this.info.nextLink);
+		if (!url) {
+			debug("getNextURL returns null", this.info.nextLink);
 			return;
 		}
 
 		this.setInsertPoint();
 		if (!this.insertPoint) {
-			debug("insertPoint not found.", this.info.pageElement);
+			debug("insertPoint not found", this.info.pageElement);
 			return;
 		}
 		this.setRemainHeight();
@@ -917,19 +952,19 @@ AutoPager.prototype = {
 		this.win.addEventListener("pagehide", this, false);
 		this.addListener();
 
-		if (!ns.SCROLL_ONLY)
-			this.scroll();
+		if (!ns.SCROLL_ONLY) {
+			this.loadedOnce = this.scroll();
+		}
 
 		if (this.getScrollHeight() == this.win.innerHeight)
 			this.body.style.minHeight = (this.win.innerHeight + 1) + 'px';
 
-        if(PRE_NEXT_PAGE){
-            this.win.setTimeout(function(self){
-                self.doRequest();
-            }, 199, this);
-        }
+		// 第一次提前预读
+		if (PRE_REQUEST_NEXT_PAGE && PRE_REQUEST_NEXT_PAGE_FIRST_TIME) {
+			this.doRequest();
+		}
 	},
-	destroy: function(isRemoveAddPage) {
+	destroy : function (isRemoveAddPage) {
 		this.state = "disable";
 		this.win.removeEventListener("pagehide", this, false);
 		this.removeListener();
@@ -948,76 +983,84 @@ AutoPager.prototype = {
 			if (style)
 				style.parentNode.removeChild(style);
 
-            if(this.separatorStyle)
-                this.separatorStyle.parentNode.removeChild(this.separatorStyle);
+			if (this.separatorStyle)
+				this.separatorStyle.parentNode.removeChild(this.separatorStyle);
 		}
 
-        this.tmpDoc = null;
+		this.tmpDoc = null;
 
 		this.win.ap = null;
 		updateIcon();
 	},
-	addListener: function() {
+	addListener : function () {
 		this.win.addEventListener("scroll", this, false);
 		this.doc.addEventListener("AutoPagerizeToggleRequest", this, false);
 		this.doc.addEventListener("AutoPagerizeEnableRequest", this, false);
 		this.doc.addEventListener("AutoPagerizeDisableRequest", this, false);
 	},
-	removeListener: function() {
+	removeListener : function () {
 		this.win.removeEventListener("scroll", this, false);
 		this.doc.removeEventListener("AutoPagerizeToggleRequest", this, false);
 		this.doc.removeEventListener("AutoPagerizeEnableRequest", this, false);
 		this.doc.removeEventListener("AutoPagerizeDisableRequest", this, false);
 	},
-	handleEvent: function(event) {
-		switch(event.type) {
-			case "scroll":
-				if (this.timer)
-					this.win.clearTimeout(this.timer);
-				this.timer = this.win.setTimeout(function(){
+	handleEvent : function (event) {
+		switch (event.type) {
+		case "scroll":
+			if (this.timer)
+				this.win.clearTimeout(this.timer);
+			this.timer = this.win.setTimeout(function () {
 					this.scroll();
 					this.timer = null;
-				}.bind(this), 100);
-				break;
-			case "click":
+                }.bind(this), 100);
+                break;
+		case "click":
+			if (event.target.getAttribute('class') == 'autopagerize_icon')
 				this.stateToggle();
-				break;
-			case "pagehide":
-				this.abort();
-				break;
-			case "AutoPagerizeToggleRequest":
-				this.stateToggle();
-				break;
-			case "AutoPagerizeEnableRequest":
-				this.state = "enable";
-				break;
-			case "AutoPagerizeDisableRequest":
-				this.state = "disable";
-				break;
+			else if (event.target.getAttribute('class') == 'autopagerize_next_page_icon')
+				uAutoPagerize.gotonext();
+			else if (event.target.getAttribute('class') == 'autopagerize_prev_page_icon')
+				uAutoPagerize.gotoprev();
+			break;
+		case "pagehide":
+			this.abort();
+			break;
+		case "AutoPagerizeToggleRequest":
+			this.stateToggle();
+			break;
+		case "AutoPagerizeEnableRequest":
+			this.state = "enable";
+			break;
+		case "AutoPagerizeDisableRequest":
+			this.state = "disable";
+			break;
 		}
 	},
-	stateToggle: function() {
-		this.state = this.state == 'disable'? 'enable' : 'disable';
+	stateToggle : function () {
+		this.state = this.state == 'disable' ? 'enable' : 'disable';
 	},
-    tmpDoc: null,
-	scroll : function(){
-		if (this.state !== 'enable' || !ns.AUTO_START) return;
+	tmpDoc : null,
+	scroll : function () {
+        if (this.state !== 'enable' || !ns.AUTO_START) return;
 		var remain = this.getScrollHeight() - this.win.innerHeight - this.win.scrollY;
 		if (remain < this.remainHeight || this.ipagesMode) {
-            if(this.tmpDoc){
-                this.loaded(this.tmpDoc);
-            }else{
-                this.doRequest();
-            }
+			if (this.tmpDoc) {
+				this.loaded(this.tmpDoc);
+			} else {
+				this.doRequest();
+			}
+			return true;
+		} else {
+			return false;
 		}
 	},
-	abort: function() {
+	abort : function () {
 		if (this.req) {
 			this.req.abort();
 			this.req = null;
 		}
 	},
-	isThridParty: function(aHost, bHost) {
+	isThridParty : function (aHost, bHost) {
 		try {
 			var aTLD = Services.eTLD.getBaseDomainFromHost(aHost);
 			var bTLD = Services.eTLD.getBaseDomainFromHost(bHost);
@@ -1026,42 +1069,44 @@ AutoPager.prototype = {
 			return aHost === bHost;
 		}
 	},
-	doRequest: function(){
-		if (this.state !== 'enable' || !this.requestURL || this.loadedURLs[this.requestURL]) return;
+	doRequest : function () {
+        if (this.state !== 'enable' || !this.requestURL || this.loadedURLs[this.requestURL]) return;
 
-        if(this.iframeMode){
-            this.iframeRequest();
-        }else{
-            this.httpRequest();
-        }
+		if (this.iframeMode) {
+			this.win.setTimeout(function (self) { // 延时点
+				self.iframeRequest.apply(self, null);
+			}, 199, this);
+		} else {
+			this.httpRequest();
+		}
 	},
-    httpRequest: function(){
-        debug("Http Request: " + this.requestURL);
+	httpRequest : function () {
+		debug("Http Request: " + this.requestURL);
 
         var [reqScheme,,reqHost] = this.requestURL.split('/');
         var {protocol, host} = this.win.location;
         if (reqScheme !== protocol) {
-            log(protocol + " が " + reqScheme + "にリクエストを送ることはできません");
-            this.state = "error";
-            return;
-        }
-        var isSameDomain = reqHost == host;
-        if (!isSameDomain && !this.isThridParty(host, reqHost)) {
-            log(host + " が " + reqHost + "にリクエストを送ることはできません");
-            this.state = 'error';
-            return;
-        }
-        this.lastRequestURL = this.requestURL;
-        var self = this;
-        var headers = {};
-        if (isSameDomain)
-            headers.Cookie = getCookie(reqHost, reqScheme === 'https');
-        var opt = {
-            method: 'get',
-            get url() self.requestURL,
-            set url(url) self.requestURL = url,
-            headers: headers,
-            overrideMimeType: 'text/html; charset=' + this.doc.characterSet,
+			log(protocol + " が " + reqScheme + "にリクエストを送ることはできません");
+			this.state = "error";
+			return;
+		}
+		var isSameDomain = reqHost == host;
+		if (!isSameDomain && !this.isThridParty(host, reqHost)) {
+			log(host + " が " + reqHost + "にリクエストを送ることはできません");
+			this.state = 'error';
+			return;
+		}
+		this.lastRequestURL = this.requestURL;
+		var self = this;
+		var headers = {};
+		if (isSameDomain)
+			headers.Cookie = getCookie(reqHost, reqScheme === 'https');
+		var opt = {
+			method : 'get',
+			get url()self.requestURL,
+			set url(url)self.requestURL = url,
+			headers : headers,
+			overrideMimeType : 'text/html; charset=' + this.doc.characterSet,
             onerror: function(){ self.state = 'error'; self.req = null; },
             onload: function(res) { self.requestLoad.apply(self, [res]); self.req = null; }
         };
@@ -1070,34 +1115,293 @@ AutoPager.prototype = {
         }
         this.win.requestFilters.forEach(function(i) { i(opt) }, this);
         this.state = 'loading';
-        this.req = GM_xmlhttpRequest(opt);
-    },
-	iframeRequest: function(){
+		this.req = GM_xmlhttpRequest(opt);
+	},
+	iframeRequest : function () {
 		var self = this;
 
-        debug("iframe Request: " + this.requestURL);
-        this.state = 'loading';
+		debug("iframe Request: " + this.requestURL);
+		this.state = 'loading';
 
-        let browser = gBrowser.getBrowserForDocument(this.doc);
-        if(!browser.uAutoPagerizeIframe){
-            let iframe = createIframe();
-            browser.uAutoPagerizeIframe = iframe;
+		var browser = gBrowser.getBrowserForDocument(this.doc);
+		var iframe = browser.uAutoPagerizeIframe;
+		if (!iframe) {
+			iframe = browser.uAutoPagerizeIframe = createIframe();
+		}
 
-            let onload = function(event){
-                self.iframeLoad.apply(self, [event]);
-            };
-            if(this.info.iloaded){
-                iframe.addEventListener("load", onload , true);
-            }else{
-                iframe.addEventListener("DOMContentLoaded", onload, true);
-            }
+		//两个地址都要改?mdc是按照第二个写的,真正有效的也是第二个,第一个是以后用来比较用的
+		iframe.src = this.requestURL;
+		iframe.contentDocument.location.href = this.requestURL;
+
+		function onload(event) {
+			iframe.removeEventListener(event.type, onload, true);
+			var doc = event.originalTarget;
+			self.iframeLoad.apply(self, [doc]);
+		}
+
+		if (this.info.iloaded) {
+			iframe.addEventListener("load", onload, true);
+		} else {
+			iframe.addEventListener("DOMContentLoaded", onload, true);
+		}
+	},
+	requestLoad : function (res) {
+		var before = res.URI.host;
+		var after = res.originalURI.host;
+		if (before != after && !this.isThridParty(before, after)) {
+			log(before + " 被重新定向到 " + after);
+			this.state = 'error';
+			return;
+		}
+		delete res.URI;
+		delete res.originalURI;
+
+        this.win.responseFilters.forEach(function(i) { i(res, this.requestURL) }, this);
+        if (res.finalUrl)
+            this.requestURL = res.finalUrl;
+
+        var htmlDoc;
+        if (this.isXML) {
+            var str = res.responseText;
+            htmlDoc = new DOMParser().parseFromString(str, "application/xml");
+        } else {
+            htmlDoc = res.response;
         }
+        this.win.documentFilters.forEach(function(i) { i(htmlDoc, this.requestURL, this.info) }, this);
 
-        //两个地址都要改?mdc是按照第二个写的,真正有效的也是第二个,第一个是以后用来比较用的
-        browser.uAutoPagerizeIframe.src = this.requestURL;
-        browser.uAutoPagerizeIframe.contentDocument.location.href = this.requestURL;
+		this.beforeLoaded(htmlDoc);
+	},
+	iframeLoad : function (doc) {
+		if (doc.location.href == "about:blank" || doc.defaultView.frameElement)
+			return;
+
+		let win = doc.defaultView;
+		win.scroll(win.scrollX, 99999); //滚动到底部,针对,某些使用滚动事件加载图片的网站.
+
+		this.beforeLoaded(doc);
+	},
+	beforeLoaded : function (doc) {
+		if (this.loadedOnce) {
+			this.loadedOnce = false;
+			this.loaded(doc);
+		} else if (PRE_REQUEST_NEXT_PAGE && !this.ipagesMode) {
+			this.tmpDoc = doc;
+			this.scroll();
+			this.state = 'enable';
+		} else {
+			this.loaded(doc);
+		}
+	},
+	loaded : function (htmlDoc) {
+		// debug("开始载入下一页内容");
+		try {
+			var page = getElementsMix(this.info.pageElement, htmlDoc);
+			var url = this.getNextURL(htmlDoc);
+        }
+        catch(e){
+            debug("  Get page and url Error: ", e);
+            this.state = 'error';
+			return;
+		}
+
+		var innerHTMLstr = '<a class="autopagerize_link" href="' + this.requestURL.replace(/&/g, '&amp;') + '" >';
+
+		if (!page || page.length < 1) {
+			debug('  pageElement not found.', this.info.pageElement, htmlDoc.documentElement.innerHTML);
+			this.state = 'terminated';
+			return;
+		}
+
+		if (this.loadedURLs[this.requestURL]) {
+			debug('page is already loaded.', this.requestURL, this.info.nextLink);
+			this.state = 'terminated';
+			return;
+		}
+
+		ralativePageStr = this.getRalativePageStr(this.lastPageURL, this.requestURL, url);
+
+		var pagerCurStr;
+		if (MAX_PAGER_NUM != -1) {
+			pagerCurStr = ' 自动翻页：第 <font color="red"> ' + (++this.pageNum) + '/' + MAX_PAGER_NUM + '</font> 页 ';
+		} else {
+			pagerCurStr = ' 自动翻页：第 <font color="red"> ' + (++this.pageNum) + '</font> 页 ';
+		}
+
+		if (MAX_PAGER_NUM != -1 && this.pageNum > MAX_PAGER_NUM) {
+			debug('page number > :', this.pageNum, MAX_PAGER_NUM);
+			var fragment = this.doc.createDocumentFragment();
+			var lastHTMLstr = innerHTMLstr + ' 达到设置的最大自动翻页数，点击进入下一页' + ralativePageStr + ' </a> ';
+			this.addSeparator(fragment, page, lastHTMLstr);
+			this.state = 'terminated';
+			return;
+		}
+
+		if (typeof this.win.ap == 'undefined') {
+			this.win.ap = { state: 'enabled' };
+			updateIcon();
+		}
+		this.loadedURLs[this.requestURL] = true;
+		if (this.insertPoint.compareDocumentPosition(this.doc) >= 32) {
+			this.setInsertPoint();
+			if (!this.insertPoint) {
+				debug("insertPoint not found.", this.info.pageElement);
+				this.state = 'terminated';
+				return;
+			}
+			this.setRemainHeight();
+		}
+
+		var nextHTMLstr = innerHTMLstr + pagerCurStr + ralativePageStr + ' </a> ';
+		page = this.addPage(htmlDoc, page, nextHTMLstr);
+		this.win.filters.forEach(function(i) { i(page) });
+
+		this.lastPageURL = this.requestURL;
+		this.requestURL = url;
+		this.state = 'enable';
+		// if (!ns.SCROLL_ONLY)
+		//  this.scroll();
+		if (!url) {
+			debug('  nextLink not found.', this.info.nextLink);
+			this.state = 'terminated';
+		}
+
+		var ev = this.doc.createEvent('Event');
+		ev.initEvent('GM_AutoPagerizeNextPageLoaded', true, false);
+		this.doc.dispatchEvent(ev);
+
+		this.afterLoaded();
+	},
+	afterLoaded : function () {
+		this.tmpDoc = null;
+
+		// 立即加载n页
+		this.ipaged += 1;
+		if (this.ipagesMode && this.ipaged >= this.ipagesNumber) {
+			this.ipagesMode = false;
+		}
+
+		if (this.ipagesMode || PRE_REQUEST_NEXT_PAGE) {
+			this.doRequest();
+		}
+	},
+	addSeparator : function (fragment, page, innerHtmlStr) {
+		//收集所有图片
+		var imgs;
+		if (this.iframeMode && !this.ipagesMode) {
+			imgs = getElementsMix('css;img[src]', fragment);
+		}
+
+		if (this.info.wrap) {
+			var div = this.doc.createElement("div");
+			div.setAttribute("class", "uAutoPagerize-wrapper");
+			div.appendChild(fragment);
+			fragment = this.doc.createDocumentFragment();
+			fragment.appendChild(div);
+		}
+
+		var hr = this.doc.createElement('hr');
+		hr.setAttribute('class', 'autopagerize_page_separator');
+		hr.setAttribute('style', 'clear: both;');
+		var p = this.doc.createElement('p');
+		p.setAttribute('class', 'autopagerize_page_info');
+
+		p.setAttribute('style', 'clear: both;text-align: center;');
+		p.innerHTML = innerHtmlStr;
+
+		if (!this.isFrame) {
+			var o = p.insertBefore(this.doc.createElement('div'), p.firstChild);
+			o.setAttribute('class', 'autopagerize_icon');
+			o.setAttribute('state', 'enable');
+			o.style.cssText = [
+				'background: ', COLOR['enable'], ';',
+				'width: 10px;',
+				'height: 10px;',
+				'padding: 0px;',
+				'margin-right: 3px;',
+				'display: inline-block;',
+				'vertical-align: middle;'
+			].join('');
+			o.addEventListener('click', this, false);
+
+			var o = p.insertBefore(this.doc.createElement('img'), p.firstChild);
+			o.setAttribute('class', 'autopagerize_prev_page_icon');
+			o.setAttribute('src', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACyUlEQVQ4jYVTW0iTYRh+dzIItIbdRLcF3RRkl1006KKgbsLCA5g4dB7QhaXDDuK/RCrIJBVNI7PMlp+nNp3TqW0oOMnfJdUim6lz89/c9k/nqbXNvV24LHXSA9/Nx/s8PN/7PB9ABCAiFwDg46Iy1eozHQUAoJDiRprdBR3q+AAAw+4XKVqWwp4FucHMjsYgIue/In/I7xfqz2tcxQFToDI4tlaOxFaoIoTwws44EcmEEB4AwPTq+Eklc2fR+LMc9StFGyPr8sCQtwy19qpaAACChAe4Q4SiNq1NuieOkDnZjGHlAfZ7ZcFBbxFql2Q4vCoP9rtLsI+pvvuv0/DGNtXM7GhM03TehyFvGWo8BUE1W4A9ngLUeAqxm80P6ZflQZVDhl1zj9PCi+Zt2/izSUn7gFuOKudNX8fCdVQ5b6DSmb912hy5ocFFue+tRbreZXlybisZiqK4FV+SidqRhYMeKfa7pdjrLsAWJhfb7HnYas/DdocU9R4Zdjsz0eC9hRVfL+DQfMsZAAAwmUxRY07V7TFXKzXu6izR2h7qe53Z+Mqas6Gw5mDTXDa223NRY5f6RhzkvpHtLDY4FaUzK5/ORkxj3N0pa51PxIbZLH+jRYINsxmhN7YMfGfNXto7f52OzzDMfpqmBaMLinsK6xV8OpXhr/8hxtqptNBLSxp2WMRe27ItlqZpgclkitpVKpqmBQAABnsz9dpyGasnxf4acypWfb8Wej6dimQ21cuybEx4fHeZEJEPADBqby6u/3YxUGpMXi+bSAiUGhP95Z8TAgpzCutyuaL3egXHbDbvAwDOsKvxUd+vBFSvZaJ6PR27VtNxwJ+OyiUxMgxziBDCC7d2mwsBAAgBIDbmGC/pVJKwMi7+YHVcvLAuLl5Yd/qqsOb4pehyADgBAIcB4ECY89cBAHAlEsm2y50QiUR8kUjEB4CtT/Ubc4ml0CYFAdAAAAAASUVORK5CYII=');
+			o.style.cssText = [
+				'width: 14px;',
+				'height: 14px;',
+				'padding: 0px;',
+				'margin-right: 12px;',
+				'display: inline-block;',
+				'vertical-align: middle;'
+			].join('');
+			o.addEventListener('click', this, false);
+
+			o = p.insertBefore(this.doc.createElement('img'), p.firstChild);
+			o.setAttribute('class', 'autopagerize_next_page_icon');
+			o.setAttribute('src', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAC6klEQVQ4jYWS2U8TYRTFL6VlMcTG+IT+ASTGmPjuQxOI4cmEaF0CxLJYsdCwuGAQZFi0gCIaEjEFjAsQnMoiIERZRgERZNgZKjMSUkoLxba0pWChtdeHThAF403uy5d7fjnfyQHgh0TSHwDA5GIjph0dKnaNKpx1UqpZZ8/dWSel0q5RuRzHBQIAIKIf/D000iIAgBlHV9HwhgrHXPdx1HUPR1wlOLlZigP2MrRareL/AmbXem4PbuS7+9dvbfSt57j71rO2Bn/kuofs5RaLxbLfB4A9ALQPMLX6jvhoz8Ju282tblsWdq1mensd2dhrKbH/E0BRlNBoNO6jaVo0bmnNf796Fdst17Y6LNfxrTnD22nLxC5znt3hWDxI07SIYZgAAgnBLhcAAGPm9hut35OxaSV9q9mUho3Lqd42cwa2L2fZ9hQwDBMwYGrI6V+qy/tsepXbslDwoc2cgvWGZI/GmIL1hmRvsykVW5ZSXX3GOhW90pT9abm2QOecCAcAAIIgBMUTUg1piMFGUyK+Xr6EDUtKfK67jC8XkvDFQhLW6K9g64oS6wwXsdOagkXTEqSM5AnYGciD6fPNjQYlVs8nudRz8Vg9n4hV/FbPJ2LFtzhvw2Ka6wl7YUMzdyccAMCXAw+grZ3i0snTXzR6OVZwcZ7HnAwr+C1nY701uiSPmpViHZsXx3fBfzsHgvAlOm4eOFw2GTVfq0vAUm2059HXGCzVRqN6Lt5TyZ3BWpbI9okp4a4wSdJX5SlT77GS8Ujb0zkZ5k+c/Vk2E+NWs1FYyaRX7LjbXaSdtp5piZPFUxGbajbWXcWdw9zhiDcEQQj2rDA/fgRBCEiS9Nfr9cEAAA+HUhMqF09h4WjkSJ+u7QDDMAEcxwWSJOnPf/kPmAgAxABwCADCAOA4ABwJlQizg0MhCgCO8m9h/I2Y1/x2AAACiUQilEqlATKZLEihUIQAACiVykCFQhEik8mC5HK5SCKRCAFg28Evyey8dGvbji0AAAAASUVORK5CYII=');
+			o.style.cssText = [
+				'width: 14px;',
+				'height: 14px;',
+				'padding: 0px;',
+				'margin-right: 12px;',
+				'display: inline-block;',
+				'vertical-align: middle;'
+			].join('');
+			o.addEventListener('click', this, false);
+
+		}
+
+		var insertParent = this.insertPoint.parentNode;
+		if (page[0] && page[0].tagName == 'TR') {
+			var colNodes = getElementsMix('child::tr[1]/child::*[self::td or self::th]', insertParent);
+			var colums = 0;
+			for (var i = 0, l = colNodes.length; i < l; i++) {
+				var col = colNodes[i].getAttribute('colspan');
+				colums += parseInt(col, 10) || 1;
+			}
+			var td = this.doc.createElement('td');
+			td.appendChild(hr);
+			td.appendChild(p);
+			var tr = this.doc.createElement('tr');
+			td.setAttribute('colspan', colums);
+			tr.appendChild(td);
+			fragment.insertBefore(tr, fragment.firstChild);
+		} else {
+			fragment.insertBefore(p, fragment.firstChild);
+			fragment.insertBefore(hr, fragment.firstChild);
+		}
+
+		insertParent.insertBefore(fragment, this.insertPoint);
+        if (imgs) {   // 非opera,在iframeDOM取出数据时需要重载图片.
+            this.win.setTimeout(function() {
+                var _imgs = imgs;
+                var i, ii, img;
+                for (i = 0, ii = _imgs.length; i < ii; i++) {
+                    img = _imgs[i];
+                    var src = img.src;
+                    img.src = src;
+                };
+            }, 99);
+        }
+		return page.map(function (pe) {
+			var ev = this.doc.createEvent('MutationEvent');
+			ev.initMutationEvent('AutoPagerize_DOMNodeInserted', true, false,
+				insertParent, null,
+				this.requestURL, null, null);
+			pe.dispatchEvent(ev);
+			return pe;
+		}, this);
+	},
+
+	addPage : function (htmlDoc, page, innerHTMLstr) {
+		var fragment = this.doc.createDocumentFragment();
+		page.forEach(function(i) { fragment.appendChild(i); });
+		this.win.fragmentFilters.forEach(function(i) { i(fragment, htmlDoc, page) }, this);
+
+		return this.addSeparator(fragment, page, innerHTMLstr);
 	},
 	getRalativePageStr : function (lastUrl, CurrentUrl, NextUrl) {
+
 		let getRalativePageNumArray = function (lasturl, url) {
 			if (!lasturl || !url) {
 				return [0, 0];
@@ -1151,10 +1455,10 @@ AutoPager.prototype = {
 		if (realPageSiteMatch) { //如果匹配就显示实际网页信息
 			if (ralativePageNumarray[1] - ralativePageNumarray[0] > 1) //一般是搜索引擎的第xx - xx项……
 			{
-				var ralativePageStr = ' [ 实际网页：  第 <font color="red">' + ralativePageNumarray[0] + ' - ' + ralativePageNumarray[1] + '</font> 项 ]';
+				var ralativePageStr = ' [ 实际：第 <font color="red">' + ralativePageNumarray[0] + ' - ' + ralativePageNumarray[1] + '</font> 项 ]';
 			} else if ((ralativePageNumarray[1] - ralativePageNumarray[0]) == 1) //一般的翻页数，差值应该是1
 			{
-				var ralativePageStr = ' [ 实际网页：  第 <font color="red">' + ralativePageNumarray[0] + '</font> 页 ]';
+				var ralativePageStr = ' [ 实际：第 <font color="red">' + ralativePageNumarray[0] + '</font> 页 ]';
 			} else if ((ralativePageNumarray[0] == 0 && ralativePageNumarray[1]) == 0) //找不到的话……
 			{
 				var ralativePageStr = ' [ 实际网页结束 ]';
@@ -1164,333 +1468,22 @@ AutoPager.prototype = {
 		}
 		return ralativePageStr;
 	},
-	requestLoad : function(res){
-		var before = res.URI.host;
-		var after  = res.originalURI.host;
-		if (before != after && !this.isThridParty(before, after)) {
-			log(before + " 被重新定向到 " + after);
-			this.state = 'error';
-			return;
-		}
-		delete res.URI;
-		delete res.originalURI;
-
-		this.win.responseFilters.forEach(function(i) { i(res, this.requestURL) }, this);
-		if (res.finalUrl)
-			this.requestURL = res.finalUrl;
-
-		var htmlDoc;
-		if (this.isXML) {
-            var str = res.responseText;
-			htmlDoc = new DOMParser().parseFromString(str, "application/xml");
-		} else {
-            htmlDoc = res.response;
-		}
-		this.win.documentFilters.forEach(function(i) { i(htmlDoc, this.requestURL, this.info) }, this);
-
-        this.beforeLoaded(htmlDoc);
-	},
-    iframeLoad: function (event) {
-        let doc = event.originalTarget;
-        if (doc.location.href == "about:blank" || doc.defaultView.frameElement)
-            return;
-
-        this.beforeLoaded(doc);
-    },
-    ipagesMode: false,
-    ipaged: 0,
-    ipagesNumber: 0,
-    loadImmediately: function(num){
-        num = parseInt(num, 10);
+	ipagesMode : false,
+	ipaged : 0,
+	ipagesNumber : 0,
+	loadImmediately : function (num) {
+		num = parseInt(num, 10);
         if(num <= 0) return;
 
-        debug("准备立即载入" + num + "页");
+		debug("准备立即载入" + num + "页");
 
-        this.ipagesMode = true;
-        this.ipaged = 0;
-        this.ipagesNumber = num;
+		this.ipagesMode = true;
+		this.ipaged = 0;
+		this.ipagesNumber = num;
 
-        this.scroll();
-    },
-    beforeLoaded: function(doc){
-        if(PRE_NEXT_PAGE && !this.ipagesMode){
-            this.tmpDoc = doc;
-            this.scroll();
-            this.state = 'enable';
-        }else{
-            this.loaded(doc);
-        }
-    },
-	loaded: function(htmlDoc){
-		try {
-			var page = getElementsMix(this.info.pageElement, htmlDoc);
-			var url = this.getNextURL(htmlDoc);
-		}
-		catch(e){
-			debug("Get page and url Error: ", e);
-			this.state = 'error';
-			return;
-		}
-
-		var innerHTMLstr = '<a class="autopagerize_link" href="' + this.requestURL.replace(/&/g, '&amp;') + '" >';
-
-		if (!page || page.length < 1 ) {
-			debug('pageElement not found.', "requestLoad ", this.info.pageElement, htmlDoc.documentElement.innerHTML);
-			this.state = 'terminated';
-			return;
-		}
-
-		if (this.loadedURLs[this.requestURL]) {
-			debug('page is already loaded.', this.requestURL, this.info.nextLink);
-			this.state = 'terminated';
-			return;
-		}
-
-		ralativePageStr = this.getRalativePageStr(this.lastPageURL, this.requestURL, url);
-
-		var pagerCurStr;
-		if (MAX_PAGER_NUM != -1) {
-			pagerCurStr = ' 自动翻页：第 <font color="red"> ' + (++this.pageNum) + '/' + MAX_PAGER_NUM + '</font> 页 ';
-		} else {
-			pagerCurStr = ' 自动翻页：第 <font color="red"> ' + (++this.pageNum) + '</font> 页 ';
-		}
-
-		if (MAX_PAGER_NUM != -1 && this.pageNum > MAX_PAGER_NUM) {
-			debug('page number > :', this.pageNum, MAX_PAGER_NUM);
-			var fragment = this.doc.createDocumentFragment();
-			var lastHTMLstr = innerHTMLstr + ' 达到设置的最大自动翻页数，点击进入下一页' + ralativePageStr + ' </a> ';
-			this.addSeparator(fragment, page, lastHTMLstr);
-			this.state = 'terminated';
-			return;
-		}
-
-		if (typeof this.win.ap == 'undefined') {
-			this.win.ap = { state: 'enabled' };
-			updateIcon();
-		}
-		this.loadedURLs[this.requestURL] = true;
-		if (this.insertPoint.compareDocumentPosition(this.doc) >= 32) {
-			this.setInsertPoint();
-			if (!this.insertPoint) {
-				debug("insertPoint not found.", this.info.pageElement);
-				this.state = 'terminated';
-				return;
-			}
-			this.setRemainHeight();
-		}
-
-		var nextHTMLstr = innerHTMLstr + pagerCurStr + ralativePageStr + ' </a> ';
-		page = this.addPage(htmlDoc, page, nextHTMLstr);
-		this.win.filters.forEach(function(i) { i(page) });
-
-		this.lastPageURL = this.requestURL;
-		this.requestURL = url;
-		this.state = 'enable';
-		// if (!ns.SCROLL_ONLY)
-		// 	this.scroll();
-		if (!url) {
-			debug('nextLink not found. requestLoad(). ', this.info.nextLink);
-			this.state = 'terminated';
-		}
-
-        var ev = this.doc.createEvent('Event');
-        ev.initEvent('GM_AutoPagerizeNextPageLoaded', true, false);
-        this.doc.dispatchEvent(ev);
-
-        this.afterLoaded();
+		this.scroll();
 	},
-    afterLoaded: function(){
-        this.tmpDoc = null;
-
-        // 立即加载n页
-        this.ipaged += 1;
-        if(this.ipagesMode && this.ipaged >= this.ipagesNumber){
-            this.ipagesMode = false;
-        }
-
-        if(this.ipagesMode || PRE_NEXT_PAGE){
-            if(this.iframeMode){
-                this.win.setTimeout(function(self){  // 延时点
-                    self.doRequest.apply(self, null);
-                }, 199, this);
-            }else{
-                this.doRequest();
-            }
-        }
-	},
-	addSeparator : function (fragment, page, innerHtmlStr) {
-		if (this.info.wrap) {
-			var div = this.doc.createElement("div");
-			div.setAttribute("class", "uAutoPagerize-wrapper");
-			div.appendChild(fragment);
-			fragment = this.doc.createDocumentFragment();
-			fragment.appendChild(div);
-		}
-
-        // 添加分割条样式
-        if(!this.separatorStyle){
-            this.separatorStyle = this.addStyle([
-                '.autopagerize_page_info {',
-                    'clear: both;',
-                    'line-height: 20px;',
-                    'background: none repeat scroll 0% 0% rgb(230, 230, 230);',
-                    'text-align: center;',
-                    'margin-top: 10px;',
-                    'margin-bottom: 10px;',
-                '}',
-                '.autopagerize_page_info img {',
-                    'width: 15px;',
-                    'height: 15px;',
-                    'padding: 0px;',
-                    'margin-right: 12px;',
-                    'display: inline-block;',
-                    'vertical-align: middle;',
-                '}',
-                '.autopagerize_link {',
-                    'padding-right: 10px;',
-                '}',
-                '.autopagerize_page_info input {',
-                    'text-align: center;',
-                '}',
-            ].join('\n'));
-        }
-
-		var p  = this.doc.createElement('div');
-		p.setAttribute('class', 'autopagerize_page_info');
-
-			p.setAttribute('style', 'clear: both;text-align: center;');
-			p.innerHTML = innerHtmlStr;
-
-		if (!this.isFrame) {
-            var o = p.insertBefore(this.doc.createElement('div'), p.firstChild);
-			o.setAttribute('class', 'autopagerize_icon');
-			o.setAttribute('state', 'enable');
-            o.setAttribute('title', "点击启用禁用");
-			o.style.cssText = [
-				'background: ', COLOR['enable'], ';'
-				,'width: .8em;'
-				,'height: .8em;'
-				,'padding: 0px;'
-				,'margin: 0px .4em 0px 0px;'
-				,'display: inline-block;'
-				,'vertical-align: middle;'
-			].join('');
-			o.addEventListener('click', this, false);
-
-            var self = this;
-
-            // 滚到顶部，2层结构
-            var a = p.appendChild($C("a", {
-                title: "滚到顶部",
-                href: "javascript:void(0)"
-            }, this.doc));
-            var i = a.appendChild($C("img", {
-                class: "ap-sp-gotop",
-                src: sep_icons.top,
-            }, this.doc));
-            i.addEventListener('click', function(){
-                ns.gototop(self.win);
-            }, false);
-
-            // 上滚一页
-            a = p.appendChild($C("a", {
-                title: "上滚一页",
-                href: "javascript:void(0)"
-            }, this.doc));
-            i = a.appendChild($C("img", {
-                class: "ap-sp-gopre",
-                src: sep_icons.up,
-            }, this.doc));
-            i.addEventListener('click', function(){
-                ns.gotoprev(self.win);
-            }, false);
-
-            // 下滚一页
-            a = p.appendChild($C("a", {
-                title: "下滚一页",
-                href: "javascript:void(0)"
-            }, this.doc));
-            i = a.appendChild($C("img", {
-                class: "ap-sp-gonext",
-                src: sep_icons.down,
-            }, this.doc));
-            i.addEventListener('click', function(){
-                ns.gotonext(self.win);
-            }, false);
-
-            // 滚到底部
-            a = p.appendChild($C("a", {
-                title: "滚到底部",
-                href: "javascript:void(0)"
-            }, this.doc));
-            i = a.appendChild($C("img", {
-                class: "ap-sp-gobottom",
-                src: sep_icons.bottom,
-            }, this.doc));
-            i.addEventListener('click', function(){
-                ns.gotobottom(self.win);
-            }, false);
-
-            // 立即加载
-            a = p.appendChild($C("a", {
-                title: "点击后立即翻指定的页数",
-                href: "javascript:void(0)"
-            }, this.doc));
-            a.innerHTML = "立即翻";
-            a.addEventListener("click", function(event){
-                var input = event.target.nextSibling;
-                var num = input.value
-                ns.IMMEDIATELY_PAGER_NUM = num;
-                self.loadImmediately(num);
-            }, false);
-            // 输入框
-            i = p.appendChild($C("input",{
-                type: "number",
-                title: "连续翻页的数量",
-                value: IMMEDIATELY_PAGER_NUM,
-                min: "1",
-                size: "1"
-            }, this.doc));
-            p.appendChild(this.doc.createTextNode("页"));
-		}
-
-		var insertParent = this.insertPoint.parentNode;
-		if (page[0] && page[0].tagName == 'TR') {
-			var colNodes = getElementsMix('child::tr[1]/child::*[self::td or self::th]', insertParent);
-			var colums = 0;
-			for (var i = 0, l = colNodes.length; i < l; i++) {
-				var col = colNodes[i].getAttribute('colspan');
-				colums += parseInt(col, 10) || 1;
-			}
-			var td = this.doc.createElement('td');
-			td.appendChild(p);
-			var tr = this.doc.createElement('tr');
-			td.setAttribute('colspan', colums);
-			tr.appendChild(td);
-			fragment.insertBefore(tr, fragment.firstChild);
-		} else {
-			fragment.insertBefore(p, fragment.firstChild);
-		}
-
-		insertParent.insertBefore(fragment, this.insertPoint);
-		return page.map(function (pe) {
-			var ev = this.doc.createEvent('MutationEvent');
-			ev.initMutationEvent('AutoPagerize_DOMNodeInserted', true, false,
-				insertParent, null,
-				this.requestURL, null, null);
-			pe.dispatchEvent(ev);
-			return pe;
-		}, this);
-	},
-
-	addPage : function (htmlDoc, page, innerHTMLstr) {
-		var fragment = this.doc.createDocumentFragment();
-		page.forEach(function(i) { fragment.appendChild(i); });
-		this.win.fragmentFilters.forEach(function(i) { i(fragment, htmlDoc, page) }, this);
-
-		return this.addSeparator(fragment, page, innerHTMLstr);
-	},
-	getNextURL : function(doc) {
+	getNextURL : function (doc) {
 		var nextLink = doc instanceof HTMLElement ?
 			doc :
 			getElementMix(this.info.nextLink, doc);
@@ -1506,21 +1499,21 @@ AutoPager.prototype = {
 			}
 			this.nextLink = nextLink;
 			return nextValue;
-		}else{
+		} else {
 			this.nextLink = null;
 		}
 	},
-	getPageElementsBottom : function() {
+	getPageElementsBottom : function () {
 		try {
 			var elem = getElementsMix(this.info.pageElement, this.doc).pop();
 			return getElementBottom(elem);
-		}
-		catch(e) {}
-	},
-	getScrollHeight: function() {
+        }
+        catch(e) {}
+    },
+    getScrollHeight: function() {
 		return Math.max(this.documentElement.scrollHeight, this.body.scrollHeight);
 	},
-	setInsertPoint: function() {
+	setInsertPoint : function () {
 		var insertPoint = null;
 		if (this.info.insertBefore) {
 			insertPoint = getElementMix(this.info.insertBefore, this.doc);
@@ -1535,41 +1528,43 @@ AutoPager.prototype = {
 		}
 		this.insertPoint = insertPoint;
 	},
-	setRemainHeight: function() {
-        // fix force next page
-        if(this.win.localStorage.ap_force_nextpage){
-            this.remainHeight = ns.BASE_REMAIN_HEIGHT;
-            return;
-        }
+	setRemainHeight : function () {
+		// fix force next page
+		if (this.win.localStorage.ap_force_nextpage) {
+			this.remainHeight = ns.BASE_REMAIN_HEIGHT;
+			return;
+		}
 
 		var scrollHeight = this.getScrollHeight();
 		var bottom = getElementPosition(this.insertPoint).top ||
 			this.getPageElementsBottom() || Math.round(scrollHeight * 0.8);
 		this.remainHeight = scrollHeight - bottom + ns.BASE_REMAIN_HEIGHT;
+
+		return this.remainHeight;
 	},
-	initIcon: function() {
+	initIcon : function () {
 		var div = this.doc.createElement("div");
 		div.setAttribute('id', 'autopagerize_icon');
 		div.setAttribute('class', 'autopagerize_icon');
 		div.setAttribute('state', this.state);
 		div.style.cssText = [
-			'font-size: 12px;'
-			,'position: fixed;'
-			,'z-index: 9999;'
-			,'top: 3px;'
-			,'right: 3px;'
-			,'width: 10px;'
-			,'height: 10px;'
-			,'border: 1px inset #999;'
-			,'padding: 0px;'
-			,'margin: 0px;'
-			,'color: #fff;'
-			,'background: ' + COLOR[this.state]
-		].join(" ");
-		this.icon = this.body.appendChild(div);
+            'font-size: 12px;'
+            ,'position: fixed;'
+            ,'z-index: 9999;'
+            ,'top: 3px;'
+            ,'right: 3px;'
+            ,'width: 10px;'
+            ,'height: 10px;'
+            ,'border: 1px inset #999;'
+            ,'padding: 0px;'
+            ,'margin: 0px;'
+            ,'color: #fff;'
+            ,'background: ' + COLOR[this.state]
+        ].join(" ");
+        this.icon = this.body.appendChild(div);
 		this.icon.addEventListener('click', this, false);
 	},
-	addStyle: function(css) {
+	addStyle : function (css) {
 		var heads = this.doc.getElementsByTagName('head');
 		if (heads.length > 0) {
 			var node = this.doc.createElement('style');
@@ -1580,75 +1575,75 @@ AutoPager.prototype = {
 	}
 };
 
-function updateIcon(){
-    var newState = "";
-    var tooltiptext = "";
-    var checkautomenu = $("uAutoPagerize-AUTOSTART");
+function updateIcon() {
+	var newState = "";
+	var tooltiptext = "";
+	var checkautomenu = $("uAutoPagerize-AUTOSTART");
 
-    if (ns.AUTO_START == false) {
-        newState = "off";
-        tooltiptext = "自动翻页已关闭";
-        checkautomenu.setAttribute("checked", false);
-    } else {
-        if (content.ap) {
-            newState = content.ap.state;
+	if (ns.AUTO_START == false) {
+		newState = "off";
+		tooltiptext = "自动翻页已关闭";
+		checkautomenu.setAttribute("checked", false);
+	} else {
+		if (content.ap) {
+			newState = content.ap.state;
             tooltiptext = content.ap.state;
             if (tooltiptext == "terminated"){ tooltiptext = "自动翻页已结束" };
             if (tooltiptext == "enable")    { tooltiptext = "自动翻页已启用" };
         } else {
-            newState = "disable";
-            tooltiptext = "此页面不支持自动翻页";
-        }
-        checkautomenu.setAttribute("checked", true);
-    }
-    ns.icon.setAttribute('state', newState);
-    ns.icon.setAttribute('tooltiptext', tooltiptext);
+			newState = "disable";
+			tooltiptext = "此页面不支持自动翻页";
+		}
+		checkautomenu.setAttribute("checked", true);
+	}
+	ns.icon.setAttribute('state', newState);
+	ns.icon.setAttribute('tooltiptext', tooltiptext);
 }
 
 function launchAutoPager_org(list, win) {
-    try {
-        var doc = win.document;
-        var locationHref = win.location.href;
-    } catch(e) {
-        return;
-    }
-    list.some(function(info, index, array) {
-        try {
-            var exp = new RegExp(info.url);
+	try {
+		var doc = win.document;
+		var locationHref = win.location.href;
+	} catch (e) {
+		return;
+	}
+	list.some(function (info, index, array) {
+		try {
+			var exp = new RegExp(info.url);
             if (win.ap) {
             } else if ( ! exp.test(locationHref) ) {
             } else if (!getElementMix(info.nextLink, doc)) {
                 // ignore microformats case.
-                if (!exp.test('http://a'))
-                    debug('nextLink not found. launchAutoPager_org(). ', info.nextLink);
-            } else if (!getElementMix(info.pageElement, doc)) {
-                if (!exp.test('http://a'))
-                    debug('pageElement not found.', info.pageElement);
-            } else {
-                win.ap = new AutoPager(doc, info);
-                return true;
-            }
-        } catch(e) {
-            log('error at launchAutoPager() : ' + e);
-        }
-    });
-    updateIcon();
+				if (!exp.test('http://a'))
+					debug('nextLink not found. launchAutoPager_org(). ', info.nextLink);
+			} else if (!getElementMix(info.pageElement, doc)) {
+				if (!exp.test('http://a'))
+					debug('pageElement not found.', info.pageElement);
+			} else {
+				win.ap = new AutoPager(doc, info);
+				return true;
+			}
+		} catch (e) {
+			log('error at launchAutoPager() : ' + e);
+		}
+	});
+	updateIcon();
 }
 
 // 获取更新 Super_preloader.db
-(function(){
+(function () {
 
 	ns.requestSITEINFO_CN = requestSITEINFO;
 
-	ns.resetSITEINFO_CN = function(){
+	ns.resetSITEINFO_CN = function () {
 		if (confirm('确定要重置 Super_preloader 及其它规则吗？'))
 			requestSITEINFO(SITEINFO_CN_IMPORT_URLS);
 	};
 
-	ns.loadSetting_cn = function(isAlert) {
-		var data = loadText(ns.file_cn);
-		if (!data) return false;
-		var sandbox = new Cu.Sandbox( new XPCNativeWrapper(window) );
+    ns.loadSetting_cn = function(isAlert) {
+        var data = loadText(ns.file_cn);
+        if (!data) return false;
+        var sandbox = new Cu.Sandbox( new XPCNativeWrapper(window) );
 		sandbox.SITEINFO = [];
 		sandbox.SITEINFO_TP = [];
 
@@ -1660,27 +1655,27 @@ function launchAutoPager_org(list, win) {
 
 		var list = [];
 		// 加上 MY_SITEINFO
-		for(var i = 0, l = SITEINFO_CN_IMPORT_URLS.length; i < l; i++){
+		for (var i = 0, l = SITEINFO_CN_IMPORT_URLS.length; i < l; i++) {
 			let mSiteInfo = sandbox["MY_SITEINFO_" + i];
-			if(mSiteInfo){
-                mSiteInfo.forEach(function(i){
-                    i.type = 'cn';
-                });
+			if (mSiteInfo) {
+				mSiteInfo.forEach(function (i) {
+					i.type = 'cn';
+				});
 				list = list.concat(mSiteInfo);
 			}
 		}
 
 		// 加上 Super_preloader
 		sandbox.SITEINFO = sandbox.SITEINFO.concat(sandbox.SITEINFO_TP);
-		for(let [index, info] in Iterator(sandbox.SITEINFO)){
+		for (let[index, info]in Iterator(sandbox.SITEINFO)) {
 			list.push({
-				url: info.url,
-				nextLink: info.nextLink,
-				pageElement: info.autopager.pageElement,
-				useiframe: info.autopager.useiframe,
-				name: info.siteName || '',
-				exampleUrl: info.siteExample || '',
-                type: "sp"
+				url : info.url,
+				nextLink : info.nextLink,
+				pageElement : info.autopager.pageElement,
+				useiframe : info.autopager.useiframe,
+				name : info.siteName || '',
+				exampleUrl : info.siteExample || '',
+				type : "sp"
 			});
 		}
 
@@ -1697,28 +1692,28 @@ function launchAutoPager_org(list, win) {
 	var finishCount = 0;
 	var dataStr = "";
 
-	function requestSITEINFO(){
+	function requestSITEINFO() {
 		finishCount = 0;
 		dataStr = "";
 		// debug(" request Super_preloader.db");
 		var xhrStates = {};
-		SITEINFO_CN_IMPORT_URLS.forEach(function(i) {
+		SITEINFO_CN_IMPORT_URLS.forEach(function (i) {
 			var opt = {
-				method: 'get',
-				url: i,
-				overrideMimeType: "text/plan; charset=utf-8;",
-				onload: function(res) {
+				method : 'get',
+				url : i,
+				overrideMimeType : "text/plan; charset=utf-8;",
+				onload : function (res) {
 					xhrStates[i] = 'loaded';
 					getCacheCallback(res, i);
 				},
-				onerror: function(res) {
+				onerror : function (res) {
 					xhrStates[i] = 'error';
 					getCacheErrorCallback(i);
 				},
 			}
 			xhrStates[i] = 'start';
 			GM_xmlhttpRequest(opt);
-			setTimeout(function() {
+			setTimeout(function () {
 				if (xhrStates[i] == 'start') {
 					getCacheErrorCallback(i);
 				}
@@ -1732,9 +1727,9 @@ function launchAutoPager_org(list, win) {
 		}
 
 		var matches = res.responseText.match(/(var SITEINFO=\[[\s\S]*\])[\s\S]*var SITEINFO_comp=/i);
-		if(!matches){
+		if (!matches) {
 			matches = res.responseText.match(/(var MY_SITEINFO\s*=\s*\[[\s\S]*\];)/i);
-			if(!matches){
+			if (!matches) {
 				log("no matches.");
 				return;
 			}
@@ -1742,14 +1737,14 @@ function launchAutoPager_org(list, win) {
 
 		dataStr += "\n\n" + matches[1].replace("MY_SITEINFO", "MY_SITEINFO_" + finishCount);
 		finishCount += 1;
-		if(finishCount >= SITEINFO_CN_IMPORT_URLS.length){
+		if (finishCount >= SITEINFO_CN_IMPORT_URLS.length) {
 			saveFile(DB_FILENAME_CN, dataStr);
 			ns.loadSetting_cn();
 			alerts("uAutoPagerize", "中文规则已经更新完毕");
 		}
 
 		log('getCacheCallback:' + url);
-    }
+	}
 
 	function getCacheErrorCallback(url) {
 		log('getCacheErrorCallback:' + url);
@@ -1758,77 +1753,77 @@ function launchAutoPager_org(list, win) {
 
 // 来自 NLF 的 Super_preloader
 var re_nextPageKey;
-function parseKWRE(){
-    function modifyPageKey(name,pageKey,pageKeyLength){
-        function strMTE(str){
-            return (str.replace(/\\/g, '\\\\')
-                        .replace(/\+/g, '\\+')
-                        .replace(/\./g, '\\.')
-                        .replace(/\?/g, '\\?')
-                        .replace(/\{/g, '\\{')
-                        .replace(/\}/g, '\\}')
-                        .replace(/\[/g, '\\[')
-                        .replace(/\]/g, '\\]')
-                        .replace(/\^/g, '\\^')
-                        .replace(/\$/g, '\\$')
-                        .replace(/\*/g, '\\*')
-                        .replace(/\(/g, '\\(')
-                        .replace(/\)/g, '\\)')
-                        .replace(/\|/g, '\\|')
-                        .replace(/\//g, '\\/'));
-        };
+function parseKWRE() {
+	function modifyPageKey(name, pageKey, pageKeyLength) {
+		function strMTE(str) {
+			return (str.replace(/\\/g, '\\\\')
+				.replace(/\+/g, '\\+')
+				.replace(/\./g, '\\.')
+				.replace(/\?/g, '\\?')
+				.replace(/\{/g, '\\{')
+				.replace(/\}/g, '\\}')
+				.replace(/\[/g, '\\[')
+				.replace(/\]/g, '\\]')
+				.replace(/\^/g, '\\^')
+				.replace(/\$/g, '\\$')
+				.replace(/\*/g, '\\*')
+				.replace(/\(/g, '\\(')
+				.replace(/\)/g, '\\)')
+				.replace(/\|/g, '\\|')
+				.replace(/\//g, '\\/'));
+		};
 
-        var pfwordl= autoMatch.pfwordl,
-            sfwordl = autoMatch.sfwordl;
+		var pfwordl = autoMatch.pfwordl,
+		sfwordl = autoMatch.sfwordl;
 
-        var RE_enable_a=pfwordl[name].enable,
-                    RE_maxPrefix=pfwordl[name].maxPrefix,
-                    RE_character_a=pfwordl[name].character,
-                    RE_enable_b=sfwordl[name].enable,
-                    RE_maxSubfix=sfwordl[name].maxSubfix,
-                    RE_character_b=sfwordl[name].character;
-        var plwords,
-                    slwords,
-                    rep;
+		var RE_enable_a = pfwordl[name].enable,
+		RE_maxPrefix = pfwordl[name].maxPrefix,
+		RE_character_a = pfwordl[name].character,
+		RE_enable_b = sfwordl[name].enable,
+		RE_maxSubfix = sfwordl[name].maxSubfix,
+		RE_character_b = sfwordl[name].character;
+		var plwords,
+		slwords,
+		rep;
 
-        plwords=RE_maxPrefix>0? ('['+(RE_enable_a? strMTE(RE_character_a.join('')) : '.')+']{0,'+RE_maxPrefix+'}') : '';
-        plwords='^\\s*' + plwords;
-        slwords=RE_maxSubfix>0? ('['+(RE_enable_b? strMTE(RE_character_b.join('')) : '.')+']{0,'+RE_maxSubfix+'}') : '';
-        slwords=slwords + '\\s*$';
-        rep = autoMatch.cases ? '' : 'i';
+		plwords = RE_maxPrefix > 0 ? ('[' + (RE_enable_a ? strMTE(RE_character_a.join('')) : '.') + ']{0,' + RE_maxPrefix + '}') : '';
+		plwords = '^\\s*' + plwords;
+		slwords = RE_maxSubfix > 0 ? ('[' + (RE_enable_b ? strMTE(RE_character_b.join('')) : '.') + ']{0,' + RE_maxSubfix + '}') : '';
+		slwords = slwords + '\\s*$';
+		rep = autoMatch.cases ? '' : 'i';
 
-        for(var i=0;i<pageKeyLength;i++){
-            pageKey[i]=new RegExp(plwords + strMTE(pageKey[i]) + slwords,rep);
-        }
-        return pageKey;
-    }
-    //转成正则.
-    return modifyPageKey('next', nextPageKey, nextPageKey.length);
+		for (var i = 0; i < pageKeyLength; i++) {
+			pageKey[i] = new RegExp(plwords + strMTE(pageKey[i]) + slwords, rep);
+		}
+		return pageKey;
+	}
+	//转成正则.
+	return modifyPageKey('next', nextPageKey, nextPageKey.length);
 }
 // doc 必须，后面2个可选
 function autoGetLink(doc, win, cplink) {
-    if (!re_nextPageKey)
-        re_nextPageKey = parseKWRE();
+	if (!re_nextPageKey)
+		re_nextPageKey = parseKWRE();
 
-    win = win || doc.defaultView;
+	win = win || doc.defaultView;
 
-    var startTime = new Date();
+	var startTime = new Date();
 
-    var _nextPageKey = re_nextPageKey;
-    var _nPKL = _nextPageKey.length;
-    var _getAllElementsByXpath = getElementsByXPath;
-    cplink = cplink || doc.URL || win.location.href;
-    var m = cplink.match(/https?:\/\/([^\/]+)/);
+	var _nextPageKey = re_nextPageKey;
+	var _nPKL = _nextPageKey.length;
+	var _getAllElementsByXpath = getElementsByXPath;
+	cplink = cplink || doc.URL || win.location.href;
+	var m = cplink.match(/https?:\/\/([^\/]+)/);
     if(!m) return;
-    var _domain_port = m[1]; //端口和域名,用来验证是否跨域.
-    var alllinks = doc.links;
-    var alllinksl = alllinks.length;
+	var _domain_port = m[1]; //端口和域名,用来验证是否跨域.
+	var alllinks = doc.links;
+	var alllinksl = alllinks.length;
 
-    var curLHref = cplink;
-    var _nextlink = null;
+	var curLHref = cplink;
+	var _nextlink;
 
-    var DCEnable = autoMatch.digitalCheck;
-    var DCRE = /^\s*\D{0,1}(\d+)\D{0,1}\s*$/;
+	var DCEnable = autoMatch.digitalCheck;
+	var DCRE = /^\s*\D{0,1}(\d+)\D{0,1}\s*$/;
 
     var i, a, ahref, atext, numtext;
     var aP, initSD, searchD = 1,
@@ -1836,17 +1831,17 @@ function autoGetLink(doc, win, cplink) {
     var nextS1, nextS2, nSNText, nextSS;
     var aimgs, j, jj, aimg_x, xbreak, k, keytext;
 
-    function finalCheck(a, type) {
-        var ahref = a.href;
+	function finalCheck(a, type) {
+		var ahref = a.href;
 
-        //3个条件:http协议链接,非跳到当前页面的链接,非跨域
-        if (/^https?:/i.test(ahref) && ahref.replace(/#.*$/, '') != curLHref && ahref.match(/https?:\/\/([^\/]+)/)[1] == _domain_port) {
-            debug((type == 'pre' ? '上一页' : '下一页') + '匹配到的关键字为:', atext);
-            return a; //返回对象A
-        }
-    }
+		//3个条件:http协议链接,非跳到当前页面的链接,非跨域
+		if (/^https?:/i.test(ahref) && ahref.replace(/#.*$/, '') != curLHref && ahref.match(/https?:\/\/([^\/]+)/)[1] == _domain_port) {
+			debug("[autoGetLink] " + (type == 'pre' ? '上一页' : '下一页') + '匹配到的关键字为:', atext);
+			return a; //返回对象A
+		}
+	}
 
-    debug('全文档链接数量:', alllinksl);
+	debug('[autoGetLink] 全文档链接数量：' + alllinksl);
 
     for (i = 0; i < alllinksl; i++) {
         if (_nextlink) break;
@@ -1859,60 +1854,60 @@ function autoGetLink(doc, win, cplink) {
                 if (numtext) { //是不是纯数字
                     //C.log(numtext);
                     numtext = numtext[1];
-                    aP = a;
-                    initSD = 0;
+					aP = a;
+					initSD = 0;
 
-                    if (!_nextlink) {
-                        preS1 = a.previousSibling;
-                        preS2 = a.previousElementSibling;
+					if (!_nextlink) {
+						preS1 = a.previousSibling;
+						preS2 = a.previousElementSibling;
+						while (!(preS1 || preS2) && initSD < searchD) {
+							aP = aP.parentNode;
+							if (aP) {
+								preS1 = aP.previousSibling;
+								preS2 = aP.previousElementSibling;
+							};
+							initSD++;
+						};
+						searchedD = initSD > 0 ? true : false;
 
-                        while (!(preS1 || preS2) && initSD < searchD) {
-                            aP = aP.parentNode;
-                            if (aP) {
-                                preS1 = aP.previousSibling;
-                                preS2 = aP.previousElementSibling;
-                            };
-                            initSD++;
-                        };
-                        searchedD = initSD > 0 ? true : false;
+						if (preS1 || preS2) {
+							pSNText = preS1 ? preS1.textContent.match(DCRE) : '';
+							if (pSNText) {
+								preSS = preS1;
+							} else {
+								pSNText = preS2 ? preS2.textContent.match(DCRE) : '';
+								preSS = preS2;
+							};
+							if (pSNText) {
+								pSNText = pSNText[1];
+								//C.log(pSNText)
+								if (Number(pSNText) == Number(numtext) - 1) {
+									nodeType = preSS.nodeType;
+									if (nodeType == 3 || (nodeType == 1 && (searchedD ? _getAllElementsByXpath('./descendant-or-self::a[@href]', preSS, doc).snapshotLength == 0 : (!preSS.hasAttribute('href') || preSS.href == curLHref)))) {
+										_nextlink = finalCheck(a, 'next');
+									}
+									continue;
+								}
+							}
+						}
+					}
 
-                        if (preS1 || preS2) {
-                            pSNText = preS1 ? preS1.textContent.match(DCRE) : '';
-                            if (pSNText) {
-                                preSS = preS1;
-                            } else {
-                                pSNText = preS2 ? preS2.textContent.match(DCRE) : '';
-                                preSS = preS2;
-                            };
-                            if (pSNText) {
-                                pSNText = pSNText[1];
-                                //C.log(pSNText)
-                                if (Number(pSNText) == Number(numtext) - 1) {
-                                    nodeType = preSS.nodeType;
-                                    if (nodeType == 3 || (nodeType == 1 && (searchedD ? _getAllElementsByXpath('./descendant-or-self::a[@href]', preSS, doc).snapshotLength == 0 : (!preSS.hasAttribute('href') || preSS.href == curLHref)))) {
-                                        _nextlink = finalCheck(a, 'next');
-                                    }
-                                    continue;
-                                }
-                            }
-                        }
-                    }
-
-                    continue;
-                };
-            }
-        } else {
-            atext = a.title;
-        }
-        if (!atext) {
-            aimgs = a.getElementsByTagName('img');
-            for (j = 0, jj = aimgs.length; j < jj; j++) {
-                aimg_x = aimgs[j];
-                atext = aimg_x.alt || aimg_x.title;
+					continue;
+				};
+			}
+		} else {
+			atext = a.title;
+		}
+		if (!atext) {
+			aimgs = a.getElementsByTagName('img');
+			for (j = 0, jj = aimgs.length; j < jj; j++) {
+				aimg_x = aimgs[j];
+				atext = aimg_x.alt || aimg_x.title;
                 if (atext) break;
             }
         }
         if (!atext) continue;
+
         if (!_nextlink) {
             xbreak = false;
             for (k = 0; k < _nPKL; k++) {
@@ -1926,14 +1921,14 @@ function autoGetLink(doc, win, cplink) {
         }
     }
 
-    debug('搜索链接数量:', i, '耗时:', new Date() - startTime, '毫秒')
+	debug('[autoGetLink] 搜索链接数量：' + i, '，耗时：' + (new Date() - startTime) + '毫秒');
 
-    return _nextlink;
+	return _nextlink || null;
 }
 // 地址栏递增
-function hrefInc(obj,doc,win){
-    var _cplink = doc.URL || win.location.href;
-    _cplink = _cplink.replace(/#.*$/,''); //url 去掉hash
+function hrefInc(obj, doc, win) {
+	var _cplink = doc.URL || win.location.href;
+	_cplink = _cplink.replace(/#.*$/, ''); //url 去掉hash
 
     function getHref(href){
         var mFails=obj.mFails;
@@ -1957,14 +1952,14 @@ function hrefInc(obj,doc,win){
                     array.push(mValue);
                 };
             };
-            var str=array.join('');
-        };
-        return str;
-    };
+			var str = array.join('');
+		};
+		return str;
+	};
 
-    var sa=obj.startAfter;
-    var saType=typeof sa;
-    var index;
+	var sa = obj.startAfter;
+	var saType = typeof sa;
+	var index;
 
     if(saType=='string'){
         index=_cplink.indexOf(sa);
@@ -1995,7 +1990,7 @@ function hrefInc(obj,doc,win){
     var nbStr=bStr.replace(/^(\d+)(.*)$/,function(a,b,c){
         b=Number(b)+obj.inc;
         if(b>=max || b<min)return a;
-        return b+c;
+			return b + c;
     });
     if(nbStr!==bStr){
         var ilresult;
@@ -2012,58 +2007,58 @@ function hrefInc(obj,doc,win){
 function toRE(obj) {
     if (obj instanceof RegExp) {
         return obj;
-    } else if (obj instanceof Array) {
-        return new RegExp(obj[0], obj[1]);
-    } else {
-        if (typeof(obj) == 'string' && obj.startsWith("wildc;")){
-            obj = wildcardToRegExpStr(obj.slice(6));
-        }
-        return new RegExp(obj);
-    };
+	} else if (obj instanceof Array) {
+		return new RegExp(obj[0], obj[1]);
+	} else {
+		if (typeof(obj) == 'string' && obj.startsWith("wildc;")) {
+			obj = wildcardToRegExpStr(obj.slice(6));
+		}
+		return new RegExp(obj);
+	}
 }
 
 function createIframe(id) {
-    let frame = document.createElement("iframe");
-    if (id)
-        frame.setAttribute("id", id);
-    frame.setAttribute("type", "content");
-    //iframe是没有history的
-    frame.setAttribute("collapsed", "true");
-    //frame.setAttribute('style', 'display: none;');
-    //不append就没有webnavigation
-    document.documentElement.appendChild(frame);
-    frame.webNavigation.allowAuth = false;  // 安全验证
-    frame.webNavigation.allowImages = false;
-    frame.webNavigation.allowJavascript = true;
-    frame.webNavigation.allowMetaRedirects = true;  //重定向之后的文档
-    frame.webNavigation.allowPlugins = false;
-    frame.webNavigation.allowSubframes = false;  //子窗口,frame,iframe
-    return frame;
+	let frame = document.createElement("iframe");
+	if (id)
+		frame.setAttribute("id", id);
+	frame.setAttribute("type", "content");
+	//iframe是没有history的
+	frame.setAttribute("collapsed", "true");
+	//frame.setAttribute('style', 'display: none;');
+	//不append就没有webnavigation
+	document.documentElement.appendChild(frame);
+	frame.webNavigation.allowAuth = false; // 安全验证
+	frame.webNavigation.allowImages = true;
+	frame.webNavigation.allowJavascript = true;
+	frame.webNavigation.allowMetaRedirects = true; //重定向之后的文档
+	frame.webNavigation.allowPlugins = false;
+	frame.webNavigation.allowSubframes = false; //子窗口,frame,iframe
+	return frame;
 }
 
 //-------- 来自 Super_preloader, 为了兼容 Super_preloader 数据库 -------------
 //获取单个元素,混合。
 function getElementMix(selector, doc, win){
-	var ret;
-	if(!selector) return ret;
-	win = win || content.window;
-	var type = typeof selector;
-	if(type == 'string'){
-		if(selector.search(/^css;/i) == 0){
-			ret = doc.querySelector(selector.slice(4));
-		}else if(selector.toLowerCase() == 'auto;'){
-			ret = autoGetLink(doc, win);
-			// debug("NextLink is auto. ", content.location.href);
-		}else{
-			ret= getFirstElementByXPath(selector, doc);
+    var ret;
+    if(!selector) return ret;
+    win = win || content.window;
+    var type = typeof selector;
+    if(type == 'string'){
+        if(selector.search(/^css;/i) == 0){
+            ret = doc.querySelector(selector.slice(4));
+        }else if(selector.toLowerCase() == 'auto;'){
+            ret = autoGetLink(doc, win);
+            // debug("NextLink is auto. ", content.location.href);
+        }else{
+            ret= getFirstElementByXPath(selector, doc);
 		}
-	}else if(type == 'function'){
-		ret=selector(doc, win, doc.URL);
-	}else if(type == 'undefined'){
+	} else if (type == 'function') {
+		ret = selector(doc, win, doc.URL);
+	} else if (type == 'undefined') {
 		ret = autoGetLink(doc, win);
-	}else{
-		var url = hrefInc(selector,doc,win);
-		if(url){
+	} else {
+		var url = hrefInc(selector, doc, win);
+		if (url) {
 			ret = doc.createElement('a');
 			ret.setAttribute('href', url);
 		}
@@ -2072,9 +2067,9 @@ function getElementMix(selector, doc, win){
 }
 
 function getElementsMix(selector, doc) {
-	if(selector.search(/^css;/i)==0){
+	if (selector.search(/^css;/i) == 0) {
 		return Array.prototype.slice.call(doc.querySelectorAll(selector.slice(4)));
-	}else{
+	} else {
 		return getElementsByXPath(selector, doc);
 	}
 }
@@ -2100,63 +2095,63 @@ function getXPathResult(xpath, node, resultType) {
 
 	try {
 		defaultNS = (node.nodeType == node.DOCUMENT_NODE) ?
-			node.documentElement.lookupNamespaceURI(null):
-			node.lookupNamespaceURI(null);
-	} catch(e) {}
+		node.documentElement.lookupNamespaceURI(null) :
+		node.lookupNamespaceURI(null);
+	} catch (e) {}
 
 	if (defaultNS) {
 		const defaultPrefix = '__default__';
-		try{
+		try {
 			xpath = addDefaultPrefix(xpath, defaultPrefix);
-		}catch(e){
+		} catch (e) {
 			log(xpath);
 		}
 
 		var defaultResolver = resolver;
 		resolver = function (prefix) {
 			return (prefix == defaultPrefix)
-				? defaultNS : defaultResolver.lookupNamespaceURI(prefix);
+			 ? defaultNS : defaultResolver.lookupNamespaceURI(prefix);
 		}
 	}
 	return doc.evaluate(xpath, node, resolver, resultType, null);
 }
 
 function addDefaultPrefix(xpath, prefix) {
-	const tokenPattern = /([A-Za-z_\u00c0-\ufffd][\w\-.\u00b7-\ufffd]*|\*)\s*(::?|\()?|(".*?"|'.*?'|\d+(?:\.\d*)?|\.(?:\.|\d+)?|[\)\]])|(\/\/?|!=|[<>]=?|[\(\[|,=+-])|([@$])/g
-	const TERM = 1, OPERATOR = 2, MODIFIER = 3
-	var tokenType = OPERATOR
-	prefix += ':'
-	function replacer(token, identifier, suffix, term, operator, modifier) {
-		if (suffix) {
-			tokenType =
-				(suffix == ':' || (suffix == '::' &&
-				 (identifier == 'attribute' || identifier == 'namespace')))
-				? MODIFIER : OPERATOR
-		}
-		else if (identifier) {
-			if (tokenType == OPERATOR && identifier != '*') {
-				token = prefix + token
-			}
-			tokenType = (tokenType == TERM) ? OPERATOR : TERM
-		}
-		else {
-			tokenType = term ? TERM : operator ? OPERATOR : MODIFIER
-		}
-		return token
-	}
-	return xpath.replace(tokenPattern, replacer)
+    const tokenPattern = /([A-Za-z_\u00c0-\ufffd][\w\-.\u00b7-\ufffd]*|\*)\s*(::?|\()?|(".*?"|'.*?'|\d+(?:\.\d*)?|\.(?:\.|\d+)?|[\)\]])|(\/\/?|!=|[<>]=?|[\(\[|,=+-])|([@$])/g
+    const TERM = 1, OPERATOR = 2, MODIFIER = 3
+    var tokenType = OPERATOR
+    prefix += ':'
+    function replacer(token, identifier, suffix, term, operator, modifier) {
+        if (suffix) {
+            tokenType =
+                (suffix == ':' || (suffix == '::' &&
+                 (identifier == 'attribute' || identifier == 'namespace')))
+                ? MODIFIER : OPERATOR
+        }
+        else if (identifier) {
+            if (tokenType == OPERATOR && identifier != '*') {
+                token = prefix + token
+            }
+            tokenType = (tokenType == TERM) ? OPERATOR : TERM
+        }
+        else {
+            tokenType = term ? TERM : operator ? OPERATOR : MODIFIER
+        }
+        return token
+    }
+    return xpath.replace(tokenPattern, replacer)
 };
 
 function getElementPosition(elem) {
 	var offsetTrail = elem;
-	var offsetLeft  = 0;
-	var offsetTop   = 0;
+	var offsetLeft = 0;
+	var offsetTop = 0;
 	while (offsetTrail) {
 		offsetLeft += offsetTrail.offsetLeft;
-		offsetTop  += offsetTrail.offsetTop;
+		offsetTop += offsetTrail.offsetTop;
 		offsetTrail = offsetTrail.offsetParent;
 	}
-	return {left: offsetLeft || null, top: offsetTop|| null};
+    return {left: offsetLeft || null, top: offsetTop|| null};
 }
 
 function getElementBottom(elem) {
@@ -2167,11 +2162,11 @@ function getElementBottom(elem) {
 		var height = parseInt(rect.height, 10);
 	} else {
 		var c_style = doc.defaultView.getComputedStyle(elem, '');
-		var height  = 0;
-		var prop    = ['height', 'borderTopWidth', 'borderBottomWidth',
+		var height = 0;
+		var prop = ['height', 'borderTopWidth', 'borderBottomWidth',
 			'paddingTop', 'paddingBottom',
 			'marginTop', 'marginBottom'];
-		prop.forEach(function(i) {
+		prop.forEach(function (i) {
 			var h = parseInt(c_style[i]);
 			if (typeof h == 'number') {
 				height += h;
@@ -2198,37 +2193,40 @@ function getCookie(host, needSecureCookie) {
 
 // end utility functions.
 function getCache() {
-	try{
+	try {
 		var cache = loadFile(DB_FILENAME_JSON);
-		if (!cache) return false;
-		cache = JSON.parse(cache);
-		ns.SITEINFO = cache;
+        if (!cache) return false;
+        cache = JSON.parse(cache);
+        ns.SITEINFO = cache;
+        ns.SITEINFO.forEach(function(i){
+            i.type = "json";
+		});
 		log('Load cacheInfo.');
 		return true;
-	}catch(e){
+	} catch (e) {
 		log('Error getCache.')
 		return false;
 	}
 }
 
-function requestSITEINFO(){
+function requestSITEINFO() {
 	var xhrStates = {};
-	SITEINFO_IMPORT_URLS.forEach(function(i) {
+	SITEINFO_IMPORT_URLS.forEach(function (i) {
 		var opt = {
-			method: 'get',
-			url: i,
-			onload: function(res) {
+			method : 'get',
+			url : i,
+			onload : function (res) {
 				xhrStates[i] = 'loaded';
 				getCacheCallback(res, i);
 			},
-			onerror: function(res) {
+			onerror : function (res) {
 				xhrStates[i] = 'error';
 				getCacheErrorCallback(i);
 			},
 		}
 		xhrStates[i] = 'start';
 		GM_xmlhttpRequest(opt);
-		setTimeout(function() {
+		setTimeout(function () {
 			if (xhrStates[i] == 'start') {
 				getCacheErrorCallback(i);
 			}
@@ -2244,27 +2242,27 @@ function getCacheCallback(res, url) {
 	var temp;
 	try {
 		temp = Cu.evalInSandbox(res.responseText, Cu.Sandbox("about:blank"));
-	} catch(e) {
+	} catch (e) {
 		log(e);
 	}
 	if (!temp || !temp.length)
 		return getCacheErrorCallback(url);
 
 	var info = [];
-	temp.forEach(function(i){
-		var data = i.data;
-		if (!data.url || data.url.length <= 12) return;
-		try {
-			var exp = new RegExp(data.url);
-			if (exp.test('http://a')) return;
-			var o = {
-				url: data.url,
-				nextLink: data.nextLink,
-				pageElement: data.pageElement,
+	temp.forEach(function (i) {
+        var data = i.data;
+        if (!data.url || data.url.length <= 12) return;
+        try {
+            var exp = new RegExp(data.url);
+            if (exp.test('http://a')) return;
+            var o = {
+				url : data.url,
+				nextLink : data.nextLink,
+				pageElement : data.pageElement,
 			};
 			Object.defineProperty(o, 'url_regexp', {
-				enumerable: false,
-				value: exp
+				enumerable : false,
+				value : exp
 			});
 			if (data.insertBefore)
 				o.insertBefore = data.insertBefore;
@@ -2272,11 +2270,11 @@ function getCacheCallback(res, url) {
 			info.push(o);
 		} catch (e) {}
 	});
-	info.sort(function(a, b) b.url.length - a.url.length);
-	saveFile(DB_FILENAME_JSON, JSON.stringify(info));
+	info.sort(function (a, b)b.url.length - a.url.length);
+		saveFile(DB_FILENAME_JSON, JSON.stringify(info));
 
-	ns.SITEINFO = info;
-	log('getCacheCallback:' + url);
+		ns.SITEINFO = info;
+		log('getCacheCallback:' + url);
 }
 
 function getCacheErrorCallback(url) {
@@ -2309,15 +2307,15 @@ function GM_xmlhttpRequest(obj, win) {
     });
 
     req.send(obj.send || null);
-    return req;
+	return req;
 }
 
 function wildcardToRegExpStr(urlstr) {
-	if (urlstr.source) return urlstr.source;
-	let reg = urlstr.replace(/[()\[\]{}|+.,^$?\\]/g, "\\$&").replace(/\*+/g, function(str){
-		return str === "*" ? ".*" : "[^/]*";
-	});
-	return "^" + reg + "$";
+    if (urlstr.source) return urlstr.source;
+    let reg = urlstr.replace(/[()\[\]{}|+.,^$?\\]/g, "\\$&").replace(/\*+/g, function(str){
+        return str === "*" ? ".*" : "[^/]*";
+    });
+    return "^" + reg + "$";
 }
 
 function log(){ Application.console.log('[uAutoPagerize] ' + $A(arguments)); }
@@ -2327,39 +2325,39 @@ function $(id, doc) (doc || document).getElementById(id);
 function $A(arr) Array.slice(arr);
 function $C(name, attr, doc) {
     doc = doc || document;
-	var el = doc.createElement(name);
-	if (attr) Object.keys(attr).forEach(function(n) el.setAttribute(n, attr[n]));
-	return el;
+    var el = doc.createElement(name);
+    if (attr) Object.keys(attr).forEach(function(n) el.setAttribute(n, attr[n]));
+    return el;
 }
 
 function addStyle(css) {
-	var pi = document.createProcessingInstruction(
-		'xml-stylesheet',
-		'type="text/css" href="data:text/css;utf-8,' + encodeURIComponent(css) + '"'
-	);
-	return document.insertBefore(pi, document.documentElement);
+    var pi = document.createProcessingInstruction(
+        'xml-stylesheet',
+        'type="text/css" href="data:text/css;utf-8,' + encodeURIComponent(css) + '"'
+    );
+    return document.insertBefore(pi, document.documentElement);
 }
 
 function loadFile(aLeafName) {
-	var aFile = Services.dirsvc.get('UChrm', Ci.nsILocalFile);
-	aFile.appendRelativePath(aLeafName);
-	return loadText(aFile);
+    var aFile = Services.dirsvc.get('UChrm', Ci.nsILocalFile);
+    aFile.appendRelativePath(aLeafName);
+    return loadText(aFile);
 }
 function loadText(aFile) {
-	if (!aFile.exists() || !aFile.isFile()) return null;
-	var fstream = Cc["@mozilla.org/network/file-input-stream;1"].createInstance(Ci.nsIFileInputStream);
-	var sstream = Cc["@mozilla.org/scriptableinputstream;1"].createInstance(Ci.nsIScriptableInputStream);
-	fstream.init(aFile, -1, 0, 0);
-	sstream.init(fstream);
-	var data = sstream.read(sstream.available());
-	try { data = decodeURIComponent(escape(data)); } catch(e) {}
-	sstream.close();
-	fstream.close();
-	return data;
+    if (!aFile.exists() || !aFile.isFile()) return null;
+    var fstream = Cc["@mozilla.org/network/file-input-stream;1"].createInstance(Ci.nsIFileInputStream);
+    var sstream = Cc["@mozilla.org/scriptableinputstream;1"].createInstance(Ci.nsIScriptableInputStream);
+    fstream.init(aFile, -1, 0, 0);
+    sstream.init(fstream);
+    var data = sstream.read(sstream.available());
+    try { data = decodeURIComponent(escape(data)); } catch(e) {}
+    sstream.close();
+    fstream.close();
+    return data;
 }
 
 function saveFile(name, data) {
-	var file = Services.dirsvc.get('UChrm', Ci.nsILocalFile);
+    var file = Services.dirsvc.get('UChrm', Ci.nsILocalFile);
 	file.appendRelativePath(name);
 
 	var suConverter = Cc["@mozilla.org/intl/scriptableunicodeconverter"].createInstance(Ci.nsIScriptableUnicodeConverter);
@@ -2372,11 +2370,10 @@ function saveFile(name, data) {
 	foStream.close();
 }
 
-function alerts(title, info){
+function alerts(title, info) {
 	Cc['@mozilla.org/alerts-service;1'].getService(Ci.nsIAlertsService)
-		.showAlertNotification(null, title, info, false, "", null, "");
+	.showAlertNotification(null, title, info, false, "", null, "");
 }
-
 
 })('\
 #uAutoPagerize-icon {\
